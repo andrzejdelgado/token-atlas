@@ -1,0 +1,341 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "apply": "Apply",
+    "reset": "Reset",
+    "close": "Close",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "yes": "Yes",
+    "no": "No",
+    "add": "Add",
+    "edit": "Edit",
+    "rename": "Rename",
+    "move": "Move",
+    "search": "Search",
+    "filter": "Filters",
+    "export": "Export",
+    "import": "Import",
+    "settings": "Settings",
+    "home": "Home",
+    "actions": "Actions",
+    "noResults": "No results found"
+  },
+  "nav": {
+    "allTokens": "All Semantics",
+    "advancedSearch": "Advanced Search",
+    "connectors": "Connectors",
+    "import": "Import",
+    "export": "Export",
+    "home": "Home",
+    "settings": "Settings"
+  },
+  "auth": {
+    "login": "Log in",
+    "logout": "Log out",
+    "register": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "name": "Name",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "continueWithGoogle": "Continue with Google",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Sign in to your Token Atlas workspace",
+    "registerTitle": "Create your account",
+    "registerSubtitle": "Start managing your design tokens",
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailTaken": "An account with this email already exists",
+      "passwordMismatch": "Passwords do not match",
+      "required": "This field is required"
+    }
+  },
+  "sidebar": {
+    "themes": "Themes",
+    "collections": "Collections",
+    "groups": "Groups",
+    "addTheme": "Add theme",
+    "addGroup": "Add group",
+    "renameTheme": "Rename theme",
+    "renameGroup": "Rename group",
+    "noThemes": "No themes yet",
+    "noGroups": "No groups yet",
+    "tokens": "tokens"
+  },
+  "dashboard": {
+    "title": "Home",
+    "totalTokens": "Total Tokens",
+    "themes": "Themes",
+    "lastFigmaSync": "Last Figma Sync",
+    "lastStorybookSync": "Last Storybook Sync",
+    "dataSources": "Data Sources",
+    "destinations": "Destinations",
+    "figmaConnected": "Connected",
+    "figmaNotConfigured": "Not configured",
+    "storybookConnected": "Connected",
+    "storybookNotConfigured": "Not configured",
+    "openStorybook": "Open Storybook",
+    "neverSynced": "Never synced",
+    "configureInSettings": "Configure in Settings"
+  },
+  "tokens": {
+    "title": "All Semantics",
+    "addToken": "Add token",
+    "all": "All",
+    "flagged": "Flagged",
+    "columns": {
+      "name": "Name",
+      "type": "Type",
+      "lightValue": "Light",
+      "darkValue": "Dark",
+      "swatch": "Swatch",
+      "flag": "Flag",
+      "themes": "Themes",
+      "components": "Components",
+      "labels": "Labels",
+      "collection": "Collection",
+      "lastModified": "Last modified"
+    },
+    "actions": {
+      "rename": "Rename",
+      "move": "Move",
+      "flag": "Flag",
+      "unflag": "Unflag",
+      "label": "Label",
+      "history": "View history",
+      "delete": "Delete",
+      "confirmDelete": "Confirm delete"
+    },
+    "bulk": {
+      "selected": "{count} selected",
+      "group": "Group",
+      "rename": "Rename",
+      "move": "Move",
+      "flag": "Flag",
+      "label": "Label",
+      "delete": "Delete",
+      "deselect": "Deselect all"
+    },
+    "deleteConfirm": "You're about to delete {count} token(s). This cannot be undone.",
+    "empty": {
+      "title": "No tokens yet",
+      "description": "Add your first token to get started",
+      "noResults": "No tokens match your search",
+      "noResultsDescription": "Try adjusting your filters or search query",
+      "noFlagged": "No flagged tokens",
+      "noFlaggedDescription": "Flag tokens to track items that need rework or discussion"
+    },
+    "types": {
+      "Color": "Color",
+      "Number": "Number",
+      "String": "String",
+      "Boolean": "Boolean"
+    }
+  },
+  "addToken": {
+    "title": "Add Token",
+    "name": "Token name",
+    "namePlaceholder": "color/background/primary",
+    "type": "Type",
+    "collection": "Collection",
+    "group": "Group",
+    "themes": "Themes",
+    "lightValue": "Light value",
+    "darkValue": "Dark value",
+    "components": "Associated components",
+    "labels": "Labels",
+    "colorPreview": "Color preview"
+  },
+  "bulkRename": {
+    "title": "Bulk Rename",
+    "subtitle": "Changes will apply to {count} selected token(s)",
+    "addPrefix": "Add prefix",
+    "addSuffix": "Add suffix",
+    "swapText": "Swap text",
+    "swapFind": "Find",
+    "swapReplace": "Replace with",
+    "removeText": "Remove text",
+    "preview": "Preview",
+    "noChanges": "Enter values above to see a preview"
+  },
+  "bulkLabel": {
+    "title": "Bulk Label",
+    "subtitle": "Apply labels to {count} selected token(s)",
+    "addLabel": "Add label",
+    "placeholder": "Type a label…",
+    "popular": "Popular labels",
+    "selected": "Selected labels",
+    "preview": "Preview"
+  },
+  "filter": {
+    "title": "Filters",
+    "activeFilters": "Active filters",
+    "clearAll": "Clear all",
+    "type": "Token type",
+    "collection": "Collection",
+    "group": "Group",
+    "theme": "Theme",
+    "flagged": "Flagged only",
+    "labels": "Labels",
+    "lastModified": "Last modified",
+    "from": "From",
+    "to": "To",
+    "components": "Associated component",
+    "resetFilters": "Reset filters"
+  },
+  "columnManager": {
+    "title": "Manage Columns",
+    "locked": "Locked",
+    "resetDefaults": "Reset defaults"
+  },
+  "versionHistory": {
+    "title": "Version History",
+    "noHistory": "No changes recorded yet",
+    "actions": {
+      "created": "Created",
+      "renamed": "Renamed",
+      "moved": "Moved",
+      "value_changed": "Value changed",
+      "flagged": "Flagged",
+      "unflagged": "Unflagged",
+      "labeled": "Labeled",
+      "unlabeled": "Unlabeled",
+      "theme_added": "Theme added",
+      "theme_removed": "Theme removed",
+      "deleted": "Deleted"
+    }
+  },
+  "search": {
+    "title": "Advanced Search",
+    "placeholder": "Search tokens by name, value, label…",
+    "results": "{count} result(s)",
+    "noResults": "No tokens found",
+    "noResultsDescription": "Try a different search term or adjust the filters",
+    "recentSearches": "Recent searches"
+  },
+  "settings": {
+    "title": "Settings",
+    "figma": {
+      "title": "Figma",
+      "pat": "Personal Access Token",
+      "patPlaceholder": "figd_…",
+      "fileKey": "File key",
+      "fileKeyPlaceholder": "Paste your Figma file key",
+      "testConnection": "Test connection",
+      "connected": "Connected",
+      "notConfigured": "Not configured",
+      "readOnly": "You have read-only access to these settings"
+    },
+    "storybook": {
+      "title": "Storybook",
+      "adminOnly": "Admin only",
+      "githubToken": "GitHub token",
+      "repoUrl": "Repository URL",
+      "branch": "Branch",
+      "tokenPath": "Token file path"
+    },
+    "users": {
+      "title": "User Management",
+      "invite": "Invite user",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "joined": "Joined",
+      "changeRole": "Change role",
+      "remove": "Remove",
+      "confirmRemove": "Remove this user?",
+      "roles": {
+        "admin": "Admin",
+        "user": "User"
+      }
+    },
+    "profile": {
+      "title": "Profile",
+      "name": "Name",
+      "email": "Email",
+      "avatar": "Avatar",
+      "language": "Language",
+      "changePassword": "Change password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmNewPassword": "Confirm new password"
+    }
+  },
+  "import": {
+    "title": "Import Tokens",
+    "description": "Upload a W3C Design Tokens JSON file",
+    "dropzone": "Drop a JSON file here or click to browse",
+    "preview": "Preview",
+    "conflicts": "{count} conflict(s) detected",
+    "conflictDescription": "These tokens already exist and will be overwritten.",
+    "confirmImport": "Confirm import",
+    "importing": "Importing…",
+    "success": "Successfully imported {count} token(s)",
+    "error": "Import failed"
+  },
+  "export": {
+    "title": "Export Tokens",
+    "scope": "Export scope",
+    "all": "All tokens",
+    "byTheme": "By theme",
+    "byCollection": "By collection",
+    "byGroup": "By group",
+    "download": "Download JSON",
+    "success": "Export downloaded",
+    "error": "Export failed"
+  },
+  "connectors": {
+    "title": "Connectors",
+    "figma": {
+      "title": "Figma",
+      "push": "Push to Figma",
+      "selectTheme": "Select theme to push",
+      "pushing": "Pushing…",
+      "lastSync": "Last synced",
+      "success": "Successfully pushed to Figma",
+      "error": "Failed to push to Figma"
+    },
+    "storybook": {
+      "title": "Storybook",
+      "push": "Push to Storybook",
+      "pushing": "Pushing…",
+      "lastSync": "Last synced",
+      "openLink": "Open Storybook",
+      "success": "Successfully pushed to Storybook",
+      "error": "Failed to push to Storybook",
+      "adminOnly": "Admin only"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No notifications",
+    "types": {
+      "token_created": "Token created",
+      "token_deleted": "Token deleted",
+      "import": "Import",
+      "export": "Export",
+      "figma_sync": "Figma sync",
+      "storybook_sync": "Storybook sync",
+      "sync_error": "Sync error"
+    }
+  },
+  "account": {
+    "title": "Account",
+    "notifications": "Notifications",
+    "darkMode": "Dark mode",
+    "language": "Language",
+    "logout": "Log out"
+  },
+  "mobile": {
+    "readOnly": "Read-only mode",
+    "readOnlyDescription": "Token Atlas requires a desktop browser (1024px+) for editing."
+  }
+}

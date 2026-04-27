@@ -1,0 +1,616 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { X, Check, ChevronsUpDown, Flag, Loader2, Layers } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { useDistinctTokenValues } from "@/hooks/use-distinct-token-values";
+import type { IToken } from "@/types/token";
+
+const POPULAR_COUNT = 5;
+const TOKEN_TYPES = ["Color", "Number", "String", "Boolean"] as const;
+type TokenType = (typeof TOKEN_TYPES)[number];
+
+const TYPE_COLORS: Record<TokenType, string> = {
+  Color: "data-[active=true]:bg-blue-500/15 data-[active=true]:text-blue-700 dark:data-[active=true]:text-blue-400 data-[active=true]:border-blue-500/30",
+  Number: "data-[active=true]:bg-emerald-500/15 data-[active=true]:text-emerald-700 dark:data-[active=true]:text-emerald-400 data-[active=true]:border-emerald-500/30",
+  String: "data-[active=true]:bg-amber-500/15 data-[active=true]:text-amber-700 dark:data-[active=true]:text-amber-400 data-[active=true]:border-amber-500/30",
+  Boolean: "data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-700 dark:data-[active=true]:text-purple-400 data-[active=true]:border-purple-500/30",
+};
+
+const isColorValue = (v: string) => /^#|^rgb|^hsl|^oklch/.test(v);
+
+interface Collection { _id: string; name: string; }
+interface Group { _id: string; name: string; path: string; depth: number; }
+
+function TagCombobox({
+  label,
+  options,
+  popular,
+  selected,
+  onToggle,
+}: {
+  label: string;
+  options: string[];
+  popular: string[];
+  selected: string[];
+  onToggle: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rest = options.filter((o) => !popular.includes(o));
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</Label>
+      <div className="flex flex-wrap gap-1.5">
+        {selected.map((s) => (
+          <Badge key={s} variant="secondary" className="gap-1 text-xs pr-1">
+            {s}
+            <button
+              type="button"
+              onClick={() => onToggle(s)}
+              className="ml-0.5 rounded-sm opacity-70 hover:opacity-100"
+            >
+              <X className="h-2.5 w-2.5" />
+            </button>
+          </Badge>
+        ))}
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-6 px-2 text-xs gap-1 border-dashed">
+              Add <ChevronsUpDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="start">
+            <Command>
+              <CommandInput placeholder={`Search ${label.toLowerCase()}…`} />
+              <CommandList>
+                <CommandEmpty>No {label.toLowerCase()} found.</CommandEmpty>
+                {popular.length > 0 && (
+                  <CommandGroup heading="Popular">
+                    {popular.map((o) => (
+                      <CommandItem key={o} value={o} onSelect={() => { onToggle(o); setOpen(false); }}>
+                        <Check className={cn("mr-2 h-3.5 w-3.5 shrink-0", selected.includes(o) ? "opacity-100" : "opacity-0")} />
+                        {o}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+                {rest.length > 0 && (
+                  <CommandGroup heading={popular.length > 0 ? "All" : undefined}>
+                    {rest.map((o) => (
+                      <CommandItem key={o} value={o} onSelect={() => { onToggle(o); setOpen(false); }}>
+                        <Check className={cn("mr-2 h-3.5 w-3.5 shrink-0", selected.includes(o) ? "opacity-100" : "opacity-0")} />
+                        {o}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      </div>
+    </div>
+  );
+}
+
+// ── Color input with swatch ───────────────────────────────────────────────────
+
+function ColorInput({
+  id,
+  value,
+  onChange,
+  placeholder,
+  showSwatch,
+}: {
+  id?: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  showSwatch: boolean;
+}) {
+  const hasSwatch = showSwatch && isColorValue(value);
+  return (
+    <div className="relative flex items-center">
+      {hasSwatch && (
+        <span
+          className="absolute left-2.5 h-3.5 w-3.5 rounded-sm border border-border/50 shrink-0"
+          style={{ backgroundColor: value }}
+        />
+      )}
+      <Input
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={cn("text-sm", hasSwatch && "pl-8")}
+        placeholder={placeholder}
+      />
+    </div>
+  );
+}
+
+// ── Props ─────────────────────────────────────────────────────────────────────
+
+interface EditTokenSheetProps {
+  token: IToken | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSaved: () => void;
+  activeThemeId?: string;
+  activeThemeName?: string;
+  activeThemeIsBase?: boolean;
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export function EditTokenSheet({
+  token,
+  open,
+  onOpenChange,
+  onSaved,
+  activeThemeId,
+  activeThemeName,
+  activeThemeIsBase = true,
+}: EditTokenSheetProps) {
+  const { labels: allLabels, components: allComponents } = useDistinctTokenValues();
+
+  // Base fields
+  const [name, setName] = useState("");
+  const [tokenType, setTokenType] = useState<TokenType>("Color");
+  const [lightValue, setLightValue] = useState("");
+  const [darkValue, setDarkValue] = useState("");
+  const [flagged, setFlagged] = useState(false);
+  const [labels, setLabels] = useState<string[]>([]);
+  const [components, setComponents] = useState<string[]>([]);
+  const [collectionId, setCollectionId] = useState("");
+  const [groupId, setGroupId] = useState("");
+
+  // Theme override fields (only populated when non-base theme is active)
+  const [overrideLight, setOverrideLight] = useState("");
+  const [overrideDark, setOverrideDark] = useState("");
+  const [hasExistingOverride, setHasExistingOverride] = useState(false);
+  const [loadingOverride, setLoadingOverride] = useState(false);
+  const [removingOverride, setRemovingOverride] = useState(false);
+
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  const showOverrideSection = !activeThemeIsBase && !!activeThemeId;
+
+  // Populate form when token or open state changes
+  useEffect(() => {
+    if (!token || !open) return;
+
+    // Always populate non-value fields from token
+    setName(token.name);
+    setTokenType(token.tokenType as TokenType);
+    setFlagged(token.flagged);
+    setLabels(token.labels ?? []);
+    setComponents(token.associatedComponents ?? []);
+
+    const colId = typeof token.collection === "object" ? token.collection._id : token.collection;
+    const grpId = typeof token.group === "object" ? token.group._id : token.group;
+    setCollectionId(colId);
+    setGroupId(grpId);
+
+    if (!showOverrideSection) {
+      // Base theme — use token values directly
+      setLightValue(token.lightValue);
+      setDarkValue(token.darkValue ?? "");
+      return;
+    }
+
+    // Non-base theme: fetch base values + existing override in parallel
+    setLoadingOverride(true);
+    Promise.all([
+      fetch(`/api/tokens/${token._id}`).then((r) => r.ok ? r.json() : null),
+      fetch(`/api/tokens/${token._id}/override?themeId=${activeThemeId}`).then((r) => r.ok ? r.json() : null),
+    ])
+      .then(([baseData, overrideData]) => {
+        const baseLv = baseData?.data?.lightValue ?? token.lightValue;
+        const baseDv = baseData?.data?.darkValue ?? token.darkValue ?? "";
+        // Always show true base values in the "Values" section
+        setLightValue(baseLv);
+        setDarkValue(baseDv);
+
+        if (overrideData?.data) {
+          setHasExistingOverride(true);
+          setOverrideLight(overrideData.data.lightValue ?? baseLv);
+          setOverrideDark(overrideData.data.darkValue ?? baseDv);
+        } else {
+          setHasExistingOverride(false);
+          // Pre-populate override inputs with base values
+          setOverrideLight(baseLv);
+          setOverrideDark(baseDv);
+        }
+      })
+      .catch(() => {
+        // Fallback to token prop values
+        setLightValue(token.lightValue);
+        setDarkValue(token.darkValue ?? "");
+        setOverrideLight(token.lightValue);
+        setOverrideDark(token.darkValue ?? "");
+      })
+      .finally(() => setLoadingOverride(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token?._id, open, activeThemeId, showOverrideSection]);
+
+  // Fetch collections once
+  useEffect(() => {
+    if (!open) return;
+    fetch("/api/collections")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => d && setCollections(d.data ?? []))
+      .catch(() => {});
+  }, [open]);
+
+  // Fetch groups whenever collection changes
+  useEffect(() => {
+    if (!collectionId) { setGroups([]); return; }
+    fetch(`/api/groups?collection=${collectionId}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => d && setGroups(d.data ?? []))
+      .catch(() => {});
+  }, [collectionId]);
+
+  function handleCollectionChange(id: string) {
+    setCollectionId(id);
+    setGroupId("");
+  }
+
+  function toggleLabel(l: string) {
+    setLabels((prev) => prev.includes(l) ? prev.filter((x) => x !== l) : [...prev, l]);
+  }
+
+  function toggleComponent(c: string) {
+    setComponents((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
+  }
+
+  function groupLabel(g: Group) {
+    return g.path.split("/").join(" › ");
+  }
+
+  async function handleSave() {
+    if (!token) return;
+    if (!name.trim()) { toast.error("Name is required"); return; }
+    if (!lightValue.trim()) { toast.error("Light value is required"); return; }
+    if (!groupId) { toast.error("Group is required"); return; }
+
+    setSaving(true);
+    try {
+      // Always save base token
+      const tokenRes = await fetch(`/api/tokens/${token._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          tokenType,
+          lightValue: lightValue.trim(),
+          darkValue: darkValue.trim() || undefined,
+          flagged,
+          labels,
+          associatedComponents: components,
+          collection: collectionId,
+          group: groupId,
+        }),
+      });
+      if (!tokenRes.ok) throw new Error("Failed to save token");
+
+      // If non-base theme: upsert the override
+      if (showOverrideSection) {
+        const overrideRes = await fetch(`/api/tokens/${token._id}/override`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            themeId: activeThemeId,
+            lightValue: overrideLight.trim() || undefined,
+            darkValue: overrideDark.trim() || undefined,
+          }),
+        });
+        if (!overrideRes.ok) throw new Error("Failed to save override");
+        setHasExistingOverride(true);
+      }
+
+      toast.success("Token saved");
+      onSaved();
+      onOpenChange(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save token");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleRemoveOverride() {
+    if (!token || !activeThemeId) return;
+    setRemovingOverride(true);
+    try {
+      const res = await fetch(`/api/tokens/${token._id}/override?themeId=${activeThemeId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error();
+      setHasExistingOverride(false);
+      // Reset override inputs to base values
+      setOverrideLight(lightValue);
+      setOverrideDark(darkValue);
+      toast.success("Override removed");
+      onSaved();
+    } catch {
+      toast.error("Failed to remove override");
+    } finally {
+      setRemovingOverride(false);
+    }
+  }
+
+  const popularLabels = allLabels.slice(0, POPULAR_COUNT);
+  const popularComponents = allComponents.slice(0, POPULAR_COUNT);
+  const showSwatch = tokenType === "Color";
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-[440px] sm:w-[500px] flex flex-col gap-0 p-0">
+        <SheetHeader className="px-6 py-5 border-b">
+          <SheetTitle className="text-base">Edit token</SheetTitle>
+          {token && (
+            <p className="text-xs text-muted-foreground truncate">{token.name}</p>
+          )}
+        </SheetHeader>
+
+        <div className="flex-1 overflow-y-auto">
+          {/* ── Identity ─────────────────────────────── */}
+          <div className="px-6 py-5 space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-name" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Name</Label>
+              <Input
+                id="edit-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="text-sm"
+                placeholder="e.g. color/brand/primary"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Type</Label>
+              <div className="flex gap-1.5">
+                {TOKEN_TYPES.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    data-active={tokenType === t}
+                    onClick={() => setTokenType(t)}
+                    className={cn(
+                      "flex-1 rounded-md border px-2 py-1.5 text-xs font-medium transition-colors",
+                      "border-border text-muted-foreground hover:text-foreground hover:bg-muted",
+                      TYPE_COLORS[t]
+                    )}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* ── Base Values ───────────────────────────── */}
+          <div className="px-6 py-5 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {showOverrideSection ? "Base values" : "Values"}
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-light" className="text-xs text-muted-foreground">Light</Label>
+                <ColorInput
+                  id="edit-light"
+                  value={lightValue}
+                  onChange={setLightValue}
+                  placeholder="#FFFFFF"
+                  showSwatch={showSwatch}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-dark" className="text-xs text-muted-foreground">Dark</Label>
+                <ColorInput
+                  id="edit-dark"
+                  value={darkValue}
+                  onChange={setDarkValue}
+                  placeholder="#0A0A0A"
+                  showSwatch={showSwatch}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Theme override section ─────────────────── */}
+          {showOverrideSection && (
+            <>
+              <Separator />
+              <div className="px-6 py-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Override for {activeThemeName ?? "theme"}
+                    </p>
+                  </div>
+                  {hasExistingOverride && (
+                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5">Active</Badge>
+                  )}
+                </div>
+
+                <p className="text-[11px] text-muted-foreground">
+                  These values override the base values when the <strong>{activeThemeName}</strong> theme is active.
+                </p>
+
+                {loadingOverride ? (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Loading base values…
+                  </div>
+                ) : (
+                  <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Light override</Label>
+                        <ColorInput
+                          value={overrideLight}
+                          onChange={setOverrideLight}
+                          placeholder="#FFFFFF"
+                          showSwatch={showSwatch}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Dark override</Label>
+                        <ColorInput
+                          value={overrideDark}
+                          onChange={setOverrideDark}
+                          placeholder="#0A0A0A"
+                          showSwatch={showSwatch}
+                        />
+                      </div>
+                    </div>
+                    {hasExistingOverride && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs text-muted-foreground hover:text-destructive px-2"
+                        onClick={handleRemoveOverride}
+                        disabled={removingOverride}
+                      >
+                        {removingOverride && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
+                        Remove override
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          <Separator />
+
+          {/* ── Status & Taxonomy ─────────────────────── */}
+          <div className="px-6 py-5 space-y-5">
+            {/* Flagged */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Flag className="h-3.5 w-3.5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Flag token</p>
+                  <p className="text-xs text-muted-foreground">Mark for review or attention</p>
+                </div>
+              </div>
+              <Switch checked={flagged} onCheckedChange={setFlagged} />
+            </div>
+
+            <TagCombobox
+              label="Labels"
+              options={allLabels}
+              popular={popularLabels}
+              selected={labels}
+              onToggle={toggleLabel}
+            />
+
+            <TagCombobox
+              label="Components"
+              options={allComponents}
+              popular={popularComponents}
+              selected={components}
+              onToggle={toggleComponent}
+            />
+          </div>
+
+          <Separator />
+
+          {/* ── Location ─────────────────────────────── */}
+          <div className="px-6 py-5 space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Location</p>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Collection</Label>
+              <Select value={collectionId} onValueChange={handleCollectionChange}>
+                <SelectTrigger className="w-full h-9 text-sm">
+                  <SelectValue placeholder="Select collection…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {collections.map((c) => (
+                    <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Group</Label>
+              <Select value={groupId} onValueChange={setGroupId} disabled={!collectionId || groups.length === 0}>
+                <SelectTrigger className="w-full h-9 text-sm">
+                  <SelectValue placeholder={!collectionId ? "Select a collection first…" : "Select group…"} />
+                </SelectTrigger>
+                <SelectContent className="max-h-64">
+                  {groups.map((g) => (
+                    <SelectItem key={g._id} value={g._id}>
+                      <span className="flex items-center gap-1">
+                        {g.depth > 0 && (
+                          <span className="text-muted-foreground text-xs" style={{ paddingLeft: `${(g.depth - 1) * 10}px` }}>
+                            └
+                          </span>
+                        )}
+                        <span className="truncate">{groupLabel(g)}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Footer ───────────────────────────────── */}
+        <div className="flex gap-2 px-6 py-4 border-t">
+          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button className="flex-1" onClick={handleSave} disabled={saving || loadingOverride}>
+            {saving ? "Saving…" : "Save changes"}
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}

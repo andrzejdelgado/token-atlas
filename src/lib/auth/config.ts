@@ -1,0 +1,123 @@
+import type { NextAuthConfig } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
+import bcrypt from "bcryptjs";
+import { connectToDatabase } from "@/lib/db/mongodb";
+import { User } from "@/lib/db/models/user.model";
+
+export const authConfig: NextAuthConfig = {
+  providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    Credentials({
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+
+        await connectToDatabase();
+
+        // ── Demo account: find or create in DB ───────────────────────────
+        if (
+          (credentials.email as string).toLowerCase() === "demo@tokenatlas.com" &&
+          credentials.password === "demo"
+        ) {
+          let demoUser = await User.findOne({ email: "demo@tokenatlas.com" });
+          if (!demoUser) {
+            const passwordHash = await bcrypt.hash("demo", 10);
+            demoUser = await User.create({
+              email: "demo@tokenatlas.com",
+              name: "Demo User",
+              passwordHash,
+              role: "admin",
+            });
+          }
+          return {
+            id: demoUser._id.toString(),
+            email: demoUser.email,
+            name: demoUser.name ?? "Demo User",
+            image: demoUser.avatarUrl ?? null,
+            role: demoUser.role,
+          };
+        }
+        // ────────────────────────────────────────────────────────────────
+
+        const user = await User.findOne({
+          email: (credentials.email as string).toLowerCase(),
+        });
+
+        if (!user || !user.passwordHash) return null;
+
+        const valid = await bcrypt.compare(
+          credentials.password as string,
+          user.passwordHash
+        );
+        if (!valid) return null;
+
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name ?? user.email,
+          image: user.avatarUrl,
+          role: user.role,
+        };
+      },
+    }),
+  ],
+  callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        await connectToDatabase();
+        const existing = await User.findOne({ email: user.email });
+        if (!existing) {
+          await User.create({
+            email: user.email,
+            name: user.name,
+            avatarUrl: user.image,
+            googleId: account.providerAccountId,
+            role: "user",
+          });
+        } else if (!existing.googleId) {
+          await User.updateOne(
+            { email: user.email },
+            { googleId: account.providerAccountId, avatarUrl: user.image }
+          );
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = (user as { role?: string }).role ?? "user";
+      }
+      // Refresh token if role is missing or id is not a valid ObjectId (e.g. stale "demo-user" token)
+      const needsRefresh = !token.role || (typeof token.id === "string" && !/^[a-f\d]{24}$/i.test(token.id));
+      if (needsRefresh && token.email && process.env.MONGODB_URI) {
+        await connectToDatabase();
+        const dbUser = await User.findOne({ email: token.email });
+        if (dbUser) {
+          token.id = dbUser._id.toString();
+          token.role = dbUser.role;
+        }
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        (session.user as { role?: string }).role = token.role as string;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: "/login",
+    error: "/login",
+  },
+  session: { strategy: "jwt" },
+};

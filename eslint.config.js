@@ -1,0 +1,26 @@
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import { FlatCompat } from "@eslint/eslintrc";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
+
+const config = [
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      "react/no-unescaped-entities": "off",
+      // Downgrade setState-in-effect to warn — the pattern is valid for data fetching
+      "react-hooks/set-state-in-effect": "warn",
+      // Allow exhaustive-deps to be a warning only
+      "react-hooks/exhaustive-deps": "warn",
+    },
+  },
+];
+
+export default config;
