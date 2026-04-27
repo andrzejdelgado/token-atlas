@@ -1,326 +1,244 @@
-<div align="center">
-<h1>Next.js Elite: The Ultimate SaaS Starter</h1>
-<p><strong>Enterprise-Grade Foundation.</strong> One config. i18n, RBAC, Google OAuth, SEO & More (built to scale)</p>
-</div>
-<div align="center">
+# Token Atlas
 
-![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?style=for-the-badge&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+**Token Atlas** is a web-based management layer for semantic design tokens in multi-brand design systems. It sits alongside Figma — not as a plugin, but as a full application — giving design and engineering teams the filtering, bulk operations, history tracking, and cross-platform sync that Figma's Variables panel doesn't provide.
 
-<br/>
-
-<img src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/z0erbpt4iuqs3m6tzbn7.jpg" alt="Next.js Production-Ready Boilerplate" />
-
-<br/><br/>
-
-[**Live Demo** ↗](https://nextjs-elite.vercel.app/) · [**Use this template** ↗](https://github.com/salmanshahriar/Nextjs-Elite-Boilerplate/generate) · [Report Bug ↗](https://github.com/salmanshahriar/Nextjs-Elite-Boilerplate/issues) · [Request Feature ↗](https://github.com/salmanshahriar/Nextjs-Elite-Boilerplate/issues)
-
-<img src="https://nextjs-elite-boilerplate.vercel.app/og-image.webp" alt="Next.js Elite Boilerplate" />
-
-</div>
+Built as a production-grade case study demonstrating SaaS architecture, Figma Variables API integration, W3C Design Tokens standard, and a component-driven UI with ShadCN.
 
 ---
 
-## Motivation
+## The Problem
 
-Most Next.js starters leave you wiring from scratch. This boilerplate prioritizes **app-ready defaults**: A production-ready Next.js SaaS Boilerplate with Type-safe i18n (6 languages) + NextAuth, Google OAuth + RBAC with parallel routes + SEO (sitemap, robots, manifest) + Theme + ESLint + Prettier + Vitest + Playwright.
+Figma's Variables panel has no filtering, no contextual search, and no bulk actions. Once a design system grows past a few hundred semantic tokens, it becomes impossible to manage inside Figma alone. Token Atlas solves this with a dedicated interface that treats tokens as data — queryable, auditable, and portable.
 
-<br/><br/>
+---
 
-## Integrated features
+## Key Features
 
-- Central config - Single [app-main-meta-data.json](src/shared/lib/config/app-main-meta-data.json) for app name, SEO, languages, organization, theme; drives metadata, sitemap, robots, manifest
-- Type-safe i18n (6 languages) - English, বাংলা, العربية, Français, Español, and 简体中文 with RTL. Example: `t("navigation.home")` is type-checked (invalid keys fail at compile time)
-- Role-based access control - [Next.js 16 parallel routes](https://nextjs.org/docs/app/building-your-application/routing/parallel-routes) for User and Admin. Example: `app/(protected)/@admin/dashboard` and `app/(protected)/@user/dashboard` both map to `/dashboard`, so roles stay hidden from the URL
-- [NextAuth.js](https://next-auth.js.org/) - Auth with optional [Google OAuth](https://next-auth.js.org/providers/google); admin role via `AUTH_ADMIN_EMAILS`
-- SEO - Open Graph, Twitter Card, JSON-LD, multi-language meta, dynamic sitemap, canonical URLs
-- [next-themes](https://github.com/pacocoursey/next-themes) - Dark mode with system preference and manual toggle
-- [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/) - Lint and format (Tailwind plugin, format on save in `.vscode`)
-- [Vitest](https://vitest.dev/) and [React Testing Library](https://testing-library.com/react) - Unit and component tests
-- [Playwright](https://playwright.dev/) - E2E tests in `e2e/`; optional WebKit-only for lower disk use
-- [GitHub Actions](https://github.com/features/actions) - Check workflow (lint, format, test, build) and Playwright E2E workflow
-- Health check - `GET /api/health` returns `{ status: "ok" }` for load balancers and Kubernetes probes
-- [shadcn/ui](https://ui.shadcn.com/) - Accessible, customizable components (Radix + CVA)
-- [Tailwind CSS v4](https://tailwindcss.com/) - Utility-first styling
-- [TypeScript](https://www.typescriptlang.org/) - Strict mode for type safety
-- [Next.js 16](https://nextjs.org/) - App Router, Server Components, recommended stable 16.x
+### Token Management
+- Collapsible grouped table with infinite scroll
+- Inline rename by double-clicking a token name
+- Per-token flag for "needs review", with optimistic UI toggle
+- Full edit sheet: name, type, values, group, themes, labels, components
+- Per-token audit log — every change, who made it, before/after values
 
-#### Vercel
+### Theme Overrides
+- **Light and Dark are not themes** — every token carries both values always
+- **Themes are brands** — orthogonal to the collection/group hierarchy
+- Switch between base theme and modifier themes; override Light/Dark values per brand without touching the base token
+- Override indicator in value columns; overflow themes tuck into a `+N` popover
 
-Deploy with [Vercel](https://vercel.com) by clicking the button below:
+### Bulk Operations
+- Select any number of tokens; floating action toolbar appears at the bottom
+- Bulk rename with prefix, suffix, swap, or remove — live highlighted preview
+- Bulk move, group, flag, label, and delete with popover confirmation
 
-[![Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/salmanshahriar/Nextjs-Elite-Boilerplate)
+### Groups
+- Infinite-depth group hierarchy within each collection
+- Inline subgroup creation and rename from the sidebar
+- Delete with child-promotion logic: direct children are promoted to top-level, tokens can be rehomed or deleted
 
-<br/><br/>
+### Filtering & Search
+- Filter by type, group, theme, flagged status, label, component, or date range
+- Advanced Search page with always-visible filters and saved query history
+- Column manager: show/hide and reorder columns; Name column locked first
 
-## Quick Start
+### Connectors
+- **Figma Variables** — push tokens as native Figma Variables via the Variables API (open beta); scoped per brand theme
+- **Storybook** (admin only) — commit a W3C `tokens.json` to a GitHub repo via Octokit; triggers Storybook rebuild if CI is configured
+
+### Import / Export
+- Import W3C Design Tokens JSON with preview and conflict warnings
+- Export scoped by theme, collection, or group
+
+### Access Control
+- Two roles: **Admin** (full access including Storybook push, settings, user management) and **User** (token operations only)
+- Role enforced server-side on every API route — UI hiding is supplemental only
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router, Server Components) |
+| Language | TypeScript (strict mode) |
+| Database | MongoDB Atlas via Mongoose |
+| Auth | NextAuth.js v5 — Credentials + Google OAuth |
+| Styling | Tailwind CSS v4 |
+| Components | ShadCN/UI (never modified at source) |
+| Figma sync | Figma Variables API (open beta) |
+| Storybook sync | GitHub API via Octokit |
+| Token standard | W3C Design Tokens Community Group format |
+| Testing | Vitest + React Testing Library, Playwright |
+| CI | GitHub Actions |
+
+---
+
+## Data Model
+
+```
+Collection (fixed: Foundations | Text)
+  └── Group (infinite depth)
+        └── Token
+              ├── lightValue   ← always present, not a theme
+              ├── darkValue    ← always present, not a theme
+              └── themes[]     ← brand associations (orthogonal to hierarchy)
+
+ThemeOverride
+  ├── theme  → Theme
+  ├── token  → Token
+  ├── lightValue (optional override)
+  └── darkValue  (optional override)
+```
+
+Themes represent brands. A token belongs to one or more brands. Pushing to Figma for a specific brand filters to that brand's tokens and applies any overrides before building the Variables payload.
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (auth)/              # Login and register pages
+│   ├── (dashboard)/         # All authenticated pages
+│   │   ├── page.tsx         # Home / dashboard
+│   │   ├── tokens/          # All Semantics (token table)
+│   │   ├── search/          # Advanced Search
+│   │   ├── connectors/      # Figma + Storybook connectors
+│   │   ├── import/          # Import flow
+│   │   ├── export/          # Export flow
+│   │   └── settings/        # Settings (admin)
+│   └── api/                 # API routes
+│       ├── tokens/          # CRUD, bulk, history, overrides
+│       ├── groups/          # CRUD with child-promotion
+│       ├── themes/          # CRUD
+│       ├── figma/           # Push to Figma Variables
+│       ├── storybook/       # Push to GitHub (admin only)
+│       ├── import/          # W3C token import
+│       ├── export/          # W3C token export
+│       ├── notifications/   # Activity feed
+│       └── settings/        # Workspace config
+├── components/
+│   ├── layout/              # Sidebar, page header, user menu
+│   ├── tokens/              # Token table, sheets, toolbar
+│   └── ui/                  # ShadCN components
+├── lib/
+│   ├── db/                  # Mongoose models + seed
+│   ├── figma/               # Figma API client + mapper
+│   └── storybook/           # W3C formatter + GitHub push
+└── types/                   # Shared TypeScript interfaces
+```
+
+---
+
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 18.17 or later
-- npm, yarn, pnpm, or bun
+- Node.js 18.17+
+- MongoDB Atlas cluster (free M0 tier works)
+- npm or pnpm
 
-### Next.js version
+### 1. Clone and install
 
-This boilerplate uses **Next.js 16** (16.1.6) for **stability and security**. Stay on the latest 16.x patch for security updates.
-
-### Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/salmanshahriar/Nextjs-Elite-Boilerplate.git
-   cd Nextjs-Elite-Boilerplate
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   # or
-   yarn install
-   # or
-   pnpm install
-   # or
-   bun install
-   ```
-
-3. **Run the development server**
-
-   ```bash
-   npm run dev
-   ```
-
-4. **Open your browser** at `http://localhost:3000`
-
-### First-time setup
-
-1. Copy `.env.example` to `.env` and set `NEXT_PUBLIC_APP_URL` if you need to override the site URL (e.g. in production).
-2. Edit **`src/shared/lib/config/app-main-meta-data.json`** — main config for app name, domain, SEO, languages, organization, and theme. Sitemap, robots, and manifest are generated from it.
-3. For **Google sign-in**: set `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` in `.env`, then set `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true`. See [Google OAuth setup](#google-oauth-setup) below.
-
-<br/><br/>
-
-## 📁 Project Structure
-
-```
-.
-├── src/
-│   ├── app/                     # App Router pages and layouts
-│   │   ├── (protected)/         # Authenticated area with RBAC
-│   │   │   ├── @admin/          # Admin dashboard
-│   │   │   ├── @user/               # User dashboard
-│   │   │   └── layout.tsx       # Chooses segment based on role
-│   │   ├── api/                 # API routes
-│   │   │   ├── auth/            # NextAuth routes
-│   │   │   └── health/          # Health check endpoint
-│   │   ├── layout.tsx           # Root layout (providers, SEO, theme, i18n)
-│   │   ├── error.tsx            # Global error boundary
-│   │   ├── not-found.tsx        # 404 page
-│   │   ├── manifest.ts          # Web manifest from config
-│   │   ├── robots.ts            # robots.txt from config
-│   │   └── sitemap.ts           # Sitemap from config
-│   └── shared/                  # Shared logic and components
-│       ├── components/          # Reusable React components
-│       ├── hooks/               # Selection of custom React hooks
-│       ├── layout/              # Layout components (header, footer, etc.)
-│       ├── lib/                 # Core logic, config, and utils
-│       │   ├── auth/            # Auth context, NextAuth options, types
-│       │   ├── config/          # Central config (app-main-meta-data.json)
-│       │   └── i18n/            # i18n config, hooks, types
-│       └── ui/                  # shadcn/ui components
-├── locales/                     # Translation files (en, bn, ar, fr, es, zh)
-├── e2e/                         # Playwright E2E tests
-├── .github/workflows/           # CI (check.yml, playwright.yml)
-└── public/                      # Static assets (favicon, og image, etc.)
+```bash
+git clone https://github.com/andrzejdelgado/token-atlas.git
+cd token-atlas
+npm install
 ```
 
-<br/><br/>
+### 2. Configure environment
 
-## ⚙️ Configuration
+Copy `.env.example` to `.env.local` and fill in the required values:
 
-### Site & SEO configuration
-
-Edit **`src/shared/lib/config/app-main-meta-data.json`** to customize app name, domain, SEO, languages, organization, theme. It drives metadata, sitemap, robots, manifest, and i18n locales.
-
-```json
-{
-  "appName": "Next.js Elite Boilerplate",
-  "appType": "Enterprise SaaS Starter",
-  "tagline": "Enterprise-Grade Foundation: i18n, RBAC, and OAuth (Built to Scale)",
-  "title": "Next.js Elite: The Ultimate SaaS Starter with i18n & RBAC",
-  "description": "Production-ready Next.js boilerplate with multi-language support (i18n) and role-based access control (RBAC)",
-  "locale": "en_US",
-  "language": "en-US",
-  "domain": "https://yourdomain.com",
-  "canonicalPath": "/",
-  "applicationCategory": "WebApplication",
-  "audience": "Developers, Businesses",
-  "keywords": ["nextjs", "i18n", "rbac", "boilerplate", "multilanguage"],
-  "features": ["Multi-language Support", "Role-Based Access Control", "Production Ready"],
-  "languages": {
-    "supported": ["en", "bn", "ar", "fr", "es", "zh"],
-    "default": "en",
-    "locales": { "...": "..." }
-  },
-  "organization": { "...": "..." },
-  "contact": { "...": "..." },
-  "social": { "...": "..." },
-  "images": { "...": "..." },
-  "icons": { "...": "..." },
-  "theme": { "...": "..." },
-  "pricing": { "...": "..." },
-  "manifest": "/manifest.webmanifest"
-}
+```bash
+cp .env.example .env.local
 ```
 
-### Adding a New Language
+| Variable | Required | Description |
+|---|---|---|
+| `MONGODB_URI` | Yes | MongoDB Atlas connection string |
+| `NEXTAUTH_SECRET` | Yes | Random secret — `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | Yes | `http://localhost:3000` in development |
+| `GOOGLE_CLIENT_ID` | Optional | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Optional | Google OAuth client secret |
 
-1. Add **`src/shared/lib/config/app-main-meta-data.json`** entry:
-   - Append the language code to `languages.supported` (e.g. `"es"`).
-   - Add an entry under `languages.locales` (e.g. `"es": { "code": "es", "name": "Spanish", "nativeName": "Español", "locale": "es_ES", "direction": "ltr" }`).
-2. Create **`locales/es.json`** (or your code) with the same structure as `locales/en.json`.
-3. In **`src/shared/lib/i18n/get-translations.ts`**, import the new file and add it to the `translations` object. Add the new key to the `TranslationKeys` union in **`src/shared/lib/i18n/types.ts`** if you use strict keys.
+### 3. Seed the database
 
-Type-safe usage example:
+The app seeds two fixed Collections (Foundations, Text) on first run. To load example tokens:
 
-```ts
-const { t } = useTranslations(messages);
-
-t("navigation.home");
-// t("navigation.homer"); // invalid key (type error)
+```bash
+npx tsx scripts/seed-variables.ts
 ```
 
-### Google OAuth setup
+### 4. Run the development server
 
-1. **Google Cloud Console**: Go to [APIs & Credentials](https://console.cloud.google.com/apis/credentials) and create an OAuth 2.0 Client ID (Web application).
-2. **Authorized redirect URI**: Add `http://localhost:3000/api/auth/callback/google` (dev) and your production URL (e.g. `https://yourdomain.com/api/auth/callback/google`).
-3. **`.env`**: Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NEXTAUTH_URL` (e.g. `http://localhost:3000`), and `NEXTAUTH_SECRET` (e.g. `openssl rand -base64 32`). Set `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` to show the Google sign-in button.
-4. **Admin role**: Optionally set `AUTH_ADMIN_EMAILS=admin@yourdomain.com` (comma-separated) so those Google accounts get the admin role.
+```bash
+npm run dev
+```
 
-### Adding a New Role
+Open [http://localhost:3000](http://localhost:3000).
 
-1. Create a new parallel route folder:
+---
 
-   ```bash
-   mkdir -p app/(protected)/@moderator/dashboard
-   ```
+## Connectors Setup
 
-2. Add your role-specific pages inside the folder
+### Figma Variables
 
-3. Update `src/app/(protected)/layout.tsx` to handle the new role:
-   ```typescript
-   if (currentUser?.role === "moderator") return moderator;
-   ```
+1. Generate a Figma Personal Access Token with `file_variables:read` and `file_variables:write` scopes
+2. Get your Figma file key from the file URL: `figma.com/design/**FILE_KEY**/...`
+3. In Token Atlas → Settings → Figma: enter both values and test the connection
+4. In Connectors → Figma: select a brand theme and push
 
-Your URL stays clean. Even with parallel routes like `app/(protected)/@admin/dashboard`, the user still visits `/dashboard` (the role is not exposed in the path).
+### Storybook (admin only)
 
-<br/><br/>
+1. Generate a GitHub Personal Access Token with `repo` scope
+2. In Settings → Storybook: enter the token, repo URL, branch, and token file path
+3. In Connectors → Storybook: push — a `tokens.json` (W3C format) is committed to your repo
 
-## 🧪 Testing
+---
 
-- **Unit / component:** [Vitest](https://vitest.dev) + [React Testing Library](https://testing-library.com/react). Run `npm run test` or `npm run test:watch`.
-- **E2E:** [Playwright](https://playwright.dev) in `e2e/`. Run `npm run e2e` (starts dev server automatically). Use `npm run e2e:ui` for the UI.
-- **E2E with Safari only:** To save disk space, install only WebKit and run with Safari: `npx playwright install webkit` then `npm run e2e:webkit`.
-- **Coverage:** `npm run test:coverage`.
+## Available Scripts
 
-<br/><br/>
+| Command | Description |
+|---|---|
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run start` | Production server |
+| `npm run lint` | ESLint |
+| `npm run test` | Unit tests (Vitest) |
+| `npm run test:coverage` | Unit tests with coverage |
+| `npm run e2e` | Playwright E2E tests |
+| `npm run e2e:ui` | Playwright with interactive UI |
+| `npm run prettier:fix` | Format all files |
 
-## 🔄 CI / DX
+---
 
-- **GitHub Actions:** `.github/workflows/check.yml` runs on push/PR: lint, Prettier check, unit tests, build. `.github/workflows/playwright.yml` runs E2E (Chromium, Firefox, WebKit).
-- **Prettier:** `prettier.config.js` + Tailwind plugin. `npm run prettier` to check, `npm run prettier:fix` to fix.
-- **Editor:** `.vscode/settings.json` enables format on save and ESLint fix on save.
+## Roles
 
-<br/><br/>
+| Capability | Admin | User |
+|---|---|---|
+| Token CRUD and bulk operations | ✓ | ✓ |
+| Import and Export | ✓ | ✓ |
+| Push to Figma | ✓ | ✓ |
+| View Settings | ✓ | ✓ (read-only) |
+| Push to Storybook | ✓ | — |
+| Manage Figma / GitHub credentials | ✓ | — |
+| Invite, remove, and change user roles | ✓ | — |
 
-## 🏥 Infra
+---
 
-- **Health check:** `GET /api/health` returns `{ status: "ok" }` for load balancers and Kubernetes probes.
+## Design Decisions
 
-## 🛠️ Available Scripts
+**ShadCN components are never modified at source.** Customisation happens through composition, props, and slots. This keeps the codebase upgradeable and demonstrates discipline over cleverness.
 
-| Command                 | Description                     |
-| ----------------------- | ------------------------------- |
-| `npm run dev`           | Start development server        |
-| `npm run build`         | Build for production            |
-| `npm run start`         | Start production server         |
-| `npm run lint`          | Run ESLint                      |
-| `npm run lint:fix`      | Fix ESLint errors               |
-| `npm run test`          | Run unit tests (Vitest)         |
-| `npm run test:watch`    | Run unit tests in watch mode    |
-| `npm run test:coverage` | Run unit tests with coverage    |
-| `npm run e2e`           | Run Playwright E2E tests        |
-| `npm run e2e:ui`        | Run Playwright with UI          |
-| `npm run e2e:webkit`    | Run E2E in WebKit (Safari) only |
-| `npm run prettier`      | Check formatting                |
-| `npm run prettier:fix`  | Fix formatting                  |
+**Light and Dark are values, not themes.** Every token always carries both `lightValue` and `darkValue`. Themes are brand associations — pushing to Figma for a brand filters to that brand's tokens only. Conflating modes with brands was the first architectural decision that prevented a class of export bugs.
 
-<br/><br/>
+**Admin-only actions enforced at the API layer.** Server-side role checks in every protected route handler. UI hiding is supplemental.
 
-## 🧪 Tech Stack
+---
 
-- **Framework:** Next.js 16.1.6 (App Router)
-- **Language:** TypeScript
-- **Auth:** NextAuth.js (Google OAuth, JWT session)
-- **Styling:** Tailwind CSS v4
-- **Components:** shadcn/ui
-- **Internationalization:** Type-safe i18n (locales from config)
-- **Code Quality:** ESLint, Prettier, TypeScript strict mode
-- **Testing:** Vitest, React Testing Library, Playwright
-- **Icons:** Lucide React
+## License
 
-<br/><br/>
-
-## 🧩 Best For
-
-Your boilerplate is ideal for:
-
-- ✅ SaaS applications with multiple user roles
-- ✅ International apps (especially with RTL needs)
-- ✅ Startups needing fast, professional launches
-- ✅ Enterprise projects with auth/role requirements
-
-May not be suitable for:
-
-- ❌ Simple landing pages (over-engineered)
-- ❌ Projects with highly custom authentication requirements
-- ❌ Applications without internationalization needs
-
-<br/><br/>
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-Please ensure your code follows the existing ESLint configuration and includes appropriate documentation.
-
-<br/><br/>
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-<br/><br/><br/>
-
-<div align="center">
-
-<br/><br/>
-
-## ⭐ Show your support
-
-**[ If this boilerplate saved you time, a star helps more devs discover it ]**
-
-[![GitHub stars](https://img.shields.io/github/stars/salmanshahriar/Nextjs-Elite-Boilerplate?style=social)](https://github.com/salmanshahriar/Nextjs-Elite-Boilerplate/stargazers)
-
-[![Star History Chart](https://api.star-history.com/svg?repos=salmanshahriar/Nextjs-Elite-Boilerplate&type=date&legend=bottom-right)](https://www.star-history.com/#salmanshahriar/Nextjs-Elite-Boilerplate&type=date&legend=bottom-right)
-
-[**Star the repo**](https://github.com/salmanshahriar/Nextjs-Elite-Boilerplate/stargazers) · [Contribute](https://github.com/salmanshahriar/Nextjs-Elite-Boilerplate/blob/main/README.md#-contributing)
-
-</div>
+MIT
