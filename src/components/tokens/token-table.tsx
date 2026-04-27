@@ -10,7 +10,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card, CardContent } from "@/components/ui/card";
 import { TokenRow } from "./token-row";
@@ -97,7 +96,7 @@ function getSubtreeTokenIds(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderGroupNodes(
   nodes: GroupNode[],
-  tokensByGroupId: Map<string, any[]>,
+  tokensByGroupId: Map<string, (IToken & { updatedAt: Date | string })[]>,
   selectedIds: Set<string>,
   toggleGroup: (ids: string[], checked: boolean) => void,
   toggleOne: (id: string, checked: boolean) => void,

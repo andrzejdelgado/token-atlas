@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
   const nextCursor = hasMore ? page[page.length - 1]._id.toString() : undefined;
 
   // If a specific non-base theme is requested, apply its overrides
-  let overrideMap = new Map<string, { lightValue?: string; darkValue?: string }>();
+  const overrideMap = new Map<string, { lightValue?: string; darkValue?: string }>();
   if (themeId) {
     const theme = await Theme.findById(themeId).select("isBase").lean();
     if (theme && !theme.isBase) {

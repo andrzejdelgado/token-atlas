@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Clock, Trash2, CheckCheck, SquarePen } from "lucide-react";
+import { Clock, Trash2, CheckCheck, SquarePen } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
