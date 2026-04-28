@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { ChevronLeft, Flag, CheckCircle2, Loader2, RotateCcw, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { FlagCell } from "@/components/tokens/flag-cell";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -135,28 +136,6 @@ export default function ThemeReviewPage({ params }: { params: Promise<{ id: stri
       toast.error("Failed to revert theme");
     } finally {
       setReverting(false);
-    }
-  }
-
-  async function toggleFlag(tokenId: string, current: boolean) {
-    setOverrides((prev) =>
-      prev.map((o) =>
-        o.token._id === tokenId ? { ...o, token: { ...o.token, flagged: !current } } : o
-      )
-    );
-    try {
-      await fetch(`/api/tokens/${tokenId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ flagged: !current }),
-      });
-    } catch {
-      toast.error("Failed to update flag");
-      setOverrides((prev) =>
-        prev.map((o) =>
-          o.token._id === tokenId ? { ...o, token: { ...o.token, flagged: current } } : o
-        )
-      );
     }
   }
 
@@ -347,7 +326,7 @@ export default function ThemeReviewPage({ params }: { params: Promise<{ id: stri
                 <div
                   key={override._id}
                   className={cn(
-                    "grid grid-cols-[1fr_1fr_1fr_auto] items-center gap-4 px-4 py-3",
+                    "group/row grid grid-cols-[1fr_1fr_1fr_auto] items-center gap-4 px-4 py-3",
                     t.flagged && "bg-amber-50/40 dark:bg-amber-950/10"
                   )}
                 >
@@ -408,16 +387,17 @@ export default function ThemeReviewPage({ params }: { params: Promise<{ id: stri
                   </div>
 
                   {/* Flag */}
-                  <button
-                    onClick={() => toggleFlag(t._id, t.flagged)}
-                    className={cn(
-                      "rounded p-1 transition-colors",
-                      t.flagged ? "text-amber-500" : "text-muted-foreground/40 hover:text-amber-400"
-                    )}
-                    title={t.flagged ? "Remove flag" : "Flag token"}
-                  >
-                    <Flag className="h-3.5 w-3.5" fill={t.flagged ? "currentColor" : "none"} />
-                  </button>
+                  <FlagCell
+                    flagged={t.flagged}
+                    tokenId={t._id}
+                    onToggle={(id, flagged) => {
+                      setOverrides((prev) =>
+                        prev.map((o) =>
+                          o.token._id === id ? { ...o, token: { ...o.token, flagged } } : o
+                        )
+                      );
+                    }}
+                  />
                 </div>
               );
             })}
