@@ -12,7 +12,6 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { TimestampCell } from "@/components/common/timestamp-cell";
 import {
-  Coins,
   Palette,
   Flag,
   CircleCheck,
@@ -21,6 +20,9 @@ import {
   Settings as SettingsIcon,
   ExternalLink,
   Layers,
+  Coins,
+  ClipboardCheck,
+  ArrowRight,
 } from "lucide-react";
 import { NotificationsCard } from "@/components/common/notifications-card";
 import { cn } from "@/lib/utils";
@@ -37,6 +39,8 @@ async function getDashboardData(userId?: string) {
       totalThemes: 0,
       flaggedCount: 0,
       groupCount: 0,
+      inReviewThemes: 0,
+      lastModified: null as Date | null,
       typeCounts: [] as TypeCount[],
       settings: null,
       notifications: [] as INotificationDoc[],
@@ -48,24 +52,37 @@ async function getDashboardData(userId?: string) {
       ? Notification.find({ userId, read: false }).sort({ createdAt: -1 }).limit(10).lean()
       : Promise.resolve([]);
 
-  const [totalTokens, totalThemes, flaggedCount, groupCount, typeCounts, settings, notifications] =
-    await Promise.all([
-      Token.countDocuments(),
-      Theme.countDocuments(),
-      Token.countDocuments({ flagged: true }),
-      Group.countDocuments(),
-      Token.aggregate<TypeCount>([
-        { $group: { _id: "$tokenType", count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-      ]),
-      Settings.findOne({}).lean<ISettingsDoc>(),
-      notifQuery,
-    ]);
+  const [
+    totalTokens,
+    totalThemes,
+    flaggedCount,
+    groupCount,
+    inReviewThemes,
+    lastModifiedToken,
+    typeCounts,
+    settings,
+    notifications,
+  ] = await Promise.all([
+    Token.countDocuments(),
+    Theme.countDocuments(),
+    Token.countDocuments({ flagged: true }),
+    Group.countDocuments(),
+    Theme.countDocuments({ status: "draft", reviewerId: { $exists: true, $ne: null } }),
+    Token.findOne({}, { updatedAt: 1 }).sort({ updatedAt: -1 }).lean(),
+    Token.aggregate<TypeCount>([
+      { $group: { _id: "$tokenType", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]),
+    Settings.findOne({}).lean<ISettingsDoc>(),
+    notifQuery,
+  ]);
   return {
     totalTokens,
     totalThemes,
     flaggedCount,
     groupCount,
+    inReviewThemes,
+    lastModified: (lastModifiedToken as { updatedAt?: Date } | null)?.updatedAt ?? null,
     typeCounts,
     settings,
     notifications: JSON.parse(JSON.stringify(notifications)) as INotificationDoc[],
@@ -104,6 +121,8 @@ export default async function HomePage() {
     totalThemes,
     flaggedCount,
     groupCount,
+    inReviewThemes,
+    lastModified,
     typeCounts,
     settings,
     notifications,
@@ -116,6 +135,38 @@ export default async function HomePage() {
     (a, b) => TYPE_ORDER.indexOf(a._id) - TYPE_ORDER.indexOf(b._id)
   );
 
+  const actionItems = [
+    flaggedCount > 0 && {
+      key: "flagged",
+      icon: <Flag className="h-4 w-4" />,
+      count: flaggedCount,
+      label: flaggedCount === 1 ? "flagged token" : "flagged tokens",
+      description: "Tokens marked for review by your team",
+      cta: "Review",
+      href: "/tokens?flagged=true",
+      color: "amber" as const,
+    },
+    inReviewThemes > 0 && {
+      key: "review",
+      icon: <ClipboardCheck className="h-4 w-4" />,
+      count: inReviewThemes,
+      label: inReviewThemes === 1 ? "theme in review" : "themes in review",
+      description: "Awaiting approval before going to production",
+      cta: "Open",
+      href: "/themes",
+      color: "blue" as const,
+    },
+  ].filter(Boolean) as {
+    key: string;
+    icon: React.ReactNode;
+    count: number;
+    label: string;
+    description: string;
+    cta: string;
+    href: string;
+    color: "amber" | "blue";
+  }[];
+
   return (
     <div className="max-w-4xl space-y-8">
       <div>
@@ -123,46 +174,71 @@ export default async function HomePage() {
         <p className="text-muted-foreground mt-1 text-sm">Your token library at a glance.</p>
       </div>
 
-      {/* Key metrics */}
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard
-            icon={<Coins className="text-muted-foreground h-4 w-4" />}
-            label="Total Tokens"
-            value={totalTokens.toLocaleString()}
-          />
-          <StatCard
-            icon={<Layers className="text-muted-foreground h-4 w-4" />}
-            label="Groups"
-            value={groupCount.toLocaleString()}
-          />
-          <StatCard
-            icon={<Flag className="text-muted-foreground h-4 w-4" />}
-            label="Flagged"
-            value={flaggedCount.toLocaleString()}
-            href={flaggedCount > 0 ? "/tokens?flagged=true" : undefined}
-            warning={flaggedCount > 0}
-            warningLabel="Needs review"
-          />
-          <StatCard
-            icon={<Palette className="text-muted-foreground h-4 w-4" />}
-            label="Themes"
-            value={totalThemes.toLocaleString()}
-          />
+      {/* Zone 1: Action items */}
+      {actionItems.length > 0 ? (
+        <div className="space-y-2">
+          <h2 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+            Needs attention
+          </h2>
+          <div className="flex flex-col gap-3">
+            {actionItems.map((item) => (
+              <ActionCard key={item.key} {...item} />
+            ))}
+          </div>
         </div>
+      ) : totalTokens > 0 ? (
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50/50 px-4 py-3 dark:border-emerald-900 dark:bg-emerald-950/20">
+          <CircleCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <p className="text-sm text-emerald-700 dark:text-emerald-400">
+            Everything looks good — no items need your attention.
+          </p>
+        </div>
+      ) : null}
 
-        {/* Token composition */}
-        {totalTokens > 0 && sortedTypeCounts.length > 0 && (
-          <CompositionCard typeCounts={sortedTypeCounts} total={totalTokens} />
-        )}
-      </div>
+      {/* Zone 2: Library stats */}
+      {totalTokens > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+            Library
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <LibraryStat
+              icon={<Coins className="h-3.5 w-3.5" />}
+              label="Tokens"
+              value={totalTokens.toLocaleString()}
+              href="/tokens"
+            />
+            <LibraryStat
+              icon={<Layers className="h-3.5 w-3.5" />}
+              label="Groups"
+              value={groupCount.toLocaleString()}
+            />
+            <LibraryStat
+              icon={<Palette className="h-3.5 w-3.5" />}
+              label="Themes"
+              value={totalThemes.toLocaleString()}
+              href="/themes"
+            />
+            <LibraryStat
+              icon={<Clock className="h-3.5 w-3.5" />}
+              label="Last modified"
+              value={null}
+              date={lastModified}
+            />
+          </div>
+
+          {sortedTypeCounts.length > 0 && (
+            <CompositionCard typeCounts={sortedTypeCounts} total={totalTokens} />
+          )}
+        </div>
+      )}
 
       {/* Notifications */}
       {notifications.length > 0 && <NotificationsCard initialNotifications={notifications} />}
 
-      {/* Connectors */}
+      {/* Sync */}
       <div className="space-y-3">
-        <h2 className="text-muted-foreground text-sm font-medium">Connectors</h2>
+        <h2 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Sync</h2>
         <div className="flex flex-col gap-4">
           <ConnectorCard
             name="Figma Variables"
@@ -187,62 +263,102 @@ export default async function HomePage() {
   );
 }
 
-function StatCard({
+function ActionCard({
+  icon,
+  count,
+  label,
+  description,
+  cta,
+  href,
+  color,
+}: {
+  icon: React.ReactNode;
+  count: number;
+  label: string;
+  description: string;
+  cta: string;
+  href: string;
+  color: "amber" | "blue";
+}) {
+  const styles = {
+    amber: {
+      border: "border-amber-200 dark:border-amber-900",
+      bg: "bg-amber-50/60 dark:bg-amber-950/20",
+      iconBg: "bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-400",
+      count: "text-amber-700 dark:text-amber-400",
+      desc: "text-amber-700/70 dark:text-amber-400/60",
+    },
+    blue: {
+      border: "border-blue-200 dark:border-blue-900",
+      bg: "bg-blue-50/60 dark:bg-blue-950/20",
+      iconBg: "bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-400",
+      count: "text-blue-700 dark:text-blue-400",
+      desc: "text-blue-700/70 dark:text-blue-400/60",
+    },
+  }[color];
+
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-4 rounded-lg border px-4 py-3.5",
+        styles.border,
+        styles.bg
+      )}
+    >
+      <div
+        className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+          styles.iconBg
+        )}
+      >
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className={cn("text-sm font-semibold tabular-nums", styles.count)}>
+          {count} {label}
+        </p>
+        <p className={cn("mt-0.5 text-xs", styles.desc)}>{description}</p>
+      </div>
+      <Button variant="outline" size="sm" asChild className="shrink-0 gap-1.5">
+        <Link href={href}>
+          {cta}
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
+function LibraryStat({
   icon,
   label,
   value,
   href,
-  warning,
-  warningLabel,
+  date,
 }: {
   icon: React.ReactNode;
   label: string;
-  value: string;
+  value: string | null;
   href?: string;
-  warning?: boolean;
-  warningLabel?: string;
+  date?: Date | string | null;
 }) {
-  const isWarning = warning && value !== "0";
-  const card = (
-    <Card
+  const inner = (
+    <div
       className={cn(
-        "transition-colors",
-        isWarning && "border-amber-300 dark:border-amber-800",
-        href && isWarning && "hover:bg-amber-50/50 dark:hover:bg-amber-950/20"
+        "bg-muted/40 flex items-center gap-3 rounded-lg border px-3 py-2.5",
+        href && "hover:bg-muted/70 cursor-pointer transition-colors"
       )}
     >
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          {icon}
-          <CardTitle className="text-muted-foreground text-xs font-medium">{label}</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div
-          className={cn(
-            "text-3xl font-bold tabular-nums",
-            isWarning ? "text-amber-600 dark:text-amber-400" : "text-foreground"
-          )}
-        >
-          {value}
-        </div>
-        {isWarning && warningLabel && (
-          <p className="mt-0.5 text-[11px] font-medium text-amber-600/70 dark:text-amber-400/70">
-            {warningLabel}
-          </p>
-        )}
-      </CardContent>
-    </Card>
+      <span className="text-muted-foreground shrink-0">{icon}</span>
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-[11px] leading-none">{label}</p>
+        <p className="text-foreground mt-1 text-sm font-semibold tabular-nums">
+          {value ?? <TimestampCell date={date ?? null} className="inline text-sm font-semibold" />}
+        </p>
+      </div>
+    </div>
   );
-
-  if (href && isWarning) {
-    return (
-      <Link href={href} className="block">
-        {card}
-      </Link>
-    );
-  }
-  return card;
+  return href ? <Link href={href}>{inner}</Link> : inner;
 }
 
 function CompositionCard({ typeCounts, total }: { typeCounts: TypeCount[]; total: number }) {
