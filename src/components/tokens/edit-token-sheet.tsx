@@ -446,17 +446,6 @@ export function EditTokenSheet({
                       Override for {activeThemeName ?? "theme"}
                     </p>
                   </div>
-                  {hasExistingOverride && (
-                    <Badge variant="secondary" className="gap-1.5 px-2 py-0.5 text-[10px]">
-                      <span
-                        className={cn(
-                          "h-2 w-2 shrink-0 rounded-full",
-                          overrideDisabled ? "bg-red-500" : "bg-green-500"
-                        )}
-                      />
-                      {overrideDisabled ? "Inactive" : "Active"}
-                    </Badge>
-                  )}
                 </div>
 
                 {loadingOverride ? (
@@ -493,20 +482,10 @@ export function EditTokenSheet({
                           size="sm"
                           className="h-6 px-2 text-xs"
                           onClick={handleRemoveOverride}
-                          disabled={removingOverride || togglingOverride}
+                          disabled={removingOverride}
                         >
                           {removingOverride && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
                           Remove Override
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-6 px-2 text-xs"
-                          onClick={handleToggleOverride}
-                          disabled={togglingOverride || removingOverride}
-                        >
-                          {togglingOverride && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
-                          {overrideDisabled ? "Activate" : "Deactivate"}
                         </Button>
                       </div>
                     )}
