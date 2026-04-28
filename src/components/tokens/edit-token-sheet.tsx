@@ -157,18 +157,34 @@ export function EditTokenSheet({
       return;
     }
 
-    // Non-base theme: base values are carried on the token as _baseLightValue/_baseDarkValue
-    // (the list API stores the raw values there before applying the override to lightValue/darkValue)
-    const baseLv = token._baseLightValue ?? token.lightValue;
-    const baseDv = token._baseDarkValue ?? token.darkValue ?? "";
-    setLightValue(baseLv);
-    setDarkValue(baseDv);
-
-    // Fetch only the override record for this theme
+    // Non-base theme: base values come from _baseLightValue/_baseDarkValue when the token was
+    // fetched with a theme active and an override exists. If those fields are missing (stale
+    // data from before this feature was added, or no override exists), fall back to a direct
+    // raw-token fetch so we never accidentally display the override value as the base.
     setLoadingOverride(true);
-    fetch(`/api/tokens/${token._id}/override?themeId=${activeThemeId}`)
+
+    const resolveBase =
+      token._overridden && token._baseLightValue === undefined
+        ? fetch(`/api/tokens/${token._id}`)
+            .then((r) => (r.ok ? r.json() : null))
+            .then((raw) => ({
+              lv: raw?.data?.lightValue ?? token.lightValue,
+              dv: raw?.data?.darkValue ?? token.darkValue ?? "",
+            }))
+            .catch(() => ({ lv: token.lightValue, dv: token.darkValue ?? "" }))
+        : Promise.resolve({
+            lv: token._baseLightValue ?? token.lightValue,
+            dv: token._baseDarkValue ?? token.darkValue ?? "",
+          });
+
+    const resolveOverride = fetch(`/api/tokens/${token._id}/override?themeId=${activeThemeId}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((overrideData) => {
+      .catch(() => null);
+
+    Promise.all([resolveBase, resolveOverride])
+      .then(([{ lv: baseLv, dv: baseDv }, overrideData]) => {
+        setLightValue(baseLv);
+        setDarkValue(baseDv);
         if (overrideData?.data) {
           setHasExistingOverride(true);
           setOverrideLight(overrideData.data.lightValue ?? baseLv);
