@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, SlidersHorizontal, Plus, Columns3, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -612,8 +613,14 @@ export function TokenTable({
                 placeholder="Search tokens…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-8 pl-8 text-sm"
+                className="h-8 pr-24 pl-8 text-sm"
               />
+              <Link
+                href="/search"
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2 text-[11px] transition-colors"
+              >
+                Build query
+              </Link>
             </div>
 
             <Tabs
