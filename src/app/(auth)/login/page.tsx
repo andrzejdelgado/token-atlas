@@ -140,20 +140,6 @@ export default function LoginPage() {
             Sign up
           </Link>
         </p>
-
-        <div className="rounded-lg border border-dashed p-3 text-center">
-          <p className="text-muted-foreground mb-1 text-xs font-medium">Demo account</p>
-          <button
-            type="button"
-            className="text-muted-foreground hover:text-foreground text-xs transition-colors hover:underline"
-            onClick={() => {
-              setEmail("demo@tokenatlas.com");
-              setPassword("demo");
-            }}
-          >
-            demo@tokenatlas.com · password: demo
-          </button>
-        </div>
       </div>
 
       {/* Right: decorative panel */}
