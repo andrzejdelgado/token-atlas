@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { previewBulkRename } from "@/lib/utils/token-names";
 import { toast } from "sonner";
@@ -48,7 +49,7 @@ export function BulkRenameSheet({
       return;
     }
     setLoading(true);
-    fetch(`/api/tokens?${selectedIds.map((id) => `id=${id}`).join("&")}&preview=true`)
+    fetch(`/api/tokens?${selectedIds.map((id) => `id=${id}`).join("&")}`)
       .then((r) => r.json())
       .then((data) => {
         const tokens = (data.data ?? []).map((t: { _id: string; name: string }) => ({
@@ -97,7 +98,7 @@ export function BulkRenameSheet({
           </p>
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto">
+        <ScrollArea className="flex-1">
           {/* ── Transform options ─────────────────── */}
           <div className="space-y-4 px-6 py-5">
             <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
@@ -169,6 +170,21 @@ export function BulkRenameSheet({
                 className="text-sm"
               />
             </div>
+
+            <div className="flex justify-end pt-1">
+              <button
+                onClick={reset}
+                disabled={!hasChanges}
+                className={cn(
+                  "text-xs transition-colors",
+                  hasChanges
+                    ? "text-muted-foreground hover:text-foreground cursor-pointer"
+                    : "text-muted-foreground/30 cursor-not-allowed"
+                )}
+              >
+                Reset
+              </button>
+            </div>
           </div>
 
           {/* ── Preview ──────────────────────────── */}
@@ -184,16 +200,11 @@ export function BulkRenameSheet({
                 ) : previews.length === 0 ? (
                   <p className="text-muted-foreground text-xs">No tokens to preview</p>
                 ) : (
-                  <div className="max-h-64 space-y-2 overflow-y-auto">
+                  <div className="space-y-2">
                     {previews.slice(0, 20).map((p) => (
-                      <div key={p.tokenId} className="flex flex-col text-xs">
-                        <span className="text-muted-foreground line-through opacity-60">
-                          {p.originalName}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <span className="text-muted-foreground">→</span>
-                          <RenamePreviewName preview={p} />
-                        </span>
+                      <div key={p.tokenId} className="flex items-center gap-1 text-xs">
+                        <span className="text-muted-foreground">→</span>
+                        <RenamePreviewName preview={p} />
                       </div>
                     ))}
                     {previews.length > 20 && (
@@ -206,12 +217,12 @@ export function BulkRenameSheet({
               </div>
             </>
           )}
-        </div>
+        </ScrollArea>
 
         {/* ── Footer ───────────────────────────── */}
         <div className="flex gap-2 border-t px-6 py-4">
-          <Button variant="outline" className="flex-1" onClick={reset}>
-            Reset
+          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+            Cancel
           </Button>
           <Button className="flex-1" onClick={handleApply} disabled={!hasChanges || applying}>
             {applying ? "Applying…" : "Apply"}

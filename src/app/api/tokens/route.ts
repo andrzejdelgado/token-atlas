@@ -38,6 +38,7 @@ export async function GET(req: NextRequest) {
     const excludeTokenTypes = searchParams.getAll("excludeTokenType");
     const excludeLabels = searchParams.getAll("excludeLabel");
     const excludeComponents = searchParams.getAll("excludeComponent");
+    const ids = searchParams.getAll("id");
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const query: Record<string, any> = {};
@@ -95,16 +96,20 @@ export async function GET(req: NextRequest) {
         $nin: excludeComponents,
       };
 
-    if (cursor) query._id = { $gt: cursor };
+    if (ids.length) {
+      query._id = { $in: ids };
+    } else if (cursor) {
+      query._id = { $gt: cursor };
+    }
 
     const tokens = await Token.find(query)
       .sort({ _id: 1 })
-      .limit(PAGE_SIZE + 1)
+      .limit(ids.length || PAGE_SIZE + 1)
       .populate("collection", "name")
       .populate("group", "name path depth sortPath")
       .lean();
 
-    const hasMore = tokens.length > PAGE_SIZE;
+    const hasMore = ids.length ? false : tokens.length > PAGE_SIZE;
     const page = hasMore ? tokens.slice(0, PAGE_SIZE) : tokens;
     const nextCursor = hasMore ? page[page.length - 1]._id.toString() : undefined;
 
