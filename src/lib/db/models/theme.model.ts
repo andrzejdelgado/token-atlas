@@ -29,5 +29,5 @@ const ThemeSchema = new Schema<IThemeDoc>(
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 
-export const Theme =
-  (models.Theme as Model<IThemeDoc> | undefined) || model<IThemeDoc>("Theme", ThemeSchema);
+delete (models as Record<string, unknown>)["Theme"];
+export const Theme = model<IThemeDoc>("Theme", ThemeSchema);

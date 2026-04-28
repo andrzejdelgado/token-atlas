@@ -15,8 +15,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   await connectToDatabase();
 
   const update = revert
-    ? { status: "draft", $unset: { approvedBy: 1, approvedAt: 1 } }
-    : { status: "approved", approvedBy: session.user.id, approvedAt: new Date() };
+    ? { $set: { status: "draft" }, $unset: { approvedBy: 1, approvedAt: 1 } }
+    : { $set: { status: "approved", approvedBy: session.user.id, approvedAt: new Date() } };
 
   const theme = await Theme.findByIdAndUpdate(id, update, { new: true }).lean();
   if (!theme) return NextResponse.json({ error: "Not found" }, { status: 404 });
