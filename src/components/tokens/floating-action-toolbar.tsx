@@ -13,6 +13,7 @@ import { toast } from "sonner";
 
 interface FloatingActionToolbarProps {
   selectedIds: string[];
+  selectedTokens: Array<{ _id: string; flagged: boolean }>;
   onDeselect: () => void;
   onBulkDelete: (ids: string[]) => Promise<void>;
   onBulkApplied: () => void;
@@ -20,6 +21,7 @@ interface FloatingActionToolbarProps {
 
 export function FloatingActionToolbar({
   selectedIds,
+  selectedTokens,
   onDeselect,
   onBulkDelete,
   onBulkApplied,
@@ -35,19 +37,43 @@ export function FloatingActionToolbar({
 
   if (count === 0) return null;
 
+  const allFlagged = selectedTokens.length > 0 && selectedTokens.every((t) => t.flagged);
+  const flagLabel = allFlagged ? "Unflag" : "Flag";
+
   async function handleFlag() {
     setFlagging(true);
     try {
-      const res = await fetch("/api/tokens/bulk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "flag", tokenIds: selectedIds, payload: { flagged: true } }),
-      });
-      if (!res.ok) throw new Error();
-      toast.success(`Flagged ${count} token(s)`);
+      if (allFlagged) {
+        // Unflag all selected
+        const res = await fetch("/api/tokens/bulk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "flag",
+            tokenIds: selectedIds,
+            payload: { flagged: false },
+          }),
+        });
+        if (!res.ok) throw new Error();
+        toast.success(`Unflagged ${count} token(s)`);
+      } else {
+        // Flag only the unflagged ones
+        const toFlag = selectedTokens.filter((t) => !t.flagged).map((t) => t._id);
+        const res = await fetch("/api/tokens/bulk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "flag",
+            tokenIds: toFlag,
+            payload: { flagged: true },
+          }),
+        });
+        if (!res.ok) throw new Error();
+        toast.success(`Flagged ${toFlag.length} token(s)`);
+      }
       onBulkApplied();
     } catch {
-      toast.error("Failed to flag tokens");
+      toast.error("Failed to update flags");
     } finally {
       setFlagging(false);
     }
@@ -112,7 +138,7 @@ export function FloatingActionToolbar({
           disabled={flagging}
         >
           <Flag className="h-3.5 w-3.5" />
-          Flag
+          {flagLabel}
         </Button>
 
         <Button

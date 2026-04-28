@@ -815,6 +815,10 @@ export function TokenTable({
 
       <FloatingActionToolbar
         selectedIds={Array.from(selectedIds)}
+        selectedTokens={Array.from(selectedIds).map((id) => {
+          const t = tokens.find((tk) => tk._id === id);
+          return { _id: id, flagged: t?.flagged ?? false };
+        })}
         onDeselect={() => setSelectedIds(new Set())}
         onBulkDelete={handleBulkDelete}
         onBulkApplied={() => fetchTokens()}
