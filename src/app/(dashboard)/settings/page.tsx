@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Eye, EyeOff, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   AlertDialog,
@@ -56,13 +56,6 @@ interface IUser {
   createdAt: string;
 }
 
-interface ITheme {
-  _id: string;
-  name: string;
-  slug: string;
-  isBase: boolean;
-}
-
 function MaskedInput({
   value,
   onChange,
@@ -104,8 +97,6 @@ export default function SettingsPage() {
 
   const [settings, setSettings] = useState<ISettings>({});
   const [users, setUsers] = useState<IUser[]>([]);
-  const [themes, setThemes] = useState<ITheme[]>([]);
-  const [togglingTheme, setTogglingTheme] = useState<string | null>(null);
   const [savingFigma, setSavingFigma] = useState(false);
   const [savingStorybook, setSavingStorybook] = useState(false);
   const [testingFigma, setTestingFigma] = useState(false);
@@ -122,9 +113,6 @@ export default function SettingsPage() {
       fetch("/api/users")
         .then((r) => r.json())
         .then((d) => setUsers(d.data ?? []));
-      fetch("/api/themes")
-        .then((r) => r.json())
-        .then((d) => setThemes(d.data ?? []));
     }
     setProfileName(session?.user?.name ?? "");
   }, [isAdmin, session]);
@@ -212,24 +200,6 @@ export default function SettingsPage() {
       toast.success("User removed");
     } else {
       toast.error("Failed to remove user");
-    }
-  }
-
-  async function toggleThemeIsBase(themeId: string, newIsBase: boolean) {
-    setTogglingTheme(themeId);
-    try {
-      const res = await fetch(`/api/themes/${themeId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isBase: newIsBase }),
-      });
-      if (!res.ok) throw new Error();
-      setThemes((prev) => prev.map((t) => (t._id === themeId ? { ...t, isBase: newIsBase } : t)));
-      toast.success(`Theme marked as ${newIsBase ? "base" : "modifier"}`);
-    } catch {
-      toast.error("Failed to update theme");
-    } finally {
-      setTogglingTheme(null);
     }
   }
 
@@ -359,47 +329,20 @@ export default function SettingsPage() {
       {isAdmin && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Themes</CardTitle>
-            <CardDescription>
-              Mark a theme as <strong>Base</strong> to give it its own full set of token values.
-              Mark it as <strong>Modifier</strong> to let it override specific tokens on top of a
-              base theme.
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Themes</CardTitle>
+                <CardDescription className="mt-1">
+                  Manage base themes and modifier themes from the dedicated Themes page.
+                </CardDescription>
+              </div>
+              <Link href="/themes">
+                <Button variant="outline" size="sm">
+                  Manage Themes
+                </Button>
+              </Link>
+            </div>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Slug</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="w-24 text-right">Base theme</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {themes.map((theme) => (
-                  <TableRow key={theme._id}>
-                    <TableCell className="font-medium">{theme.name}</TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">
-                      {theme.slug}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={theme.isBase ? "default" : "secondary"} className="text-xs">
-                        {theme.isBase ? "Base" : "Modifier"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Switch
-                        checked={theme.isBase}
-                        disabled={togglingTheme === theme._id}
-                        onCheckedChange={(v) => toggleThemeIsBase(theme._id, v)}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
         </Card>
       )}
 

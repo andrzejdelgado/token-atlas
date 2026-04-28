@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { label: "Home", href: "/" },
   { label: "All Semantics", href: "/tokens" },
   { label: "Advanced Search", href: "/search" },
+  { label: "Themes", href: "/themes" },
   { label: "Connectors", href: "/connectors" },
   { label: "Import", href: "/import" },
   { label: "Export", href: "/export" },
