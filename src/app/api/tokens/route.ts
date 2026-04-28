@@ -121,6 +121,7 @@ export async function GET(req: NextRequest) {
         const overrides = await ThemeOverride.find({
           theme: themeId,
           token: { $in: page.map((t) => t._id) },
+          disabled: { $ne: true },
         })
           .select("token lightValue darkValue")
           .lean();

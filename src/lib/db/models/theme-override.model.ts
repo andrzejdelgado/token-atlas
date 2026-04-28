@@ -6,6 +6,7 @@ export interface IThemeOverrideDoc {
   token: mongoose.Types.ObjectId;
   lightValue?: string;
   darkValue?: string;
+  disabled?: boolean;
 }
 
 const ThemeOverrideSchema = new Schema<IThemeOverrideDoc>(
@@ -14,6 +15,7 @@ const ThemeOverrideSchema = new Schema<IThemeOverrideDoc>(
     token: { type: Schema.Types.ObjectId, ref: "Token", required: true },
     lightValue: { type: String },
     darkValue: { type: String },
+    disabled: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Flag, Loader2, Layers } from "lucide-react";
+import { Loader2, Layers } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,8 +125,10 @@ export function EditTokenSheet({
   const [overrideLight, setOverrideLight] = useState("");
   const [overrideDark, setOverrideDark] = useState("");
   const [hasExistingOverride, setHasExistingOverride] = useState(false);
+  const [overrideDisabled, setOverrideDisabled] = useState(false);
   const [loadingOverride, setLoadingOverride] = useState(false);
   const [removingOverride, setRemovingOverride] = useState(false);
+  const [togglingOverride, setTogglingOverride] = useState(false);
 
   const [collections, setCollections] = useState<Collection[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -187,10 +189,12 @@ export function EditTokenSheet({
         setDarkValue(baseDv);
         if (overrideData?.data) {
           setHasExistingOverride(true);
+          setOverrideDisabled(!!overrideData.data.disabled);
           setOverrideLight(overrideData.data.lightValue ?? baseLv);
           setOverrideDark(overrideData.data.darkValue ?? baseDv);
         } else {
           setHasExistingOverride(false);
+          setOverrideDisabled(false);
           setOverrideLight(baseLv);
           setOverrideDark(baseDv);
         }
@@ -307,7 +311,7 @@ export function EditTokenSheet({
       });
       if (!res.ok) throw new Error();
       setHasExistingOverride(false);
-      // Reset override inputs to base values
+      setOverrideDisabled(false);
       setOverrideLight(lightValue);
       setOverrideDark(darkValue);
       toast.success("Override removed");
@@ -316,6 +320,27 @@ export function EditTokenSheet({
       toast.error("Failed to remove override");
     } finally {
       setRemovingOverride(false);
+    }
+  }
+
+  async function handleToggleOverride() {
+    if (!token || !activeThemeId) return;
+    setTogglingOverride(true);
+    const newDisabled = !overrideDisabled;
+    try {
+      const res = await fetch(`/api/tokens/${token._id}/override`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ themeId: activeThemeId, disabled: newDisabled }),
+      });
+      if (!res.ok) throw new Error();
+      setOverrideDisabled(newDisabled);
+      toast.success(newDisabled ? "Override deactivated" : "Override activated");
+      onSaved();
+    } catch {
+      toast.error("Failed to update override");
+    } finally {
+      setTogglingOverride(false);
     }
   }
 
@@ -422,24 +447,25 @@ export function EditTokenSheet({
                     </p>
                   </div>
                   {hasExistingOverride && (
-                    <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
-                      Active
+                    <Badge variant="secondary" className="h-4 gap-1 px-1.5 text-[10px]">
+                      <span
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          overrideDisabled ? "bg-red-500" : "bg-green-500"
+                        )}
+                      />
+                      {overrideDisabled ? "Inactive" : "Active"}
                     </Badge>
                   )}
                 </div>
 
-                <p className="text-muted-foreground text-[11px]">
-                  These values override the base values when the <strong>{activeThemeName}</strong>{" "}
-                  theme is active.
-                </p>
-
                 {loadingOverride ? (
                   <div className="text-muted-foreground flex items-center gap-2 py-2 text-xs">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Loading base values…
+                    Loading override values…
                   </div>
                 ) : (
-                  <div className="bg-muted/30 space-y-3 rounded-lg border p-3">
+                  <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <Label className="text-muted-foreground text-xs">Light override</Label>
@@ -461,16 +487,28 @@ export function EditTokenSheet({
                       </div>
                     </div>
                     {hasExistingOverride && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-muted-foreground hover:text-destructive h-7 px-2 text-xs"
-                        onClick={handleRemoveOverride}
-                        disabled={removingOverride}
-                      >
-                        {removingOverride && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
-                        Remove override
-                      </Button>
+                      <div className="flex gap-1.5">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={handleRemoveOverride}
+                          disabled={removingOverride || togglingOverride}
+                        >
+                          {removingOverride && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+                          Remove Override
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={handleToggleOverride}
+                          disabled={togglingOverride || removingOverride}
+                        >
+                          {togglingOverride && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+                          {overrideDisabled ? "Activate" : "Deactivate"}
+                        </Button>
+                      </div>
                     )}
                   </div>
                 )}
@@ -483,14 +521,8 @@ export function EditTokenSheet({
           {/* ── Status & Taxonomy ─────────────────────── */}
           <div className="space-y-5 px-6 py-5">
             {/* Flagged */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Flag className="text-muted-foreground h-3.5 w-3.5" />
-                <div>
-                  <p className="text-sm font-medium">Flag token</p>
-                  <p className="text-muted-foreground text-xs">Mark for review or attention</p>
-                </div>
-              </div>
+            <div className="flex items-center justify-between border-b pb-5">
+              <p className="text-sm font-medium">Flag</p>
               <Switch checked={flagged} onCheckedChange={setFlagged} />
             </div>
 

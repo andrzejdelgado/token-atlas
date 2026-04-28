@@ -56,6 +56,7 @@ export interface IThemeOverride {
   token: string | IToken;
   lightValue?: string;
   darkValue?: string;
+  disabled?: boolean;
 }
 
 export interface IUser {

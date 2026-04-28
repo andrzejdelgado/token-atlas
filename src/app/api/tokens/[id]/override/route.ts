@@ -26,12 +26,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   await connectToDatabase();
   const { id } = await params;
-  const { themeId, lightValue, darkValue } = await req.json();
+  const { themeId, lightValue, darkValue, disabled } = await req.json();
   if (!themeId) return NextResponse.json({ error: "themeId is required" }, { status: 400 });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const setFields: Record<string, any> = { lightValue, darkValue };
+  if (disabled !== undefined) setFields.disabled = disabled;
 
   const override = await ThemeOverride.findOneAndUpdate(
     { theme: themeId, token: id },
-    { $set: { lightValue, darkValue } },
+    { $set: setFields },
     { upsert: true, new: true }
   ).lean();
 
