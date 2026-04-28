@@ -157,7 +157,6 @@ function ThemeCard({ theme, onEdit, onDelete, onRename }: ThemeCardProps) {
                 {theme.name}
               </p>
             )}
-            <p className="text-muted-foreground mt-0.5 font-mono text-xs">{theme.slug}</p>
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
