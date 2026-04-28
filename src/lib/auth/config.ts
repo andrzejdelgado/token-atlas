@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/db/mongodb";
 import { User } from "@/lib/db/models/user.model";
+import { Invite } from "@/lib/db/models/invite.model";
 
 export const authConfig: NextAuthConfig = {
   providers: [
@@ -71,13 +72,33 @@ export const authConfig: NextAuthConfig = {
         await connectToDatabase();
         const existing = await User.findOne({ email: user.email });
         if (!existing) {
-          await User.create({
-            email: user.email,
-            name: user.name,
-            avatarUrl: user.image,
-            googleId: account.providerAccountId,
-            role: "user",
-          });
+          const userCount = await User.countDocuments();
+          if (userCount > 0) {
+            // Restricted workspace: require a valid invite for this email
+            const invite = await Invite.findOne({
+              email: user.email?.toLowerCase(),
+              usedAt: null,
+              expiresAt: { $gt: new Date() },
+            });
+            if (!invite) return false;
+            await User.create({
+              email: user.email,
+              name: user.name,
+              avatarUrl: user.image,
+              googleId: account.providerAccountId,
+              role: "user",
+            });
+            await Invite.updateOne({ _id: invite._id }, { usedAt: new Date() });
+          } else {
+            // First user — bootstrap admin via Google
+            await User.create({
+              email: user.email,
+              name: user.name,
+              avatarUrl: user.image,
+              googleId: account.providerAccountId,
+              role: "admin",
+            });
+          }
         } else if (!existing.googleId) {
           await User.updateOne(
             { email: user.email },

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/db/mongodb";
 import { User } from "@/lib/db/models/user.model";
@@ -23,9 +24,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   await connectToDatabase();
   const body = await req.json();
 
-  // Whitelist updatable fields; admins can also change role
+  // Whitelist updatable fields; admins can also change role and reset passwords
   const allowed = isAdmin(role) ? ["name", "role", "preferences"] : ["name", "preferences"];
-  const update = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k)));
+  const update: Record<string, unknown> = Object.fromEntries(
+    Object.entries(body).filter(([k]) => allowed.includes(k))
+  );
+
+  if (isAdmin(role) && typeof body.newPassword === "string" && body.newPassword.length >= 8) {
+    update.passwordHash = await bcrypt.hash(body.newPassword, 10);
+  }
 
   const user = await User.findByIdAndUpdate(id, update, { new: true })
     .select("-passwordHash")
