@@ -164,7 +164,7 @@ export default async function HomePage() {
           <Card>
             <CardContent className="divide-border divide-y p-0">
               {notifications.map((n) => (
-                <div key={n._id.toString()} className="flex items-start gap-3 px-4 py-3">
+                <div key={n._id.toString()} className="flex items-start gap-3 px-6 py-4">
                   <Bell className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="text-foreground text-sm">{n.message}</p>
