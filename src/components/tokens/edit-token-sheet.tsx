@@ -263,7 +263,9 @@ export function EditTokenSheet({
       return;
     }
 
-    // Non-base theme: fetch base values + existing override in parallel
+    // Non-base theme: fetch true base values from DB (token prop has overrides applied)
+    setLightValue("");
+    setDarkValue("");
     setLoadingOverride(true);
     Promise.all([
       fetch(`/api/tokens/${token._id}`).then((r) => (r.ok ? r.json() : null)),
@@ -272,9 +274,8 @@ export function EditTokenSheet({
       ),
     ])
       .then(([baseData, overrideData]) => {
-        const baseLv = baseData?.data?.lightValue ?? token.lightValue;
-        const baseDv = baseData?.data?.darkValue ?? token.darkValue ?? "";
-        // Always show true base values in the "Values" section
+        const baseLv = baseData?.data?.lightValue ?? "";
+        const baseDv = baseData?.data?.darkValue ?? "";
         setLightValue(baseLv);
         setDarkValue(baseDv);
 
@@ -284,17 +285,13 @@ export function EditTokenSheet({
           setOverrideDark(overrideData.data.darkValue ?? baseDv);
         } else {
           setHasExistingOverride(false);
-          // Pre-populate override inputs with base values
           setOverrideLight(baseLv);
           setOverrideDark(baseDv);
         }
       })
       .catch(() => {
-        // Fallback to token prop values
-        setLightValue(token.lightValue);
-        setDarkValue(token.darkValue ?? "");
-        setOverrideLight(token.lightValue);
-        setOverrideDark(token.darkValue ?? "");
+        toast.error("Failed to load base values");
+        setLoadingOverride(false);
       })
       .finally(() => setLoadingOverride(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
