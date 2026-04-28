@@ -5,21 +5,15 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="bg-muted flex min-h-screen flex-col items-center justify-center gap-6 p-6">
       {children}
       <p className="text-muted-foreground text-center text-xs">
-        By clicking continue, you agree to our{" "}
+        Created with ❤️ by{" "}
         <a
-          href="#"
+          href="https://www.linkedin.com/in/andrzejdelgado/"
+          target="_blank"
+          rel="noopener noreferrer"
           className="hover:text-foreground underline underline-offset-4 transition-colors"
         >
-          Terms of Service
-        </a>{" "}
-        and{" "}
-        <a
-          href="#"
-          className="hover:text-foreground underline underline-offset-4 transition-colors"
-        >
-          Privacy Policy
+          Andrzej Delgado
         </a>
-        .
       </p>
     </div>
   );

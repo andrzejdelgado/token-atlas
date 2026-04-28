@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, ImageIcon } from "lucide-react";
+import { Loader2, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -151,7 +151,7 @@ export default function LoginPage() {
           <div className="border-border bg-border absolute h-px w-32" />
           <div className="border-border bg-border absolute h-32 w-px" />
           <div className="bg-background border-border relative z-10 flex h-14 w-14 items-center justify-center rounded-xl border shadow-sm">
-            <ImageIcon className="text-muted-foreground h-6 w-6" />
+            <Globe className="text-muted-foreground h-6 w-6" />
           </div>
         </div>
       </div>
