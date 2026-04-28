@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, use } from "react";
+import { useState, useEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
 import {
   Upload,
@@ -151,8 +151,7 @@ export default function ImportOverridesPage({ params }: { params: Promise<{ id: 
     unmatched: number;
   } | null>(null);
 
-  // Fetch theme name on mount
-  useState(() => {
+  useEffect(() => {
     fetch(`/api/themes?includeDrafts=true`)
       .then((r) => r.json())
       .then((d) => {
@@ -160,7 +159,7 @@ export default function ImportOverridesPage({ params }: { params: Promise<{ id: 
         if (theme) setThemeName(theme.name);
       })
       .catch(() => {});
-  });
+  }, [themeId]);
 
   async function parseFile(file: File) {
     if (!file.name.endsWith(".json")) {

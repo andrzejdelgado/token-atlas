@@ -4,6 +4,8 @@ import { Token } from "@/lib/db/models/token.model";
 import { Theme } from "@/lib/db/models/theme.model";
 import { Group } from "@/lib/db/models/group.model";
 import { Settings, type ISettingsDoc } from "@/lib/db/models/settings.model";
+import { Notification, type INotificationDoc } from "@/lib/db/models/notification.model";
+import mongoose from "mongoose";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -19,6 +21,7 @@ import {
   Settings as SettingsIcon,
   ExternalLink,
   Layers,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +30,7 @@ interface TypeCount {
   count: number;
 }
 
-async function getDashboardData() {
+async function getDashboardData(userId?: string) {
   if (!process.env.MONGODB_URI) {
     return {
       totalTokens: 0,
@@ -36,10 +39,16 @@ async function getDashboardData() {
       groupCount: 0,
       typeCounts: [] as TypeCount[],
       settings: null,
+      notifications: [] as INotificationDoc[],
     };
   }
   await connectToDatabase();
-  const [totalTokens, totalThemes, flaggedCount, groupCount, typeCounts, settings] =
+  const notifQuery =
+    userId && mongoose.Types.ObjectId.isValid(userId)
+      ? Notification.find({ userId, read: false }).sort({ createdAt: -1 }).limit(10).lean()
+      : Promise.resolve([]);
+
+  const [totalTokens, totalThemes, flaggedCount, groupCount, typeCounts, settings, notifications] =
     await Promise.all([
       Token.countDocuments(),
       Theme.countDocuments(),
@@ -50,8 +59,17 @@ async function getDashboardData() {
         { $sort: { count: -1 } },
       ]),
       Settings.findOne({}).lean<ISettingsDoc>(),
+      notifQuery,
     ]);
-  return { totalTokens, totalThemes, flaggedCount, groupCount, typeCounts, settings };
+  return {
+    totalTokens,
+    totalThemes,
+    flaggedCount,
+    groupCount,
+    typeCounts,
+    settings,
+    notifications: JSON.parse(JSON.stringify(notifications)) as INotificationDoc[],
+  };
 }
 
 // Stable order so bar segments don't jump on re-render
@@ -79,9 +97,17 @@ const TYPE_VALUE: Record<string, string> = {
 };
 
 export default async function HomePage() {
-  await auth();
-  const { totalTokens, totalThemes, flaggedCount, groupCount, typeCounts, settings } =
-    await getDashboardData();
+  const session = await auth();
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  const {
+    totalTokens,
+    totalThemes,
+    flaggedCount,
+    groupCount,
+    typeCounts,
+    settings,
+    notifications,
+  } = await getDashboardData(userId);
 
   const figmaConfigured = !!(settings?.figmaPersonalAccessToken && settings?.figmaFileKey);
   const storybookConfigured = !!(settings?.storybookGithubToken && settings?.storybookRepoUrl);
@@ -130,6 +156,36 @@ export default async function HomePage() {
           <CompositionCard typeCounts={sortedTypeCounts} total={totalTokens} />
         )}
       </div>
+
+      {/* Notifications */}
+      {notifications.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-muted-foreground text-sm font-medium">Notifications</h2>
+          <Card>
+            <CardContent className="divide-border divide-y p-0">
+              {notifications.map((n) => (
+                <div key={n._id.toString()} className="flex items-start gap-3 px-4 py-3">
+                  <Bell className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-foreground text-sm">{n.message}</p>
+                    {typeof n.metadata?.themeId === "string" && (
+                      <Link
+                        href={`/themes/${n.metadata.themeId}/review`}
+                        className="text-primary mt-0.5 inline-block text-xs hover:underline"
+                      >
+                        Review theme →
+                      </Link>
+                    )}
+                  </div>
+                  <span className="text-muted-foreground shrink-0 text-xs">
+                    <TimestampCell date={n.createdAt} className="inline" />
+                  </span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Connectors */}
       <div className="space-y-3">
