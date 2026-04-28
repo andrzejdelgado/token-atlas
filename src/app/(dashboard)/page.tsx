@@ -181,8 +181,8 @@ export default async function HomePage() {
             Needs attention
           </h2>
           <div className="flex flex-col gap-3">
-            {actionItems.map((item) => (
-              <ActionCard key={item.key} {...item} />
+            {actionItems.map(({ key, ...item }) => (
+              <ActionCard key={key} {...item} />
             ))}
           </div>
         </div>
