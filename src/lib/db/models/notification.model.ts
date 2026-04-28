@@ -42,6 +42,7 @@ const NotificationSchema = new Schema<INotificationDoc>(
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 
-export const Notification =
-  (models.Notification as Model<INotificationDoc> | undefined) ||
-  model<INotificationDoc>("Notification", NotificationSchema);
+// Delete stale cached model so schema changes (e.g. new enum values) are
+// picked up without requiring a full server restart during development.
+delete (models as Record<string, unknown>)["Notification"];
+export const Notification = model<INotificationDoc>("Notification", NotificationSchema);
