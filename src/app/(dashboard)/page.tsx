@@ -144,7 +144,7 @@ export default async function HomePage() {
       description: "Tokens marked for review by your team",
       cta: "Review",
       href: "/tokens?flagged=true",
-      color: "amber" as const,
+      color: "purple" as const,
     },
     inReviewThemes > 0 && {
       key: "review",
@@ -164,7 +164,7 @@ export default async function HomePage() {
     description: string;
     cta: string;
     href: string;
-    color: "amber" | "blue";
+    color: "purple" | "blue";
   }[];
 
   return (
@@ -278,15 +278,15 @@ function ActionCard({
   description: string;
   cta: string;
   href: string;
-  color: "amber" | "blue";
+  color: "purple" | "blue";
 }) {
   const styles = {
-    amber: {
-      border: "border-amber-200 dark:border-amber-900",
-      bg: "bg-amber-50/60 dark:bg-amber-950/20",
-      iconBg: "bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-400",
-      count: "text-amber-700 dark:text-amber-400",
-      desc: "text-amber-700/70 dark:text-amber-400/60",
+    purple: {
+      border: "border-purple-200 dark:border-purple-900",
+      bg: "bg-purple-50/60 dark:bg-purple-950/20",
+      iconBg: "bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-400",
+      count: "text-purple-700 dark:text-purple-400",
+      desc: "text-purple-700/70 dark:text-purple-400/60",
     },
     blue: {
       border: "border-blue-200 dark:border-blue-900",
