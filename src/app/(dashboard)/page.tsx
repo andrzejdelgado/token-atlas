@@ -21,8 +21,8 @@ import {
   Settings as SettingsIcon,
   ExternalLink,
   Layers,
-  Bell,
 } from "lucide-react";
+import { NotificationsCard } from "@/components/common/notifications-card";
 import { cn } from "@/lib/utils";
 
 interface TypeCount {
@@ -158,34 +158,7 @@ export default async function HomePage() {
       </div>
 
       {/* Notifications */}
-      {notifications.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-muted-foreground text-sm font-medium">Notifications</h2>
-          <Card>
-            <CardContent className="divide-border divide-y p-0">
-              {notifications.map((n) => (
-                <div key={n._id.toString()} className="flex items-start gap-3 px-6 py-4">
-                  <Bell className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-foreground text-sm">{n.message}</p>
-                    {typeof n.metadata?.themeId === "string" && (
-                      <Link
-                        href={`/themes/${n.metadata.themeId}/review`}
-                        className="text-primary mt-0.5 inline-block text-xs hover:underline"
-                      >
-                        Review theme →
-                      </Link>
-                    )}
-                  </div>
-                  <span className="text-muted-foreground shrink-0 text-xs">
-                    <TimestampCell date={n.createdAt} className="inline" />
-                  </span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {notifications.length > 0 && <NotificationsCard initialNotifications={notifications} />}
 
       {/* Connectors */}
       <div className="space-y-3">
