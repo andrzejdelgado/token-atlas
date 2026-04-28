@@ -111,7 +111,7 @@ export function BulkRenameSheet({
               </Label>
               <Input
                 id="rename-prefix"
-                placeholder="e.g. legacy/"
+                placeholder="e.g. legacy-"
                 value={prefix}
                 onChange={(e) => setPrefix(e.target.value)}
                 className="text-sm"
@@ -138,7 +138,7 @@ export function BulkRenameSheet({
                 </Label>
                 <Input
                   id="rename-find"
-                  placeholder="color/"
+                  placeholder="e.g. color-"
                   value={swapFind}
                   onChange={(e) => setSwapFind(e.target.value)}
                   className="text-sm"
@@ -150,7 +150,7 @@ export function BulkRenameSheet({
                 </Label>
                 <Input
                   id="rename-replace"
-                  placeholder="colour/"
+                  placeholder="e.g. shade-"
                   value={swapReplace}
                   onChange={(e) => setSwapReplace(e.target.value)}
                   className="text-sm"
