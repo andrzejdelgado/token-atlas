@@ -35,12 +35,21 @@ export async function POST(req: NextRequest) {
   if (!process.env.MONGODB_URI)
     return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
-  const { name, slug, description } = await req.json();
+  const { name, slug, description, isBase } = await req.json();
 
   const existing = await Theme.findOne({ slug });
   if (existing)
     return NextResponse.json({ error: "Theme with this slug already exists" }, { status: 409 });
 
-  const theme = await Theme.create({ name, slug, description });
+  const theme = await Theme.create({ name, slug, description, isBase: !!isBase });
+
+  // Re-sort all themes of the same type alphabetically and assign positions
+  const siblings = await Theme.find({ isBase: !!isBase }).sort({ name: 1 }).lean();
+  await Theme.bulkWrite(
+    siblings.map((t, i) => ({
+      updateOne: { filter: { _id: t._id }, update: { $set: { position: i } } },
+    }))
+  );
+
   return NextResponse.json({ data: JSON.parse(JSON.stringify(theme)) }, { status: 201 });
 }
