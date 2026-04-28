@@ -25,6 +25,41 @@ interface VersionHistorySheetProps {
   tokenName: string;
 }
 
+const MEANINGFUL_FIELDS = new Set([
+  "name",
+  "lightValue",
+  "darkValue",
+  "tokenType",
+  "labels",
+  "associatedComponents",
+  "flagged",
+  "group",
+  "collection",
+]);
+
+const FIELD_LABELS: Record<string, string> = {
+  name: "Name",
+  lightValue: "Light value",
+  darkValue: "Dark value",
+  tokenType: "Type",
+  labels: "Labels",
+  associatedComponents: "Components",
+  flagged: "Flagged",
+  group: "Group",
+  collection: "Collection",
+};
+
+function formatValue(val: unknown): string {
+  if (val === null || val === undefined) return "—";
+  if (Array.isArray(val)) return val.length ? val.join(", ") : "—";
+  if (typeof val === "object") {
+    const obj = val as Record<string, unknown>;
+    return String(obj.name ?? obj._id ?? "—");
+  }
+  if (typeof val === "boolean") return val ? "Yes" : "No";
+  return String(val);
+}
+
 const ACTION_LABELS: Record<string, string> = {
   created: "Created",
   renamed: "Renamed",
@@ -117,18 +152,25 @@ export function VersionHistorySheet({
                       )}
                       {entry.before && entry.after && (
                         <div className="text-muted-foreground mt-1 space-y-0.5 text-xs">
-                          {Object.keys(entry.after).map((key) =>
-                            entry.before?.[key] !== entry.after?.[key] ? (
+                          {Object.keys(entry.after)
+                            .filter((key) => MEANINGFUL_FIELDS.has(key))
+                            .filter(
+                              (key) =>
+                                formatValue(entry.before?.[key]) !==
+                                formatValue(entry.after?.[key])
+                            )
+                            .map((key) => (
                               <div key={key}>
-                                <span className="text-muted-foreground">{key}: </span>
+                                <span className="text-muted-foreground">
+                                  {FIELD_LABELS[key] ?? key}:{" "}
+                                </span>
                                 <span className="line-through opacity-50">
-                                  {String(entry.before?.[key] ?? "—")}
+                                  {formatValue(entry.before?.[key])}
                                 </span>
                                 {" → "}
-                                <span>{String(entry.after?.[key] ?? "—")}</span>
+                                <span>{formatValue(entry.after?.[key])}</span>
                               </div>
-                            ) : null
-                          )}
+                            ))}
                         </div>
                       )}
                     </div>

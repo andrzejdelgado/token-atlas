@@ -14,6 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const logs = await AuditLog.find({ tokenId: id })
     .sort({ timestamp: -1 })
+    .limit(100)
     .populate("userId", "name email avatarUrl")
     .lean();
 
