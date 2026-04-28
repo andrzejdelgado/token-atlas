@@ -23,12 +23,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   await connectToDatabase();
   const body = await req.json();
 
-  // Only admins can change roles
-  if ("role" in body && !isAdmin(role)) {
-    delete body.role;
-  }
+  // Whitelist updatable fields; admins can also change role
+  const allowed = isAdmin(role)
+    ? ["name", "role", "preferences"]
+    : ["name", "preferences"];
+  const update = Object.fromEntries(
+    Object.entries(body).filter(([k]) => allowed.includes(k))
+  );
 
-  const user = await User.findByIdAndUpdate(id, body, { new: true }).select("-passwordHash").lean();
+  const user = await User.findByIdAndUpdate(id, update, { new: true }).select("-passwordHash").lean();
 
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ data: JSON.parse(JSON.stringify(user)) });
@@ -45,6 +48,17 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const { id } = await params;
+
+  if (session.user.id === id)
+    return NextResponse.json({ error: "Cannot delete your own account" }, { status: 400 });
+
+  const target = await User.findById(id).lean();
+  if (target?.role === "admin") {
+    const adminCount = await User.countDocuments({ role: "admin" });
+    if (adminCount <= 1)
+      return NextResponse.json({ error: "Cannot delete the last admin" }, { status: 400 });
+  }
+
   await User.findByIdAndDelete(id);
   return NextResponse.json({ message: "Deleted" });
 }
