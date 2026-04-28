@@ -176,8 +176,8 @@ export function BulkRenameSheet({
           </p>
         </SheetHeader>
 
-        <ScrollArea className="min-h-0 flex-1">
-          {/* ── Transform options ─────────────────── */}
+        <div className="flex min-h-0 flex-1 flex-col">
+          {/* ── Transform options (not scrollable) ── */}
           <div className="space-y-4 px-6 py-5">
             <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               Transform
@@ -265,11 +265,11 @@ export function BulkRenameSheet({
             </div>
           </div>
 
-          {/* ── Preview ──────────────────────────── */}
+          {/* ── Preview (scrollable, fills remaining height) ── */}
           {hasChanges && (
             <>
               <Separator />
-              <div className="space-y-3 px-6 py-5">
+              <div className="flex min-h-0 flex-1 flex-col gap-3 px-6 py-5">
                 <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                   Preview
                 </p>
@@ -278,23 +278,25 @@ export function BulkRenameSheet({
                 ) : previews.length === 0 ? (
                   <p className="text-muted-foreground text-xs">No tokens to preview</p>
                 ) : (
-                  <div className="space-y-2">
-                    {previews.slice(0, 20).map((p) => (
-                      <div key={p.tokenId} className="text-xs">
-                        <AnnotatedTokenName originalName={p.originalName} options={options} />
-                      </div>
-                    ))}
-                    {previews.length > 20 && (
-                      <p className="text-muted-foreground text-xs">
-                        …and {previews.length - 20} more
-                      </p>
-                    )}
-                  </div>
+                  <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-scrollbar]]:w-1">
+                    <div className="space-y-2">
+                      {previews.slice(0, 20).map((p) => (
+                        <div key={p.tokenId} className="text-xs">
+                          <AnnotatedTokenName originalName={p.originalName} options={options} />
+                        </div>
+                      ))}
+                      {previews.length > 20 && (
+                        <p className="text-muted-foreground text-xs">
+                          …and {previews.length - 20} more
+                        </p>
+                      )}
+                    </div>
+                  </ScrollArea>
                 )}
               </div>
             </>
           )}
-        </ScrollArea>
+        </div>
 
         {/* ── Footer ───────────────────────────── */}
         <div className="flex gap-2 border-t px-6 py-4">
