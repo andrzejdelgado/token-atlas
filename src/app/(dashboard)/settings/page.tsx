@@ -29,6 +29,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/layout/page-header";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -394,318 +395,329 @@ export default function SettingsPage() {
     }
   }
 
+  const defaultTab = isAdmin ? "team" : "profile";
+
   return (
-    <div className="max-w-4xl space-y-8">
+    <div className="max-w-4xl space-y-6">
       <PageHeader title="Settings" />
 
-      {/* Figma */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <span className="">◈</span> Figma
-          </CardTitle>
-          {!isAdmin && (
-            <CardDescription>You have read-only access to these settings.</CardDescription>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Personal Access Token</Label>
-            <MaskedInput
-              value={settings.figmaPersonalAccessToken ?? ""}
-              onChange={(v) => setSettings((p) => ({ ...p, figmaPersonalAccessToken: v }))}
-              placeholder="figd_…"
-              disabled={!isAdmin}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>File key</Label>
-            <Input
-              value={settings.figmaFileKey ?? ""}
-              onChange={(e) => setSettings((p) => ({ ...p, figmaFileKey: e.target.value }))}
-              placeholder="Paste your Figma file key"
-              disabled={!isAdmin}
-            />
-          </div>
-          {isAdmin && (
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={testFigmaConnection} disabled={testingFigma}>
-                {testingFigma && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Test connection
-              </Button>
-              <Button onClick={saveFigmaSettings} disabled={savingFigma}>
-                {savingFigma && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <Tabs defaultValue={defaultTab}>
+        <TabsList>
+          {isAdmin && <TabsTrigger value="team">Team</TabsTrigger>}
+          <TabsTrigger value="workspace">Workspace</TabsTrigger>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+        </TabsList>
 
-      {/* Storybook */}
-      {isAdmin && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <span className="">◉</span> Storybook
-              <Badge variant="outline" className="ml-1 text-xs">
-                Admin only
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>GitHub token</Label>
-              <MaskedInput
-                value={settings.storybookGithubToken ?? ""}
-                onChange={(v) => setSettings((p) => ({ ...p, storybookGithubToken: v }))}
-                placeholder="ghp_…"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Repository URL</Label>
-              <Input
-                value={settings.storybookRepoUrl ?? ""}
-                onChange={(e) => setSettings((p) => ({ ...p, storybookRepoUrl: e.target.value }))}
-                placeholder="https://github.com/org/repo"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Branch</Label>
-                <Input
-                  value={settings.storybookBranch ?? "main"}
-                  onChange={(e) => setSettings((p) => ({ ...p, storybookBranch: e.target.value }))}
-                  placeholder="main"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Token file path</Label>
-                <Input
-                  value={settings.storybookTokenPath ?? "tokens/tokens.json"}
-                  onChange={(e) =>
-                    setSettings((p) => ({ ...p, storybookTokenPath: e.target.value }))
-                  }
-                  placeholder="tokens/tokens.json"
-                />
-              </div>
-            </div>
-            <Button onClick={saveStorybookSettings} disabled={savingStorybook}>
-              {savingStorybook && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Themes */}
-      {isAdmin && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base">Themes</CardTitle>
-                <CardDescription className="mt-1">
-                  Manage base themes and modifier themes from the dedicated Themes page.
+        {/* ── Team tab (admin only) ── */}
+        {isAdmin && (
+          <TabsContent value="team" className="mt-6 space-y-6">
+            {/* Invite */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Invite member</CardTitle>
+                <CardDescription>
+                  Generate an invite link for a teammate. Links expire after 7 days.
                 </CardDescription>
-              </div>
-              <Link href="/themes">
-                <Button variant="outline" size="sm">
-                  Manage Themes
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-        </Card>
-      )}
-
-      {/* User Management */}
-      {isAdmin && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">User Management</CardTitle>
-            <CardDescription>Manage workspace members and their roles.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Invite section */}
-            <div className="space-y-3">
-              <p className="text-sm font-medium">Invite member</p>
-              <div className="flex gap-2">
-                <Input
-                  type="email"
-                  placeholder="teammate@example.com"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && generateInvite()}
-                  className="max-w-xs"
-                />
-                <Button
-                  variant="outline"
-                  onClick={generateInvite}
-                  disabled={generatingInvite || !inviteEmail.trim()}
-                >
-                  {generatingInvite && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Generate invite
-                </Button>
-              </div>
-
-              {generatedLink && (
-                <div className="bg-muted flex items-center gap-2 rounded-lg px-3 py-2">
-                  <span className="text-muted-foreground min-w-0 flex-1 truncate font-mono text-xs">
-                    {generatedLink}
-                  </span>
-                  <CopyButton text={generatedLink} />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    placeholder="teammate@example.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && generateInvite()}
+                    className="max-w-xs"
+                  />
                   <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 shrink-0"
-                    onClick={() => setGeneratedLink(null)}
+                    variant="outline"
+                    onClick={generateInvite}
+                    disabled={generatingInvite || !inviteEmail.trim()}
                   >
-                    <X className="h-3.5 w-3.5" />
+                    {generatingInvite && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Generate invite
+                  </Button>
+                </div>
+
+                {generatedLink && (
+                  <div className="bg-muted flex items-center gap-2 rounded-lg px-3 py-2">
+                    <span className="text-muted-foreground min-w-0 flex-1 truncate font-mono text-xs">
+                      {generatedLink}
+                    </span>
+                    <CopyButton text={generatedLink} />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 shrink-0"
+                      onClick={() => setGeneratedLink(null)}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
+
+                {invites.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-muted-foreground text-xs font-medium">Pending invites</p>
+                    {invites.map((invite) => (
+                      <div
+                        key={invite._id}
+                        className="flex items-center gap-2 rounded-md px-0 py-1"
+                      >
+                        <span className="text-foreground min-w-0 flex-1 truncate text-sm">
+                          {invite.email}
+                        </span>
+                        <span className="text-muted-foreground shrink-0 text-xs">
+                          expires <TimestampCell date={invite.expiresAt} className="inline" />
+                        </span>
+                        <CopyButton
+                          text={`${typeof window !== "undefined" ? window.location.origin : ""}/register?token=${invite.token}`}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-destructive h-7 w-7 shrink-0"
+                          onClick={() => revokeInvite(invite.token)}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Members */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Members</CardTitle>
+                <CardDescription>Manage workspace members and their roles.</CardDescription>
+              </CardHeader>
+              {users.length > 0 && (
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Joined</TableHead>
+                        <TableHead className="w-20" />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((user) => (
+                        <TableRow key={user._id}>
+                          <TableCell className="font-medium">{user.name ?? "—"}</TableCell>
+                          <TableCell className="text-muted-foreground text-sm">
+                            {user.email}
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={user.role}
+                              onValueChange={(role) => changeRole(user._id, role)}
+                              disabled={user._id === session?.user?.id}
+                            >
+                              <SelectTrigger className="h-7 w-24 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="user">User</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <TimestampCell date={user.createdAt} />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:text-foreground h-7 w-7"
+                                onClick={() => setResetTarget(user)}
+                              >
+                                <KeyRound className="h-3.5 w-3.5" />
+                              </Button>
+                              {user._id !== session?.user?.id && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="text-muted-foreground hover:text-destructive h-7 w-7"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Remove user?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This will permanently remove{" "}
+                                        <span className="font-medium">
+                                          {user.name ?? user.email}
+                                        </span>{" "}
+                                        from the workspace. This action cannot be undone.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        onClick={() => removeUser(user._id)}
+                                      >
+                                        Remove
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              )}
+            </Card>
+          </TabsContent>
+        )}
+
+        {/* ── Workspace tab ── */}
+        <TabsContent value="workspace" className="mt-6 space-y-6">
+          {/* Figma */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <span>◈</span> Figma
+              </CardTitle>
+              {!isAdmin && (
+                <CardDescription>You have read-only access to these settings.</CardDescription>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <Label>Personal Access Token</Label>
+                <MaskedInput
+                  value={settings.figmaPersonalAccessToken ?? ""}
+                  onChange={(v) => setSettings((p) => ({ ...p, figmaPersonalAccessToken: v }))}
+                  placeholder="figd_…"
+                  disabled={!isAdmin}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>File key</Label>
+                <Input
+                  value={settings.figmaFileKey ?? ""}
+                  onChange={(e) => setSettings((p) => ({ ...p, figmaFileKey: e.target.value }))}
+                  placeholder="Paste your Figma file key"
+                  disabled={!isAdmin}
+                />
+              </div>
+              {isAdmin && (
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={testFigmaConnection} disabled={testingFigma}>
+                    {testingFigma && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Test connection
+                  </Button>
+                  <Button onClick={saveFigmaSettings} disabled={savingFigma}>
+                    {savingFigma && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save
                   </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
 
-              {invites.length > 0 && (
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-xs font-medium">Pending invites</p>
-                  {invites.map((invite) => (
-                    <div key={invite._id} className="flex items-center gap-2 rounded-md px-0 py-1">
-                      <span className="text-foreground min-w-0 flex-1 truncate text-sm">
-                        {invite.email}
-                      </span>
-                      <span className="text-muted-foreground shrink-0 text-xs">
-                        expires <TimestampCell date={invite.expiresAt} className="inline" />
-                      </span>
-                      <CopyButton
-                        text={`${typeof window !== "undefined" ? window.location.origin : ""}/register?token=${invite.token}`}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-destructive h-7 w-7 shrink-0"
-                        onClick={() => revokeInvite(invite.token)}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  ))}
+          {/* Storybook */}
+          {isAdmin && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <span>◉</span> Storybook
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label>GitHub token</Label>
+                  <MaskedInput
+                    value={settings.storybookGithubToken ?? ""}
+                    onChange={(v) => setSettings((p) => ({ ...p, storybookGithubToken: v }))}
+                    placeholder="ghp_…"
+                  />
                 </div>
-              )}
-            </div>
+                <div className="space-y-1.5">
+                  <Label>Repository URL</Label>
+                  <Input
+                    value={settings.storybookRepoUrl ?? ""}
+                    onChange={(e) =>
+                      setSettings((p) => ({ ...p, storybookRepoUrl: e.target.value }))
+                    }
+                    placeholder="https://github.com/org/repo"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Branch</Label>
+                    <Input
+                      value={settings.storybookBranch ?? "main"}
+                      onChange={(e) =>
+                        setSettings((p) => ({ ...p, storybookBranch: e.target.value }))
+                      }
+                      placeholder="main"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Token file path</Label>
+                    <Input
+                      value={settings.storybookTokenPath ?? "tokens/tokens.json"}
+                      onChange={(e) =>
+                        setSettings((p) => ({ ...p, storybookTokenPath: e.target.value }))
+                      }
+                      placeholder="tokens/tokens.json"
+                    />
+                  </div>
+                </div>
+                <Button onClick={saveStorybookSettings} disabled={savingStorybook}>
+                  {savingStorybook && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
-            {/* Members table */}
-            {users.length > 0 && (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Joined</TableHead>
-                    <TableHead className="w-20" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user._id}>
-                      <TableCell className="font-medium">{user.name ?? "—"}</TableCell>
-                      <TableCell className="text-muted-foreground text-sm">{user.email}</TableCell>
-                      <TableCell>
-                        <Select
-                          value={user.role}
-                          onValueChange={(role) => changeRole(user._id, role)}
-                          disabled={user._id === session?.user?.id}
-                        >
-                          <SelectTrigger className="h-7 w-24 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="user">User</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <TimestampCell date={user.createdAt} />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-foreground h-7 w-7"
-                            onClick={() => setResetTarget(user)}
-                          >
-                            <KeyRound className="h-3.5 w-3.5" />
-                          </Button>
-                          {user._id !== session?.user?.id && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="text-muted-foreground hover:text-destructive h-7 w-7"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Remove user?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will permanently remove{" "}
-                                    <span className="font-medium">{user.name ?? user.email}</span>{" "}
-                                    from the workspace. This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    onClick={() => removeUser(user._id)}
-                                  >
-                                    Remove
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Profile */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Profile</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Name</Label>
-              <Input value={profileName} onChange={(e) => setProfileName(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Email</Label>
-              <Input value={session?.user?.email ?? ""} disabled />
-            </div>
-          </div>
-          <Button onClick={saveProfile} disabled={savingProfile} size="sm">
-            {savingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save profile
-          </Button>
-        </CardContent>
-      </Card>
+        {/* ── Profile tab ── */}
+        <TabsContent value="profile" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Profile</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Name</Label>
+                  <Input value={profileName} onChange={(e) => setProfileName(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Email</Label>
+                  <Input value={session?.user?.email ?? ""} disabled />
+                </div>
+              </div>
+              <Button onClick={saveProfile} disabled={savingProfile} size="sm">
+                {savingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save profile
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Reset password dialog */}
       {resetTarget && (

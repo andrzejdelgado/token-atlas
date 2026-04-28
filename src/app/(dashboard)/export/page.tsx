@@ -158,7 +158,11 @@ export default function ExportPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = scope === "all" ? "tokens.json" : `tokens-${scope}-${scopeId || "all"}.json`;
+      const date = new Date().toISOString().slice(0, 10);
+      a.download =
+        scope === "all"
+          ? `tokens-${date}.json`
+          : `tokens-${scope}-${scopeId || "all"}-${date}.json`;
       a.click();
       URL.revokeObjectURL(url);
 
@@ -283,7 +287,12 @@ export default function ExportPage() {
             <span className="text-foreground font-medium">W3C Design Token Format</span>
           </p>
           <p>
-            File: <span className="text-foreground font-medium">tokens.json</span>
+            File:{" "}
+            <span className="text-foreground font-medium">
+              {scope === "all"
+                ? `tokens-${new Date().toISOString().slice(0, 10)}.json`
+                : `tokens-${scope}-${scopeId || "all"}-${new Date().toISOString().slice(0, 10)}.json`}
+            </span>
           </p>
         </div>
 

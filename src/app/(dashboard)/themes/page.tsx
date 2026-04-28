@@ -73,6 +73,7 @@ interface Theme {
   modificationCount: number;
   position?: number;
   status: "draft" | "approved";
+  reviewerId?: string;
   approvedBy?: { _id: string; name?: string; email: string } | string;
   approvedAt?: string;
 }
@@ -187,12 +188,14 @@ function ThemeCard({ theme, onEdit, onDelete, onRename, onRevert }: ThemeCardPro
                 variant={isDraft ? "outline" : "secondary"}
                 className={cn(
                   "text-[11px]",
-                  isDraft
+                  isDraft && !theme.reviewerId
                     ? "border-amber-400 text-amber-600 dark:text-amber-400"
-                    : "text-emerald-700 dark:text-emerald-400"
+                    : isDraft && theme.reviewerId
+                      ? "border-blue-400 text-blue-600 dark:text-blue-400"
+                      : "text-emerald-700 dark:text-emerald-400"
                 )}
               >
-                {isDraft ? "Draft" : "Approved"}
+                {isDraft ? (theme.reviewerId ? "In Review" : "Draft") : "Approved"}
               </Badge>
             )}
 
@@ -293,7 +296,7 @@ function ThemeCard({ theme, onEdit, onDelete, onRename, onRevert }: ThemeCardPro
                 onClick={() => router.push(`/themes/${theme._id}/review`)}
               >
                 <ClipboardCheck className="h-3 w-3" />
-                {isDraft ? "Review" : "View review"}
+                {isDraft ? "Start review" : "Open review"}
               </Button>
             </div>
           )}

@@ -311,8 +311,8 @@ export default function ImportPage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Import Tokens</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Import design tokens from a W3C Design Token Format JSON file. New tokens are added to the
-          Foundations collection; existing tokens with the same name are updated.
+          Import design tokens from a W3C Design Token Format JSON file. New tokens are added to
+          their matching collection; existing tokens with the same name are updated.
         </p>
       </div>
 

@@ -913,6 +913,18 @@ export default function AdvancedSearchPage() {
           {/* Collapsible body */}
           {!builderCollapsed && (
             <div className="space-y-3 p-5">
+              {/* Column headers */}
+              <div className="flex items-center gap-2 pl-0">
+                <div className="w-12 shrink-0" />
+                <span className="text-muted-foreground w-36 shrink-0 text-xs font-medium">
+                  Field
+                </span>
+                <span className="text-muted-foreground w-28 shrink-0 text-xs font-medium">
+                  Operator
+                </span>
+                <span className="text-muted-foreground flex-1 text-xs font-medium">Value</span>
+              </div>
+
               {/* Include criteria */}
               {criteria.map((c, i) => (
                 <CriterionRow
