@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -11,14 +11,15 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
+  // Derive initial state from token presence — avoids calling setState in effect body
   const [inviteEmail, setInviteEmail] = useState<string | null>(null);
-  const [tokenError, setTokenError] = useState<string | null>(null);
-  const [tokenLoading, setTokenLoading] = useState(true);
+  const [tokenError, setTokenError] = useState<string | null>(token ? null : "no-token");
+  const [tokenLoading, setTokenLoading] = useState(!!token);
 
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -29,11 +30,7 @@ export default function RegisterPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
-    if (!token) {
-      setTokenError("no-token");
-      setTokenLoading(false);
-      return;
-    }
+    if (!token) return;
     fetch(`/api/invites/${token}`)
       .then((r) => r.json())
       .then((d) => {
@@ -249,5 +246,19 @@ export default function RegisterPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-card flex items-center justify-center rounded-xl border p-8 shadow-sm">
+          <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />
+        </div>
+      }
+    >
+      <RegisterContent />
+    </Suspense>
   );
 }
