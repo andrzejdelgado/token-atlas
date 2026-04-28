@@ -21,6 +21,7 @@ export async function GET() {
 
   const data = themes.map((t) => ({
     ...JSON.parse(JSON.stringify(t)),
+    isBase: !!t.isBase,
     modificationCount: t.isBase ? 0 : (countMap.get(t._id.toString()) ?? 0),
   }));
 

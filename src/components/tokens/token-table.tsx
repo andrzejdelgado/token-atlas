@@ -197,7 +197,7 @@ export function TokenTable({
 
   // Derive whether the active theme is base
   const activeTheme = themes.find((t) => t._id === activeThemeId);
-  const activeThemeIsBase = !activeTheme || activeTheme.isBase;
+  const activeThemeIsBase = !activeTheme || !!activeTheme.isBase;
   const baseThemes = themes.filter((t) => t.isBase).sort((a, b) => a.name.localeCompare(b.name));
   const modifierThemes = themes
     .filter((t) => !t.isBase)
