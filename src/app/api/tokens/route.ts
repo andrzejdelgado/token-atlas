@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   if (!process.env.MONGODB_URI) return NextResponse.json({ data: [], hasMore: false });
+  try {
   await connectToDatabase();
 
   const { searchParams } = req.nextUrl;
@@ -124,6 +125,9 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json({ data, hasMore, nextCursor });
+  } catch (e) {
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
