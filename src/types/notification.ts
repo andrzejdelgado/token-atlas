@@ -5,7 +5,8 @@ export type NotificationType =
   | "export"
   | "figma_sync"
   | "storybook_sync"
-  | "sync_error";
+  | "sync_error"
+  | "peer_review_assigned";
 
 export interface INotification {
   _id: string;

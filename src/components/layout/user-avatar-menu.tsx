@@ -31,6 +31,7 @@ const TYPE_ICONS: Record<INotification["type"], string> = {
   figma_sync: "◈",
   storybook_sync: "◉",
   sync_error: "⚠",
+  peer_review_assigned: "◎",
 };
 
 function getInitials(name?: string | null, email?: string | null): string {
@@ -53,10 +54,15 @@ export function UserAvatarMenu() {
   const unread = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
-    fetch("/api/notifications")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => data && setNotifications(data.data ?? []))
-      .catch(() => {});
+    function fetchNotifications() {
+      fetch("/api/notifications")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => data && setNotifications(data.data ?? []))
+        .catch(() => {});
+    }
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30_000);
+    return () => clearInterval(interval);
   }, []);
 
   async function markAllRead() {
@@ -166,6 +172,15 @@ export function UserAvatarMenu() {
                       </span>
                       <div className="flex min-w-0 flex-col gap-1">
                         <span className="text-sm leading-tight">{n.message}</span>
+                        {n.type === "peer_review_assigned" &&
+                          typeof n.metadata?.themeId === "string" && (
+                            <Link
+                              href={`/themes/${n.metadata.themeId}/review`}
+                              className="text-primary text-xs hover:underline"
+                            >
+                              Review theme →
+                            </Link>
+                          )}
                         <TimestampCell date={n.createdAt} />
                       </div>
                     </div>
