@@ -27,7 +27,7 @@ export function NotificationsCard({
   if (notifications.length === 0) return null;
 
   return (
-    <Card>
+    <Card className="py-2">
       <div className="flex items-center justify-between border-b px-6 py-3">
         <span className="text-sm font-medium">Notifications</span>
         {unread > 0 && (

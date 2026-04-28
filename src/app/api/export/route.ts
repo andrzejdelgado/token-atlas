@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(JSON.stringify(w3c, null, 2), {
     headers: {
       "Content-Type": "application/json",
-      "Content-Disposition": `attachment; filename="tokens.json"`,
+      "Content-Disposition": `attachment; filename="tokens-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}.json"`,
     },
   });
 }

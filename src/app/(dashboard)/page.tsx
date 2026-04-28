@@ -247,8 +247,8 @@ function StatCard({
 
 function CompositionCard({ typeCounts, total }: { typeCounts: TypeCount[]; total: number }) {
   return (
-    <Card>
-      <CardContent className="pt-5 pb-5">
+    <Card className="py-2">
+      <CardContent className="py-2">
         <div className="space-y-3">
           <p className="text-muted-foreground text-xs font-medium">Token types</p>
           <div className="bg-muted flex h-1.5 gap-px overflow-hidden rounded-full">
