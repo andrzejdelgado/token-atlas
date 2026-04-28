@@ -16,15 +16,23 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
 
-  const theme = await Theme.findByIdAndUpdate(id, { reviewerId }, { new: true }).lean();
-  if (!theme) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  try {
+    const theme = await Theme.findByIdAndUpdate(id, { reviewerId }, { new: true }).lean();
+    if (!theme) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await Notification.create({
-    userId: reviewerId,
-    type: "peer_review_assigned",
-    message: `You have been assigned to peer review the theme "${theme.name}"`,
-    metadata: { themeId: id, themeName: theme.name, assignedBy: session.user.id },
-  });
+    await Notification.create({
+      userId: reviewerId,
+      type: "peer_review_assigned",
+      message: `You have been assigned to peer review the theme "${theme.name}"`,
+      metadata: { themeId: id, themeName: theme.name, assignedBy: session.user.id },
+    });
 
-  return NextResponse.json({ data: JSON.parse(JSON.stringify(theme)) });
+    return NextResponse.json({ data: JSON.parse(JSON.stringify(theme)) });
+  } catch (err) {
+    console.error("[assign-reviewer]", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Internal error" },
+      { status: 500 }
+    );
+  }
 }

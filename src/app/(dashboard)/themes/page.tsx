@@ -61,7 +61,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PageHeader } from "@/components/layout/page-header";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -662,22 +661,25 @@ export default function ThemesPage() {
   void isAdmin; // used in review page via router
 
   return (
-    <div className="p-6">
-      <PageHeader
-        title="Themes"
-        actions={
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditingTheme(null);
-              setDialogOpen(true);
-            }}
-          >
-            <Plus className="mr-1.5 h-4 w-4" />
-            New Theme
-          </Button>
-        }
-      />
+    <div className="max-w-4xl space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">Themes</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Manage base and modifier themes for your design tokens.
+          </p>
+        </div>
+        <Button
+          size="sm"
+          onClick={() => {
+            setEditingTheme(null);
+            setDialogOpen(true);
+          }}
+        >
+          <Plus className="mr-1.5 h-4 w-4" />
+          New Theme
+        </Button>
+      </div>
 
       {loading ? (
         <div className="text-muted-foreground flex items-center justify-center gap-2 py-12 text-sm">
@@ -685,7 +687,7 @@ export default function ThemesPage() {
           Loading themes…
         </div>
       ) : (
-        <div className="max-w-2xl space-y-10">
+        <div className="space-y-10">
           <ThemeSection
             title="Base Themes"
             description="Provide a full set of token values. Use these as the foundation for modifier themes."

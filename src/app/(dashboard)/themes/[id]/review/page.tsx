@@ -183,11 +183,12 @@ export default function ThemeReviewPage({ params }: { params: Promise<{ id: stri
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reviewerId: selectedReviewerId }),
       });
-      if (!res.ok) throw new Error();
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error ?? "Failed to assign reviewer");
       toast.success("Peer reviewer assigned");
       setShowAssign(false);
-    } catch {
-      toast.error("Failed to assign reviewer");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to assign reviewer");
     } finally {
       setAssigning(false);
     }
