@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   DndContext,
   closestCenter,
@@ -26,6 +28,10 @@ import {
   ArrowRight,
   Pencil,
   Trash2,
+  Upload,
+  ClipboardCheck,
+  RotateCcw,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +73,15 @@ interface Theme {
   isBase: boolean;
   modificationCount: number;
   position?: number;
+  status: "draft" | "approved";
+  approvedBy?: { _id: string; name?: string; email: string } | string;
+  approvedAt?: string;
+}
+
+interface User {
+  _id: string;
+  name?: string;
+  email: string;
 }
 
 // ── slug helper ───────────────────────────────────────────────────────────────
@@ -78,6 +93,12 @@ function toSlug(name: string) {
     .replace(/^-|-$/g, "");
 }
 
+function approvedByName(theme: Theme) {
+  if (!theme.approvedBy) return null;
+  if (typeof theme.approvedBy === "object") return theme.approvedBy.name ?? theme.approvedBy.email;
+  return null;
+}
+
 // ── Sortable theme card ───────────────────────────────────────────────────────
 
 interface ThemeCardProps {
@@ -85,9 +106,11 @@ interface ThemeCardProps {
   onEdit: (theme: Theme) => void;
   onDelete: (theme: Theme) => void;
   onRename: (id: string, name: string) => void;
+  onRevert: (id: string) => void;
 }
 
-function ThemeCard({ theme, onEdit, onDelete, onRename }: ThemeCardProps) {
+function ThemeCard({ theme, onEdit, onDelete, onRename, onRevert }: ThemeCardProps) {
+  const router = useRouter();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: theme._id,
   });
@@ -95,10 +118,8 @@ function ThemeCard({ theme, onEdit, onDelete, onRename }: ThemeCardProps) {
   const [renaming, setRenaming] = useState(false);
   const [renameVal, setRenameVal] = useState(theme.name);
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  const style = { transform: CSS.Transform.toString(transform), transition };
+  const isDraft = theme.status === "draft";
 
   async function commitRename() {
     const trimmed = renameVal.trim();
@@ -116,7 +137,8 @@ function ThemeCard({ theme, onEdit, onDelete, onRename }: ThemeCardProps) {
       style={style}
       className={cn(
         "bg-card border-border flex items-start gap-3 rounded-lg border p-4 transition-shadow",
-        isDragging && "opacity-50 shadow-lg"
+        isDragging && "opacity-50 shadow-lg",
+        isDraft && "border-dashed"
       )}
     >
       {/* Drag handle */}
@@ -159,7 +181,23 @@ function ThemeCard({ theme, onEdit, onDelete, onRename }: ThemeCardProps) {
             )}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
+            {/* Status badge */}
+            {!theme.isBase && (
+              <Badge
+                variant={isDraft ? "outline" : "secondary"}
+                className={cn(
+                  "text-[11px]",
+                  isDraft
+                    ? "border-amber-400 text-amber-600 dark:text-amber-400"
+                    : "text-emerald-700 dark:text-emerald-400"
+                )}
+              >
+                {isDraft ? "Draft" : "Approved"}
+              </Badge>
+            )}
+
+            {/* Base/Modifier badge */}
             <Badge variant={theme.isBase ? "default" : "secondary"} className="text-[11px]">
               {theme.isBase ? "Base" : "Modifier"}
             </Badge>
@@ -170,11 +208,17 @@ function ThemeCard({ theme, onEdit, onDelete, onRename }: ThemeCardProps) {
                   <MoreHorizontal className="h-4 w-4" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
+              <DropdownMenuContent align="end" className="w-40">
                 <DropdownMenuItem onSelect={() => onEdit(theme)}>
                   <Pencil className="mr-2 h-3.5 w-3.5" />
                   Edit
                 </DropdownMenuItem>
+                {!theme.isBase && !isDraft && (
+                  <DropdownMenuItem onSelect={() => onRevert(theme._id)}>
+                    <RotateCcw className="mr-2 h-3.5 w-3.5" />
+                    Revert to Draft
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onSelect={() => onDelete(theme)}
@@ -194,28 +238,73 @@ function ThemeCard({ theme, onEdit, onDelete, onRename }: ThemeCardProps) {
           </p>
         )}
 
+        {/* Approved-by line */}
+        {!theme.isBase && !isDraft && theme.approvedAt && (
+          <p className="text-muted-foreground mt-1 flex items-center gap-1 text-[11px]">
+            <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+            Approved{approvedByName(theme) ? ` by ${approvedByName(theme)}` : ""}
+            {theme.approvedAt ? ` · ${new Date(theme.approvedAt).toLocaleDateString()}` : ""}
+          </p>
+        )}
+
+        {/* Card footer */}
         <div className="mt-3 flex items-center justify-between">
-          {!theme.isBase && theme.modificationCount > 0 ? (
-            <span className="text-muted-foreground text-xs">
-              {theme.modificationCount} override{theme.modificationCount !== 1 ? "s" : ""}
-            </span>
+          {!theme.isBase ? (
+            <div className="text-muted-foreground flex items-center gap-2 text-xs">
+              {theme.modificationCount > 0 && (
+                <>
+                  <span>
+                    {theme.modificationCount} override{theme.modificationCount !== 1 ? "s" : ""}
+                  </span>
+                  <span className="text-border">|</span>
+                </>
+              )}
+              <Link
+                href={`/tokens?theme=${theme._id}`}
+                className="hover:text-foreground flex items-center gap-0.5 transition-colors"
+              >
+                Browse tokens <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
           ) : (
-            <span />
+            <Link
+              href={`/tokens?theme=${theme._id}`}
+              className="text-muted-foreground hover:text-foreground flex items-center gap-0.5 text-xs transition-colors"
+            >
+              Browse tokens <ArrowRight className="h-3 w-3" />
+            </Link>
           )}
-          <Link
-            href={`/tokens?theme=${theme._id}`}
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs transition-colors"
-          >
-            Browse tokens
-            <ArrowRight className="h-3 w-3" />
-          </Link>
+
+          {/* Modifier action buttons */}
+          {!theme.isBase && (
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 gap-1 px-2 text-xs"
+                onClick={() => router.push(`/themes/${theme._id}/import`)}
+              >
+                <Upload className="h-3 w-3" />
+                Import overrides
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 gap-1 px-2 text-xs"
+                onClick={() => router.push(`/themes/${theme._id}/review`)}
+              >
+                <ClipboardCheck className="h-3 w-3" />
+                {isDraft ? "Review" : "View review"}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-// ── Section with sortable list ────────────────────────────────────────────────
+// ── Section ───────────────────────────────────────────────────────────────────
 
 function ThemeSection({
   title,
@@ -224,6 +313,7 @@ function ThemeSection({
   onEdit,
   onDelete,
   onRename,
+  onRevert,
   onDragEnd,
 }: {
   title: string;
@@ -232,6 +322,7 @@ function ThemeSection({
   onEdit: (theme: Theme) => void;
   onDelete: (theme: Theme) => void;
   onRename: (id: string, name: string) => void;
+  onRevert: (id: string) => void;
   onDragEnd: (event: DragEndEvent, section: "base" | "modifier") => void;
 }) {
   const section = title === "Base Themes" ? "base" : "modifier";
@@ -263,6 +354,7 @@ function ThemeSection({
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onRename={onRename}
+                  onRevert={onRevert}
                 />
               ))}
             </div>
@@ -275,14 +367,17 @@ function ThemeSection({
 
 // ── Create / Edit dialog ──────────────────────────────────────────────────────
 
-interface ThemeDialogProps {
+function ThemeDialog({
+  open,
+  onOpenChange,
+  theme,
+  onSaved,
+}: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   theme?: Theme | null;
   onSaved: (theme: Theme) => void;
-}
-
-function ThemeDialog({ open, onOpenChange, theme, onSaved }: ThemeDialogProps) {
+}) {
   const isEdit = !!theme;
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -352,7 +447,6 @@ function ThemeDialog({ open, onOpenChange, theme, onSaved }: ThemeDialogProps) {
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Name */}
           <div className="space-y-1.5">
             <Label htmlFor="theme-name">Name</Label>
             <Input
@@ -364,7 +458,6 @@ function ThemeDialog({ open, onOpenChange, theme, onSaved }: ThemeDialogProps) {
             />
           </div>
 
-          {/* Slug — only for create */}
           {!isEdit && (
             <div className="space-y-1.5">
               <Label htmlFor="theme-slug">Slug</Label>
@@ -384,7 +477,6 @@ function ThemeDialog({ open, onOpenChange, theme, onSaved }: ThemeDialogProps) {
             </div>
           )}
 
-          {/* Description */}
           <div className="space-y-1.5">
             <Label htmlFor="theme-description">
               Description <span className="text-muted-foreground font-normal">(optional)</span>
@@ -399,7 +491,6 @@ function ThemeDialog({ open, onOpenChange, theme, onSaved }: ThemeDialogProps) {
             />
           </div>
 
-          {/* Type */}
           <div className="space-y-2">
             <Label>Type</Label>
             <div className="grid grid-cols-2 gap-2">
@@ -410,11 +501,7 @@ function ThemeDialog({ open, onOpenChange, theme, onSaved }: ThemeDialogProps) {
                     label: "Modifier",
                     sub: "Overrides specific tokens on top of a base theme",
                   },
-                  {
-                    value: true,
-                    label: "Base",
-                    sub: "Has its own full set of token values",
-                  },
+                  { value: true, label: "Base", sub: "Has its own full set of token values" },
                 ] as const
               ).map(({ value, label, sub }) => (
                 <button
@@ -453,21 +540,22 @@ function ThemeDialog({ open, onOpenChange, theme, onSaved }: ThemeDialogProps) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ThemesPage() {
+  const { data: session } = useSession();
   const [themes, setThemes] = useState<Theme[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
-
   const [deleteTarget, setDeleteTarget] = useState<Theme | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  const isAdmin = (session?.user as { role?: string } | undefined)?.role === "admin";
   const baseThemes = themes.filter((t) => t.isBase);
   const modifierThemes = themes.filter((t) => !t.isBase);
 
   const fetchThemes = useCallback(async () => {
     try {
-      const res = await fetch("/api/themes");
+      const res = await fetch("/api/themes?includeDrafts=true");
       const { data } = await res.json();
       setThemes(data ?? []);
     } catch {
@@ -480,6 +568,15 @@ export default function ThemesPage() {
   useEffect(() => {
     fetchThemes();
   }, [fetchThemes]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetch("/api/users")
+        .then((r) => r.json())
+        .then((d) => setUsers(d.data ?? []))
+        .catch(() => {});
+    }
+  }, [isAdmin]);
 
   function handleSaved(saved: Theme) {
     setThemes((prev) => {
@@ -510,6 +607,25 @@ export default function ThemesPage() {
     }
   }
 
+  async function handleRevert(id: string) {
+    try {
+      const res = await fetch(`/api/themes/${id}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ revert: true }),
+      });
+      if (!res.ok) throw new Error();
+      setThemes((ts) =>
+        ts.map((t) =>
+          t._id === id ? { ...t, status: "draft", approvedBy: undefined, approvedAt: undefined } : t
+        )
+      );
+      toast.success("Theme reverted to Draft");
+    } catch {
+      toast.error("Failed to revert theme");
+    }
+  }
+
   async function handleDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -529,25 +645,21 @@ export default function ThemesPage() {
   function handleDragEnd(event: DragEndEvent, section: "base" | "modifier") {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-
     const sectionThemes = section === "base" ? baseThemes : modifierThemes;
     const oldIndex = sectionThemes.findIndex((t) => t._id === active.id);
     const newIndex = sectionThemes.findIndex((t) => t._id === over.id);
     const reordered = arrayMove(sectionThemes, oldIndex, newIndex);
-
     const otherThemes = section === "base" ? modifierThemes : baseThemes;
-    const allReordered =
-      section === "base" ? [...reordered, ...otherThemes] : [...otherThemes, ...reordered];
-
-    setThemes(allReordered);
-
-    const items = reordered.map((t, i) => ({ id: t._id, position: i }));
+    setThemes(section === "base" ? [...reordered, ...otherThemes] : [...otherThemes, ...reordered]);
     fetch("/api/themes/reorder", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items }),
+      body: JSON.stringify({ items: reordered.map((t, i) => ({ id: t._id, position: i })) }),
     }).catch(() => toast.error("Failed to save order"));
   }
+
+  void users;
+  void isAdmin; // used in review page via router
 
   return (
     <div className="p-6">
@@ -584,9 +696,9 @@ export default function ThemesPage() {
             }}
             onDelete={setDeleteTarget}
             onRename={handleRename}
+            onRevert={handleRevert}
             onDragEnd={handleDragEnd}
           />
-
           <ThemeSection
             title="Modifier Themes"
             description="Override specific tokens on top of a base theme to create brand or platform variants."
@@ -597,10 +709,10 @@ export default function ThemesPage() {
             }}
             onDelete={setDeleteTarget}
             onRename={handleRename}
+            onRevert={handleRevert}
             onDragEnd={handleDragEnd}
           />
-
-          {themes.length === 0 && !loading && (
+          {themes.length === 0 && (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <Layers className="text-muted-foreground h-8 w-8" />
               <p className="text-muted-foreground text-sm">No themes yet. Create your first one.</p>

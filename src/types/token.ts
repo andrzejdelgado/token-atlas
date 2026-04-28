@@ -50,6 +50,10 @@ export interface ITheme {
   description?: string;
   createdAt: Date;
   position?: number;
+  status: "draft" | "approved";
+  reviewerId?: string;
+  approvedBy?: string | { _id: string; name?: string; email: string };
+  approvedAt?: string;
 }
 
 export interface IThemeOverride {

@@ -4,14 +4,18 @@ import { connectToDatabase } from "@/lib/db/mongodb";
 import { Theme } from "@/lib/db/models/theme.model";
 import { ThemeOverride } from "@/lib/db/models/theme-override.model";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   if (!process.env.MONGODB_URI) return NextResponse.json({ data: [] });
   await connectToDatabase();
 
-  const themes = await Theme.find({}).sort({ position: 1, name: 1 }).lean();
+  const includeDrafts = req.nextUrl.searchParams.get("includeDrafts") === "true";
+  const query = includeDrafts
+    ? {}
+    : { $or: [{ status: "approved" }, { status: { $exists: false } }] };
+  const themes = await Theme.find(query).sort({ position: 1, name: 1 }).lean();
 
   // Count how many token overrides each theme has (baseTheme always 0)
   const countResults = await ThemeOverride.aggregate([
@@ -22,6 +26,7 @@ export async function GET() {
   const data = themes.map((t) => ({
     ...JSON.parse(JSON.stringify(t)),
     isBase: !!t.isBase,
+    status: t.status ?? "approved",
     modificationCount: t.isBase ? 0 : (countMap.get(t._id.toString()) ?? 0),
   }));
 
@@ -41,7 +46,9 @@ export async function POST(req: NextRequest) {
   if (existing)
     return NextResponse.json({ error: "Theme with this slug already exists" }, { status: 409 });
 
-  const theme = await Theme.create({ name, slug, description, isBase: !!isBase });
+  // Modifier themes start as draft; base themes start as approved
+  const status = isBase ? "approved" : "draft";
+  const theme = await Theme.create({ name, slug, description, isBase: !!isBase, status });
 
   // Re-sort all themes of the same type alphabetically and assign positions
   const siblings = await Theme.find({ isBase: !!isBase }).sort({ name: 1 }).lean();

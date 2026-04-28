@@ -8,6 +8,10 @@ export interface IThemeDoc {
   description?: string;
   createdAt: Date;
   position: number;
+  status: "draft" | "approved";
+  reviewerId?: mongoose.Types.ObjectId;
+  approvedBy?: mongoose.Types.ObjectId;
+  approvedAt?: Date;
 }
 
 const ThemeSchema = new Schema<IThemeDoc>(
@@ -17,6 +21,10 @@ const ThemeSchema = new Schema<IThemeDoc>(
     isBase: { type: Boolean, default: false },
     description: { type: String },
     position: { type: Number, default: 0 },
+    status: { type: String, enum: ["draft", "approved"], default: "approved" },
+    reviewerId: { type: Schema.Types.ObjectId, ref: "User" },
+    approvedBy: { type: Schema.Types.ObjectId, ref: "User" },
+    approvedAt: { type: Date },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );

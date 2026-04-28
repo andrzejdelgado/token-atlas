@@ -10,7 +10,8 @@ export interface INotificationDoc {
     | "export"
     | "figma_sync"
     | "storybook_sync"
-    | "sync_error";
+    | "sync_error"
+    | "peer_review_assigned";
   message: string;
   read: boolean;
   metadata?: Record<string, unknown>;
@@ -30,6 +31,7 @@ const NotificationSchema = new Schema<INotificationDoc>(
         "figma_sync",
         "storybook_sync",
         "sync_error",
+        "peer_review_assigned",
       ],
       required: true,
     },
