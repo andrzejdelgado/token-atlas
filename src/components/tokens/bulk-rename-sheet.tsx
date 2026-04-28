@@ -19,6 +19,84 @@ interface BulkRenameSheetProps {
   onApplied: () => void;
 }
 
+type AnnotationSegment = {
+  text: string;
+  style: "unchanged" | "removed" | "added" | "prefix" | "suffix";
+};
+
+function applyPattern(
+  segments: AnnotationSegment[],
+  pattern: string,
+  replacement: string | null
+): AnnotationSegment[] {
+  const result: AnnotationSegment[] = [];
+  for (const seg of segments) {
+    if (seg.style !== "unchanged" || !seg.text.includes(pattern)) {
+      result.push(seg);
+      continue;
+    }
+    const parts = seg.text.split(pattern);
+    parts.forEach((part, i) => {
+      if (part) result.push({ text: part, style: "unchanged" });
+      if (i < parts.length - 1) {
+        result.push({ text: pattern, style: "removed" });
+        if (replacement) result.push({ text: replacement, style: "added" });
+      }
+    });
+  }
+  return result;
+}
+
+function buildAnnotatedSegments(
+  originalName: string,
+  options: BulkRenameOptions
+): AnnotationSegment[] {
+  const segments: AnnotationSegment[] = [];
+
+  if (options.prefix) segments.push({ text: options.prefix, style: "prefix" });
+
+  let inner: AnnotationSegment[] = [{ text: originalName, style: "unchanged" }];
+  if (options.remove) inner = applyPattern(inner, options.remove, null);
+  if (options.swap?.find)
+    inner = applyPattern(inner, options.swap.find, options.swap.replace || "");
+  segments.push(...inner);
+
+  if (options.suffix) segments.push({ text: options.suffix, style: "suffix" });
+
+  return segments;
+}
+
+const segmentStyles: Record<AnnotationSegment["style"], string> = {
+  prefix: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+  suffix: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  added: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+  removed: "bg-red-100 text-red-800 line-through dark:bg-red-900/30 dark:text-red-400",
+  unchanged: "",
+};
+
+function AnnotatedTokenName({
+  originalName,
+  options,
+}: {
+  originalName: string;
+  options: BulkRenameOptions;
+}) {
+  const segments = buildAnnotatedSegments(originalName, options);
+  return (
+    <span className="break-all">
+      {segments.map((seg, i) =>
+        seg.style === "unchanged" ? (
+          <span key={i}>{seg.text}</span>
+        ) : (
+          <span key={i} className={cn("rounded-sm px-0.5", segmentStyles[seg.style])}>
+            {seg.text}
+          </span>
+        )
+      )}
+    </span>
+  );
+}
+
 export function BulkRenameSheet({
   open,
   onOpenChange,
@@ -98,7 +176,7 @@ export function BulkRenameSheet({
           </p>
         </SheetHeader>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="min-h-0 flex-1">
           {/* ── Transform options ─────────────────── */}
           <div className="space-y-4 px-6 py-5">
             <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
@@ -202,9 +280,8 @@ export function BulkRenameSheet({
                 ) : (
                   <div className="space-y-2">
                     {previews.slice(0, 20).map((p) => (
-                      <div key={p.tokenId} className="flex items-center gap-1 text-xs">
-                        <span className="text-muted-foreground">→</span>
-                        <RenamePreviewName preview={p} />
+                      <div key={p.tokenId} className="text-xs">
+                        <AnnotatedTokenName originalName={p.originalName} options={options} />
                       </div>
                     ))}
                     {previews.length > 20 && (
@@ -230,27 +307,5 @@ export function BulkRenameSheet({
         </div>
       </SheetContent>
     </Sheet>
-  );
-}
-
-function RenamePreviewName({ preview }: { preview: BulkRenamePreview }) {
-  const changeColors: Record<string, string> = {
-    prefix: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-    suffix: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-    swap: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
-    remove: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-  };
-
-  if (preview.changes.length === 0) return <span>{preview.newName}</span>;
-
-  return (
-    <span>
-      {preview.changes.map((c, i) => (
-        <span key={i} className={cn("rounded-sm px-0.5", changeColors[c.type])}>
-          {c.segment}
-        </span>
-      ))}
-      {preview.newName}
-    </span>
   );
 }
