@@ -24,14 +24,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const body = await req.json();
 
   // Whitelist updatable fields; admins can also change role
-  const allowed = isAdmin(role)
-    ? ["name", "role", "preferences"]
-    : ["name", "preferences"];
-  const update = Object.fromEntries(
-    Object.entries(body).filter(([k]) => allowed.includes(k))
-  );
+  const allowed = isAdmin(role) ? ["name", "role", "preferences"] : ["name", "preferences"];
+  const update = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k)));
 
-  const user = await User.findByIdAndUpdate(id, update, { new: true }).select("-passwordHash").lean();
+  const user = await User.findByIdAndUpdate(id, update, { new: true })
+    .select("-passwordHash")
+    .lean();
 
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ data: JSON.parse(JSON.stringify(user)) });

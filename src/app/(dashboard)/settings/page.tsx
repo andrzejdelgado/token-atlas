@@ -382,10 +382,8 @@ export default function SettingsPage() {
                               <AlertDialogTitle>Remove user?</AlertDialogTitle>
                               <AlertDialogDescription>
                                 This will permanently remove{" "}
-                                <span className="font-medium">
-                                  {user.name ?? user.email}
-                                </span>{" "}
-                                from the workspace. This action cannot be undone.
+                                <span className="font-medium">{user.name ?? user.email}</span> from
+                                the workspace. This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

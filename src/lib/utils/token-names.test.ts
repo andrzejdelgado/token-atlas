@@ -11,15 +11,13 @@ describe("applyBulkRename", () => {
   });
 
   it("swaps a substring", () => {
-    expect(applyBulkRename("color/background", { swap: { find: "background", replace: "bg" } })).toBe(
-      "color/bg"
-    );
+    expect(
+      applyBulkRename("color/background", { swap: { find: "background", replace: "bg" } })
+    ).toBe("color/bg");
   });
 
   it("swaps all occurrences", () => {
-    expect(
-      applyBulkRename("a/a/b", { swap: { find: "a", replace: "x" } })
-    ).toBe("x/x/b");
+    expect(applyBulkRename("a/a/b", { swap: { find: "a", replace: "x" } })).toBe("x/x/b");
   });
 
   it("adds a prefix", () => {

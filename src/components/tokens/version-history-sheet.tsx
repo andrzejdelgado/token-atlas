@@ -156,8 +156,7 @@ export function VersionHistorySheet({
                             .filter((key) => MEANINGFUL_FIELDS.has(key))
                             .filter(
                               (key) =>
-                                formatValue(entry.before?.[key]) !==
-                                formatValue(entry.after?.[key])
+                                formatValue(entry.before?.[key]) !== formatValue(entry.after?.[key])
                             )
                             .map((key) => (
                               <div key={key}>
