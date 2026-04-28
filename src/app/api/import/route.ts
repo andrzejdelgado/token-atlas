@@ -5,47 +5,7 @@ import { Token } from "@/lib/db/models/token.model";
 import { Collection } from "@/lib/db/models/collection.model";
 import { Group } from "@/lib/db/models/group.model";
 import { Notification } from "@/lib/db/models/notification.model";
-
-interface W3CToken {
-  $value: string | number | boolean;
-  $type?: string;
-}
-
-type W3CTree = { [key: string]: W3CToken | W3CTree };
-
-function flattenW3C(
-  tree: W3CTree,
-  prefix = ""
-): Array<{ name: string; value: string; type: string }> {
-  const result: Array<{ name: string; value: string; type: string }> = [];
-  for (const [key, val] of Object.entries(tree)) {
-    const path = prefix ? `${prefix}/${key}` : key;
-    if (val && typeof val === "object" && "$value" in val) {
-      const token = val as W3CToken;
-      result.push({
-        name: path,
-        value: String(token.$value),
-        type: token.$type ?? "String",
-      });
-    } else {
-      result.push(...flattenW3C(val as W3CTree, path));
-    }
-  }
-  return result;
-}
-
-function w3cTypeToTokenType(type: string): string {
-  switch (type.toLowerCase()) {
-    case "color":
-      return "Color";
-    case "number":
-      return "Number";
-    case "boolean":
-      return "Boolean";
-    default:
-      return "String";
-  }
-}
+import { flattenW3C, w3cTypeToTokenType, type W3CTree } from "@/lib/utils/w3c-tokens";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
