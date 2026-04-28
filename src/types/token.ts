@@ -17,6 +17,9 @@ export interface IToken {
   updatedBy: string | IUser;
   /** Present when the token was fetched with a non-base theme selected. */
   _overridden?: boolean;
+  /** Raw base values before theme overrides are applied. Present when _overridden is true. */
+  _baseLightValue?: string;
+  _baseDarkValue?: string;
 }
 
 export interface ICollection {

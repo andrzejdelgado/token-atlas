@@ -137,6 +137,9 @@ export async function GET(req: NextRequest) {
         lightValue: override?.lightValue ?? token.lightValue,
         darkValue: override?.darkValue ?? token.darkValue,
         _overridden: !!override,
+        ...(override
+          ? { _baseLightValue: token.lightValue, _baseDarkValue: token.darkValue ?? "" }
+          : {}),
       });
     });
 

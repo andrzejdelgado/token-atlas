@@ -157,22 +157,18 @@ export function EditTokenSheet({
       return;
     }
 
-    // Non-base theme: fetch true base values from DB (token prop has overrides applied)
-    setLightValue("");
-    setDarkValue("");
-    setLoadingOverride(true);
-    Promise.all([
-      fetch(`/api/tokens/${token._id}`).then((r) => (r.ok ? r.json() : null)),
-      fetch(`/api/tokens/${token._id}/override?themeId=${activeThemeId}`).then((r) =>
-        r.ok ? r.json() : null
-      ),
-    ])
-      .then(([baseData, overrideData]) => {
-        const baseLv = baseData?.data?.lightValue ?? "";
-        const baseDv = baseData?.data?.darkValue ?? "";
-        setLightValue(baseLv);
-        setDarkValue(baseDv);
+    // Non-base theme: base values are carried on the token as _baseLightValue/_baseDarkValue
+    // (the list API stores the raw values there before applying the override to lightValue/darkValue)
+    const baseLv = token._baseLightValue ?? token.lightValue;
+    const baseDv = token._baseDarkValue ?? token.darkValue ?? "";
+    setLightValue(baseLv);
+    setDarkValue(baseDv);
 
+    // Fetch only the override record for this theme
+    setLoadingOverride(true);
+    fetch(`/api/tokens/${token._id}/override?themeId=${activeThemeId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((overrideData) => {
         if (overrideData?.data) {
           setHasExistingOverride(true);
           setOverrideLight(overrideData.data.lightValue ?? baseLv);
@@ -183,10 +179,7 @@ export function EditTokenSheet({
           setOverrideDark(baseDv);
         }
       })
-      .catch(() => {
-        toast.error("Failed to load base values");
-        setLoadingOverride(false);
-      })
+      .catch(() => toast.error("Failed to load override values"))
       .finally(() => setLoadingOverride(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token?._id, open, activeThemeId, showOverrideSection]);
