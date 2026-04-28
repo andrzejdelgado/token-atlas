@@ -1,19 +1,39 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, X, Search, MinusCircle, ChevronDown, ChevronUp, Trash2, BookmarkPlus, Clock, Bookmark, Check, ChevronsUpDown } from "lucide-react";
+import {
+  Plus,
+  X,
+  Search,
+  MinusCircle,
+  ChevronDown,
+  ChevronUp,
+  Trash2,
+  BookmarkPlus,
+  Clock,
+  Bookmark,
+  Check,
+  ChevronsUpDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Popover, PopoverContent, PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import { TokenTable } from "@/components/tokens/token-table";
 import { cn } from "@/lib/utils";
@@ -26,12 +46,18 @@ const POPULAR_COUNT = 5;
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type Field =
-  | "name" | "value" | "type" | "collection" | "group"
-  | "theme" | "flagged" | "label" | "component" | "lastModified";
+  | "name"
+  | "value"
+  | "type"
+  | "collection"
+  | "group"
+  | "theme"
+  | "flagged"
+  | "label"
+  | "component"
+  | "lastModified";
 
-type Operator =
-  | "contains" | "equals" | "starts_with"
-  | "is" | "is_not" | "after" | "before";
+type Operator = "contains" | "equals" | "starts_with" | "is" | "is_not" | "after" | "before";
 
 interface Criterion {
   id: string;
@@ -58,9 +84,19 @@ interface TableSearchProps {
   excludeFilters?: ExcludeFilters;
 }
 
-interface Collection { _id: string; name: string; }
-interface Group { _id: string; name: string; depth: number; }
-interface Theme { _id: string; name: string; }
+interface Collection {
+  _id: string;
+  name: string;
+}
+interface Group {
+  _id: string;
+  name: string;
+  depth: number;
+}
+interface Theme {
+  _id: string;
+  name: string;
+}
 
 // ── Field / operator config ────────────────────────────────────────────────────
 
@@ -86,14 +122,16 @@ const TOKEN_TYPES = [
 
 function getOperators(field: Field): { value: Operator; label: string }[] {
   if (field === "flagged") return [{ value: "is", label: "is flagged" }];
-  if (field === "lastModified") return [
-    { value: "after", label: "after" },
-    { value: "before", label: "before" },
-  ];
-  if (["type", "collection", "group", "theme"].includes(field)) return [
-    { value: "is", label: "is" },
-    { value: "is_not", label: "is not" },
-  ];
+  if (field === "lastModified")
+    return [
+      { value: "after", label: "after" },
+      { value: "before", label: "before" },
+    ];
+  if (["type", "collection", "group", "theme"].includes(field))
+    return [
+      { value: "is", label: "is" },
+      { value: "is_not", label: "is not" },
+    ];
   return [
     { value: "contains", label: "contains" },
     { value: "equals", label: "equals" },
@@ -101,7 +139,9 @@ function getOperators(field: Field): { value: Operator; label: string }[] {
   ];
 }
 
-function uid() { return Math.random().toString(36).slice(2, 9); }
+function uid() {
+  return Math.random().toString(36).slice(2, 9);
+}
 
 function makeCriterion(field: Field = "name"): Criterion {
   return { id: uid(), field, operator: getOperators(field)[0].value, value: "" };
@@ -111,33 +151,43 @@ function makeCriterion(field: Field = "name"): Criterion {
 
 function criterionSummary(
   c: Criterion,
-  opts: { collections: Collection[]; groups: Group[]; themes: Theme[] },
+  opts: { collections: Collection[]; groups: Group[]; themes: Theme[] }
 ): string {
   if (c.field === "flagged") return "Is flagged";
-  const fieldLabel = FIELDS.find(f => f.value === c.field)?.label ?? c.field;
-  const opLabel = getOperators(c.field).find(o => o.value === c.operator)?.label ?? c.operator;
+  const fieldLabel = FIELDS.find((f) => f.value === c.field)?.label ?? c.field;
+  const opLabel = getOperators(c.field).find((o) => o.value === c.operator)?.label ?? c.operator;
   let val = c.value;
-  if (c.field === "collection") val = opts.collections.find(x => x._id === val)?.name ?? val;
-  if (c.field === "group") val = opts.groups.find(x => x._id === val)?.name ?? val;
-  if (c.field === "theme") val = opts.themes.find(x => x._id === val)?.name ?? val;
-  if (c.field === "type") val = TOKEN_TYPES.find(t => t.value === val)?.label ?? val;
+  if (c.field === "collection") val = opts.collections.find((x) => x._id === val)?.name ?? val;
+  if (c.field === "group") val = opts.groups.find((x) => x._id === val)?.name ?? val;
+  if (c.field === "theme") val = opts.themes.find((x) => x._id === val)?.name ?? val;
+  if (c.field === "type") val = TOKEN_TYPES.find((t) => t.value === val)?.label ?? val;
   return val ? `${fieldLabel} ${opLabel} "${val}"` : `${fieldLabel} ${opLabel}`;
 }
 
 function autoName(
   criteria: Criterion[],
   excludeCriteria: Criterion[],
-  opts: { collections: Collection[]; groups: Group[]; themes: Theme[] },
+  opts: { collections: Collection[]; groups: Group[]; themes: Theme[] }
 ): string {
-  const parts = criteria.map(c => criterionSummary(c, opts));
-  if (excludeCriteria.length) parts.push(`Excluding: ${excludeCriteria.map(c => criterionSummary(c, opts)).join(", ")}`);
+  const parts = criteria.map((c) => criterionSummary(c, opts));
+  if (excludeCriteria.length)
+    parts.push(`Excluding: ${excludeCriteria.map((c) => criterionSummary(c, opts)).join(", ")}`);
   return parts.join(" AND ") || "Untitled query";
 }
 
 // ── Criterion row ─────────────────────────────────────────────────────────────
 
 function CriterionRow({
-  criterion, isFirst, isExclude, collections, groups, themes, labels, components, onChange, onRemove,
+  criterion,
+  isFirst,
+  isExclude,
+  collections,
+  groups,
+  themes,
+  labels,
+  components,
+  onChange,
+  onRemove,
 }: {
   criterion: Criterion;
   isFirst: boolean;
@@ -162,57 +212,82 @@ function CriterionRow({
   function renderValue() {
     if (!showVal) return <div className="flex-1" />;
 
-    if (criterion.field === "type") return (
-      <Select value={criterion.value} onValueChange={v => onChange({ ...criterion, value: v })}>
-        <SelectTrigger className="h-9 flex-1 min-w-0"><SelectValue placeholder="Select type…" /></SelectTrigger>
-        <SelectContent>
-          {TOKEN_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-        </SelectContent>
-      </Select>
-    );
+    if (criterion.field === "type")
+      return (
+        <Select value={criterion.value} onValueChange={(v) => onChange({ ...criterion, value: v })}>
+          <SelectTrigger className="h-9 min-w-0 flex-1">
+            <SelectValue placeholder="Select type…" />
+          </SelectTrigger>
+          <SelectContent>
+            {TOKEN_TYPES.map((t) => (
+              <SelectItem key={t.value} value={t.value}>
+                {t.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
 
-    if (criterion.field === "collection") return (
-      <Select value={criterion.value} onValueChange={v => onChange({ ...criterion, value: v })}>
-        <SelectTrigger className="h-9 flex-1 min-w-0"><SelectValue placeholder="Select collection…" /></SelectTrigger>
-        <SelectContent>
-          {collections.map(c => <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>)}
-        </SelectContent>
-      </Select>
-    );
+    if (criterion.field === "collection")
+      return (
+        <Select value={criterion.value} onValueChange={(v) => onChange({ ...criterion, value: v })}>
+          <SelectTrigger className="h-9 min-w-0 flex-1">
+            <SelectValue placeholder="Select collection…" />
+          </SelectTrigger>
+          <SelectContent>
+            {collections.map((c) => (
+              <SelectItem key={c._id} value={c._id}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
 
-    if (criterion.field === "group") return (
-      <Select value={criterion.value} onValueChange={v => onChange({ ...criterion, value: v })}>
-        <SelectTrigger className="h-9 flex-1 min-w-0"><SelectValue placeholder="Select group…" /></SelectTrigger>
-        <SelectContent className="max-h-60">
-          {groups.map(g => (
-            <SelectItem key={g._id} value={g._id}>
-              <span className="text-xs" style={{ paddingLeft: `${g.depth * 12}px` }}>
-                {g.depth > 0 && <span className="text-muted-foreground mr-1">└</span>}
-                {g.name}
-              </span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    );
+    if (criterion.field === "group")
+      return (
+        <Select value={criterion.value} onValueChange={(v) => onChange({ ...criterion, value: v })}>
+          <SelectTrigger className="h-9 min-w-0 flex-1">
+            <SelectValue placeholder="Select group…" />
+          </SelectTrigger>
+          <SelectContent className="max-h-60">
+            {groups.map((g) => (
+              <SelectItem key={g._id} value={g._id}>
+                <span className="text-xs" style={{ paddingLeft: `${g.depth * 12}px` }}>
+                  {g.depth > 0 && <span className="text-muted-foreground mr-1">└</span>}
+                  {g.name}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
 
-    if (criterion.field === "theme") return (
-      <Select value={criterion.value} onValueChange={v => onChange({ ...criterion, value: v })}>
-        <SelectTrigger className="h-9 flex-1 min-w-0"><SelectValue placeholder="Select theme…" /></SelectTrigger>
-        <SelectContent>
-          {themes.map(t => <SelectItem key={t._id} value={t._id}>{t.name}</SelectItem>)}
-        </SelectContent>
-      </Select>
-    );
+    if (criterion.field === "theme")
+      return (
+        <Select value={criterion.value} onValueChange={(v) => onChange({ ...criterion, value: v })}>
+          <SelectTrigger className="h-9 min-w-0 flex-1">
+            <SelectValue placeholder="Select theme…" />
+          </SelectTrigger>
+          <SelectContent>
+            {themes.map((t) => (
+              <SelectItem key={t._id} value={t._id}>
+                {t.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
 
-    if (criterion.field === "lastModified") return (
-      <input
-        type="date"
-        className="h-9 flex-1 min-w-0 rounded-md border border-input bg-background px-3 text-sm"
-        value={criterion.value}
-        onChange={e => onChange({ ...criterion, value: e.target.value })}
-      />
-    );
+    if (criterion.field === "lastModified")
+      return (
+        <input
+          type="date"
+          className="border-input bg-background h-9 min-w-0 flex-1 rounded-md border px-3 text-sm"
+          value={criterion.value}
+          onChange={(e) => onChange({ ...criterion, value: e.target.value })}
+        />
+      );
 
     if (criterion.field === "label" || criterion.field === "component") {
       const opts = criterion.field === "label" ? labels : components;
@@ -224,7 +299,7 @@ function CriterionRow({
             <Button
               variant="outline"
               role="combobox"
-              className="h-9 flex-1 min-w-0 justify-between font-normal text-sm"
+              className="h-9 min-w-0 flex-1 justify-between text-sm font-normal"
             >
               {criterion.value ? (
                 <span className="truncate">{criterion.value}</span>
@@ -246,8 +321,10 @@ function CriterionRow({
               <CommandList>
                 <CommandEmpty>
                   <button
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-muted"
-                    onClick={() => { setSuggestionOpen(false); }}
+                    className="hover:bg-muted w-full px-4 py-2 text-left text-sm"
+                    onClick={() => {
+                      setSuggestionOpen(false);
+                    }}
                   >
                     Use "{criterion.value}"
                   </button>
@@ -255,8 +332,20 @@ function CriterionRow({
                 {popular.length > 0 && (
                   <CommandGroup heading="Popular">
                     {popular.map((o) => (
-                      <CommandItem key={o} value={o} onSelect={() => { onChange({ ...criterion, value: o }); setSuggestionOpen(false); }}>
-                        <Check className={cn("mr-2 h-4 w-4 shrink-0", criterion.value === o ? "opacity-100" : "opacity-0")} />
+                      <CommandItem
+                        key={o}
+                        value={o}
+                        onSelect={() => {
+                          onChange({ ...criterion, value: o });
+                          setSuggestionOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4 shrink-0",
+                            criterion.value === o ? "opacity-100" : "opacity-0"
+                          )}
+                        />
                         {o}
                       </CommandItem>
                     ))}
@@ -265,8 +354,20 @@ function CriterionRow({
                 {rest.length > 0 && (
                   <CommandGroup heading={popular.length > 0 ? "All" : undefined}>
                     {rest.map((o) => (
-                      <CommandItem key={o} value={o} onSelect={() => { onChange({ ...criterion, value: o }); setSuggestionOpen(false); }}>
-                        <Check className={cn("mr-2 h-4 w-4 shrink-0", criterion.value === o ? "opacity-100" : "opacity-0")} />
+                      <CommandItem
+                        key={o}
+                        value={o}
+                        onSelect={() => {
+                          onChange({ ...criterion, value: o });
+                          setSuggestionOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4 shrink-0",
+                            criterion.value === o ? "opacity-100" : "opacity-0"
+                          )}
+                        />
                         {o}
                       </CommandItem>
                     ))}
@@ -281,14 +382,16 @@ function CriterionRow({
 
     return (
       <Input
-        className="h-9 flex-1 min-w-0"
+        className="h-9 min-w-0 flex-1"
         placeholder={
-          criterion.field === "name" ? "e.g. button-primary"
-          : criterion.field === "value" ? "e.g. #0066cc"
-          : "e.g. value"
+          criterion.field === "name"
+            ? "e.g. button-primary"
+            : criterion.field === "value"
+              ? "e.g. #0066cc"
+              : "e.g. value"
         }
         value={criterion.value}
-        onChange={e => onChange({ ...criterion, value: e.target.value })}
+        onChange={(e) => onChange({ ...criterion, value: e.target.value })}
       />
     );
   }
@@ -296,30 +399,47 @@ function CriterionRow({
   return (
     <div className="flex items-center gap-2">
       {/* AND / empty slot */}
-      <div className="w-12 shrink-0 flex justify-center">
+      <div className="flex w-12 shrink-0 justify-center">
         {!isFirst && !isExclude && (
-          <Badge variant="outline" className="text-[10px] px-1.5 h-5">AND</Badge>
+          <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
+            AND
+          </Badge>
         )}
       </div>
 
       {/* Field */}
-      <Select value={criterion.field} onValueChange={v => handleFieldChange(v as Field)}>
-        <SelectTrigger className="h-9 w-36 shrink-0"><SelectValue /></SelectTrigger>
+      <Select value={criterion.field} onValueChange={(v) => handleFieldChange(v as Field)}>
+        <SelectTrigger className="h-9 w-36 shrink-0">
+          <SelectValue />
+        </SelectTrigger>
         <SelectContent>
-          {FIELDS.map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+          {FIELDS.map((f) => (
+            <SelectItem key={f.value} value={f.value}>
+              {f.label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
 
       {/* Operator */}
       {showOp ? (
-        <Select value={criterion.operator} onValueChange={v => onChange({ ...criterion, operator: v as Operator })}>
-          <SelectTrigger className="h-9 w-28 shrink-0"><SelectValue /></SelectTrigger>
+        <Select
+          value={criterion.operator}
+          onValueChange={(v) => onChange({ ...criterion, operator: v as Operator })}
+        >
+          <SelectTrigger className="h-9 w-28 shrink-0">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
-            {operators.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+            {operators.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       ) : (
-        <span className="w-28 shrink-0 h-9 flex items-center px-3 text-sm text-muted-foreground">
+        <span className="text-muted-foreground flex h-9 w-28 shrink-0 items-center px-3 text-sm">
           {operators[0].label}
         </span>
       )}
@@ -330,7 +450,7 @@ function CriterionRow({
       {/* Remove */}
       <button
         onClick={onRemove}
-        className="shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        className="text-muted-foreground hover:text-foreground hover:bg-muted shrink-0 rounded p-1.5 transition-colors"
       >
         <X className="h-3.5 w-3.5" />
       </button>
@@ -341,7 +461,13 @@ function CriterionRow({
 // ── Save query dialog ─────────────────────────────────────────────────────────
 
 function SaveQueryDialog({
-  criteria, excludeCriteria, collections, groups, themes, onSaved, onClose,
+  criteria,
+  excludeCriteria,
+  collections,
+  groups,
+  themes,
+  onSaved,
+  onClose,
 }: {
   criteria: Criterion[];
   excludeCriteria: Criterion[];
@@ -376,14 +502,19 @@ function SaveQueryDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      onClick={onClose}
+    >
       <div
-        className="bg-background rounded-xl border shadow-xl p-6 w-96 space-y-4"
-        onClick={e => e.stopPropagation()}
+        className="bg-background w-96 space-y-4 rounded-xl border p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
       >
         <div>
           <h2 className="text-base font-semibold">Save query</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Name this query so you can reuse it later.</p>
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            Name this query so you can reuse it later.
+          </p>
         </div>
 
         <div className="space-y-1.5">
@@ -391,19 +522,24 @@ function SaveQueryDialog({
             autoFocus
             placeholder="Query name…"
             value={name}
-            onChange={e => setName(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onClose(); }}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSave();
+              if (e.key === "Escape") onClose();
+            }}
           />
           <button
             onClick={() => setName(autoName(criteria, excludeCriteria, opts))}
-            className="text-xs text-primary hover:underline underline-offset-2"
+            className="text-primary text-xs underline-offset-2 hover:underline"
           >
             Auto-generate name
           </button>
         </div>
 
-        <div className="flex gap-2 justify-end">
-          <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={onClose}>
+            Cancel
+          </Button>
           <Button size="sm" onClick={handleSave} disabled={!name.trim() || saving}>
             {saving ? "Saving…" : "Save"}
           </Button>
@@ -416,8 +552,13 @@ function SaveQueryDialog({
 // ── Queries sidebar ────────────────────────────────────────────────────────────
 
 function QueriesSidebar({
-  savedQueries, recentQueries, collections, groups, themes,
-  onLoadQuery, onDeleteSaved,
+  savedQueries,
+  recentQueries,
+  collections,
+  groups,
+  themes,
+  onLoadQuery,
+  onDeleteSaved,
 }: {
   savedQueries: SavedQuery[];
   recentQueries: { criteria: Criterion[]; excludeCriteria: Criterion[]; timestamp: string }[];
@@ -431,24 +572,30 @@ function QueriesSidebar({
   const opts = { collections, groups, themes };
 
   return (
-    <div className="rounded-xl border flex flex-col overflow-hidden">
+    <div className="flex flex-col overflow-hidden rounded-xl border">
       {/* Tabs */}
-      <div className="flex border-b shrink-0">
-        {(["recent", "saved"] as const).map(t => (
+      <div className="flex shrink-0 border-b">
+        {(["recent", "saved"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={cn(
               "flex-1 py-3.5 text-sm font-medium capitalize transition-colors",
               tab === t
-                ? "text-foreground border-b-2 border-primary -mb-px"
+                ? "text-foreground border-primary -mb-px border-b-2"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             {t === "recent" ? (
-              <span className="flex items-center justify-center gap-1.5"><Clock className="h-3 w-3" />Recent</span>
+              <span className="flex items-center justify-center gap-1.5">
+                <Clock className="h-3 w-3" />
+                Recent
+              </span>
             ) : (
-              <span className="flex items-center justify-center gap-1.5"><Bookmark className="h-3 w-3" />Saved</span>
+              <span className="flex items-center justify-center gap-1.5">
+                <Bookmark className="h-3 w-3" />
+                Saved
+              </span>
             )}
           </button>
         ))}
@@ -456,73 +603,84 @@ function QueriesSidebar({
 
       {/* Content */}
       <div className="flex-1 divide-y overflow-auto">
-        {tab === "recent" && (
-          recentQueries.length === 0 ? (
-            <div className="py-8 flex flex-col items-center gap-2 text-center px-3">
-              <Clock className="h-5 w-5 text-muted-foreground/30" />
-              <p className="text-xs text-muted-foreground">No recent searches yet</p>
+        {tab === "recent" &&
+          (recentQueries.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 px-3 py-8 text-center">
+              <Clock className="text-muted-foreground/30 h-5 w-5" />
+              <p className="text-muted-foreground text-xs">No recent searches yet</p>
             </div>
-          ) : recentQueries.map((q, qi) => (
-            <button
-              key={qi}
-              onClick={() => onLoadQuery(q.criteria, q.excludeCriteria)}
-              className="w-full text-left px-3 py-3 hover:bg-muted/50 transition-colors space-y-1"
-            >
-              {q.criteria.map((c, i) => (
-                <div key={c.id} className="flex items-start gap-1.5">
-                  {i > 0 && <Badge variant="outline" className="text-[9px] px-1 h-4 shrink-0 mt-0.5">AND</Badge>}
-                  <p className="text-[11px] text-muted-foreground leading-snug break-all">
-                    {criterionSummary(c, opts)}
-                  </p>
-                </div>
-              ))}
-              {q.excludeCriteria.length > 0 && (
-                <p className="text-[10px] text-muted-foreground/60 italic pl-1">
-                  + {q.excludeCriteria.length} exclusion{q.excludeCriteria.length > 1 ? "s" : ""}
-                </p>
-              )}
-            </button>
-          ))
-        )}
-
-        {tab === "saved" && (
-          savedQueries.length === 0 ? (
-            <div className="py-8 flex flex-col items-center gap-2 text-center px-3">
-              <Bookmark className="h-5 w-5 text-muted-foreground/30" />
-              <p className="text-xs text-muted-foreground">No saved queries</p>
-              <p className="text-[11px] text-muted-foreground/60">Save a query to reuse it across sessions</p>
-            </div>
-          ) : savedQueries.map(q => (
-            <div
-              key={q._id}
-              className="px-3 py-3 hover:bg-muted/50 transition-colors group"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <button
-                  onClick={() => onLoadQuery(q.criteria, q.excludeCriteria)}
-                  className="flex-1 text-left space-y-1 min-w-0"
-                >
-                  <p className="text-xs font-medium truncate">{q.name}</p>
-                  {q.criteria.slice(0, 2).map((c, i) => (
-                    <p key={i} className="text-[11px] text-muted-foreground leading-snug truncate">
-                      {i > 0 && "AND "}{criterionSummary(c, opts)}
+          ) : (
+            recentQueries.map((q, qi) => (
+              <button
+                key={qi}
+                onClick={() => onLoadQuery(q.criteria, q.excludeCriteria)}
+                className="hover:bg-muted/50 w-full space-y-1 px-3 py-3 text-left transition-colors"
+              >
+                {q.criteria.map((c, i) => (
+                  <div key={c.id} className="flex items-start gap-1.5">
+                    {i > 0 && (
+                      <Badge variant="outline" className="mt-0.5 h-4 shrink-0 px-1 text-[9px]">
+                        AND
+                      </Badge>
+                    )}
+                    <p className="text-muted-foreground text-[11px] leading-snug break-all">
+                      {criterionSummary(c, opts)}
                     </p>
-                  ))}
-                  {q.criteria.length > 2 && (
-                    <p className="text-[10px] text-muted-foreground/60">+{q.criteria.length - 2} more</p>
-                  )}
-                </button>
-                <button
-                  onClick={() => onDeleteSaved(q._id)}
-                  className="shrink-0 p-1 rounded text-muted-foreground hover:text-destructive hover:bg-muted opacity-0 group-hover:opacity-100 transition-all"
-                  title="Delete query"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
+                  </div>
+                ))}
+                {q.excludeCriteria.length > 0 && (
+                  <p className="text-muted-foreground/60 pl-1 text-[10px] italic">
+                    + {q.excludeCriteria.length} exclusion{q.excludeCriteria.length > 1 ? "s" : ""}
+                  </p>
+                )}
+              </button>
+            ))
+          ))}
+
+        {tab === "saved" &&
+          (savedQueries.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 px-3 py-8 text-center">
+              <Bookmark className="text-muted-foreground/30 h-5 w-5" />
+              <p className="text-muted-foreground text-xs">No saved queries</p>
+              <p className="text-muted-foreground/60 text-[11px]">
+                Save a query to reuse it across sessions
+              </p>
             </div>
-          ))
-        )}
+          ) : (
+            savedQueries.map((q) => (
+              <div key={q._id} className="hover:bg-muted/50 group px-3 py-3 transition-colors">
+                <div className="flex items-start justify-between gap-2">
+                  <button
+                    onClick={() => onLoadQuery(q.criteria, q.excludeCriteria)}
+                    className="min-w-0 flex-1 space-y-1 text-left"
+                  >
+                    <p className="truncate text-xs font-medium">{q.name}</p>
+                    {q.criteria.slice(0, 2).map((c, i) => (
+                      <p
+                        key={i}
+                        className="text-muted-foreground truncate text-[11px] leading-snug"
+                      >
+                        {i > 0 && "AND "}
+                        {criterionSummary(c, opts)}
+                      </p>
+                    ))}
+                    {q.criteria.length > 2 && (
+                      <p className="text-muted-foreground/60 text-[10px]">
+                        +{q.criteria.length - 2} more
+                      </p>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => onDeleteSaved(q._id)}
+                    className="text-muted-foreground hover:text-destructive hover:bg-muted shrink-0 rounded p-1 opacity-0 transition-all group-hover:opacity-100"
+                    title="Delete query"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))
+          ))}
       </div>
     </div>
   );
@@ -547,8 +705,10 @@ function buildTableProps(criteria: Criterion[], excludeCriteria: Criterion[]): T
         searchQuery = c.value;
         break;
       case "type":
-        if (c.operator === "is") initialFilters.tokenTypes = [...(initialFilters.tokenTypes ?? []), c.value];
-        else if (c.operator === "is_not") excludeFilters.tokenTypes = [...(excludeFilters.tokenTypes ?? []), c.value];
+        if (c.operator === "is")
+          initialFilters.tokenTypes = [...(initialFilters.tokenTypes ?? []), c.value];
+        else if (c.operator === "is_not")
+          excludeFilters.tokenTypes = [...(excludeFilters.tokenTypes ?? []), c.value];
         break;
       case "collection":
         if (c.operator === "is") collectionId = c.value;
@@ -609,7 +769,15 @@ function buildTableProps(criteria: Criterion[], excludeCriteria: Criterion[]): T
     }
   }
 
-  return { searchQuery, collectionId, groupId, themeId, initialFlaggedOnly, initialFilters, excludeFilters };
+  return {
+    searchQuery,
+    collectionId,
+    groupId,
+    themeId,
+    initialFlaggedOnly,
+    initialFilters,
+    excludeFilters,
+  };
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
@@ -623,17 +791,19 @@ export default function AdvancedSearchPage() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
 
   const [savedQueries, setSavedQueries] = useState<SavedQuery[]>([]);
-  const [recentQueries, setRecentQueries] = useState<{ criteria: Criterion[]; excludeCriteria: Criterion[]; timestamp: string }[]>([]);
+  const [recentQueries, setRecentQueries] = useState<
+    { criteria: Criterion[]; excludeCriteria: Criterion[]; timestamp: string }[]
+  >([]);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [themes, setThemes] = useState<Theme[]>([]);
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/themes").then(r => r.json()),
-      fetch("/api/collections").then(r => r.json()),
-      fetch("/api/groups").then(r => r.json()),
-      fetch("/api/search/queries").then(r => r.json()),
+      fetch("/api/themes").then((r) => r.json()),
+      fetch("/api/collections").then((r) => r.json()),
+      fetch("/api/groups").then((r) => r.json()),
+      fetch("/api/search/queries").then((r) => r.json()),
     ]).then(([t, c, g, sq]) => {
       setThemes(t.data ?? []);
       setCollections(c.data ?? []);
@@ -651,10 +821,16 @@ export default function AdvancedSearchPage() {
     setTableProps(props);
     setBuilderCollapsed(true);
 
-    const entry = { criteria: [...criteria], excludeCriteria: [...excludeCriteria], timestamp: new Date().toISOString() };
-    setRecentQueries(prev => {
+    const entry = {
+      criteria: [...criteria],
+      excludeCriteria: [...excludeCriteria],
+      timestamp: new Date().toISOString(),
+    };
+    setRecentQueries((prev) => {
       const next = [entry, ...prev].slice(0, 10);
-      try { localStorage.setItem("ta_search_recent", JSON.stringify(next)); } catch {}
+      try {
+        localStorage.setItem("ta_search_recent", JSON.stringify(next));
+      } catch {}
       return next;
     });
   }
@@ -668,8 +844,8 @@ export default function AdvancedSearchPage() {
   }
 
   function loadQuery(inCriteria: Criterion[], inExclude: Criterion[]) {
-    setCriteria(inCriteria.map(c => ({ ...c, id: uid() })));
-    setExcludeCriteria(inExclude.map(c => ({ ...c, id: uid() })));
+    setCriteria(inCriteria.map((c) => ({ ...c, id: uid() })));
+    setExcludeCriteria(inExclude.map((c) => ({ ...c, id: uid() })));
     setShowExclude(inExclude.length > 0);
     setTableProps(null);
     setBuilderCollapsed(false);
@@ -677,47 +853,58 @@ export default function AdvancedSearchPage() {
 
   async function handleDeleteSaved(id: string) {
     const res = await fetch(`/api/search/queries/${id}`, { method: "DELETE" });
-    if (res.ok) setSavedQueries(prev => prev.filter(q => q._id !== id));
+    if (res.ok) setSavedQueries((prev) => prev.filter((q) => q._id !== id));
     else toast.error("Failed to delete query");
   }
 
   const activeCriteriaCount = criteria.length + excludeCriteria.length;
   const { labels: distinctLabels, components: distinctComponents } = useDistinctTokenValues();
-  const sharedOptions = { collections, groups, themes, labels: distinctLabels, components: distinctComponents };
+  const sharedOptions = {
+    collections,
+    groups,
+    themes,
+    labels: distinctLabels,
+    components: distinctComponents,
+  };
 
   return (
     <div className="space-y-6">
       <div className="max-w-4xl">
         <h1 className="text-xl font-semibold tracking-tight">Advanced Search</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-sm">
           Build queries with multiple criteria to find exactly the tokens you need.
         </p>
       </div>
 
-      <div className="flex gap-5 items-start">
+      <div className="flex items-start gap-5">
         {/* ── Query builder card ── */}
-        <div className="flex-1 min-w-0 rounded-xl border bg-card">
-
+        <div className="bg-card min-w-0 flex-1 rounded-xl border">
           {/* Card header — always visible */}
-          <div className="flex items-center justify-between px-5 py-3.5 border-b">
+          <div className="flex items-center justify-between border-b px-5 py-3.5">
             <div className="flex items-center gap-2">
-              <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+              <Search className="text-muted-foreground h-4 w-4 shrink-0" />
               <span className="text-sm font-medium">Query builder</span>
               {builderCollapsed && tableProps && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   — {activeCriteriaCount} criterion{activeCriteriaCount !== 1 ? "a" : ""} active
                 </span>
               )}
             </div>
             {tableProps && (
               <button
-                onClick={() => setBuilderCollapsed(v => !v)}
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setBuilderCollapsed((v) => !v)}
+                className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs transition-colors"
               >
                 {builderCollapsed ? (
-                  <><ChevronDown className="h-3.5 w-3.5" />Edit search</>
+                  <>
+                    <ChevronDown className="h-3.5 w-3.5" />
+                    Edit search
+                  </>
                 ) : (
-                  <><ChevronUp className="h-3.5 w-3.5" />Collapse</>
+                  <>
+                    <ChevronUp className="h-3.5 w-3.5" />
+                    Collapse
+                  </>
                 )}
               </button>
             )}
@@ -725,7 +912,7 @@ export default function AdvancedSearchPage() {
 
           {/* Collapsible body */}
           {!builderCollapsed && (
-            <div className="p-5 space-y-3">
+            <div className="space-y-3 p-5">
               {/* Include criteria */}
               {criteria.map((c, i) => (
                 <CriterionRow
@@ -734,15 +921,19 @@ export default function AdvancedSearchPage() {
                   isFirst={i === 0}
                   isExclude={false}
                   {...sharedOptions}
-                  onChange={updated => setCriteria(prev => prev.map(r => r.id === updated.id ? updated : r))}
-                  onRemove={() => criteria.length > 1 && setCriteria(prev => prev.filter(r => r.id !== c.id))}
+                  onChange={(updated) =>
+                    setCriteria((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
+                  }
+                  onRemove={() =>
+                    criteria.length > 1 && setCriteria((prev) => prev.filter((r) => r.id !== c.id))
+                  }
                 />
               ))}
 
               <div className="pl-14">
                 <button
-                  onClick={() => setCriteria(prev => [...prev, makeCriterion("name")])}
-                  className="flex items-center gap-1.5 text-sm text-primary hover:underline underline-offset-2"
+                  onClick={() => setCriteria((prev) => [...prev, makeCriterion("name")])}
+                  className="text-primary flex items-center gap-1.5 text-sm underline-offset-2 hover:underline"
                 >
                   <Plus className="h-3.5 w-3.5" /> Add criteria
                 </button>
@@ -752,8 +943,8 @@ export default function AdvancedSearchPage() {
               {showExclude && (
                 <>
                   <div className="relative flex items-center py-1">
-                    <div className="flex-1 border-t ml-12" />
-                    <span className="px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-card">
+                    <div className="ml-12 flex-1 border-t" />
+                    <span className="text-muted-foreground bg-card px-3 text-[10px] font-semibold tracking-widest uppercase">
                       Exclude
                     </span>
                     <div className="flex-1 border-t" />
@@ -766,18 +957,24 @@ export default function AdvancedSearchPage() {
                       isFirst={i === 0}
                       isExclude={true}
                       {...sharedOptions}
-                      onChange={updated => setExcludeCriteria(prev => prev.map(r => r.id === updated.id ? updated : r))}
+                      onChange={(updated) =>
+                        setExcludeCriteria((prev) =>
+                          prev.map((r) => (r.id === updated.id ? updated : r))
+                        )
+                      }
                       onRemove={() => {
-                        if (excludeCriteria.length === 1) { setExcludeCriteria([]); setShowExclude(false); }
-                        else setExcludeCriteria(prev => prev.filter(r => r.id !== c.id));
+                        if (excludeCriteria.length === 1) {
+                          setExcludeCriteria([]);
+                          setShowExclude(false);
+                        } else setExcludeCriteria((prev) => prev.filter((r) => r.id !== c.id));
                       }}
                     />
                   ))}
 
                   <div className="pl-14">
                     <button
-                      onClick={() => setExcludeCriteria(prev => [...prev, makeCriterion("type")])}
-                      className="flex items-center gap-1.5 text-sm text-primary hover:underline underline-offset-2"
+                      onClick={() => setExcludeCriteria((prev) => [...prev, makeCriterion("type")])}
+                      className="text-primary flex items-center gap-1.5 text-sm underline-offset-2 hover:underline"
                     >
                       <Plus className="h-3.5 w-3.5" /> Exclude more
                     </button>
@@ -788,8 +985,11 @@ export default function AdvancedSearchPage() {
               {!showExclude && (
                 <div className="pl-14">
                   <button
-                    onClick={() => { setShowExclude(true); setExcludeCriteria([makeCriterion("type")]); }}
-                    className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => {
+                      setShowExclude(true);
+                      setExcludeCriteria([makeCriterion("type")]);
+                    }}
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm transition-colors"
                   >
                     <MinusCircle className="h-3.5 w-3.5" /> Add exclusion
                   </button>
@@ -797,15 +997,20 @@ export default function AdvancedSearchPage() {
               )}
 
               {/* Actions */}
-              <div className="border-t pt-4 flex items-center justify-between">
+              <div className="flex items-center justify-between border-t pt-4">
                 <button
                   onClick={handleClear}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                 >
                   Clear
                 </button>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setShowSaveDialog(true)} className="gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSaveDialog(true)}
+                    className="gap-1.5"
+                  >
                     <BookmarkPlus className="h-3.5 w-3.5" /> Save query
                   </Button>
                   <Button size="sm" onClick={handleSearch} className="gap-1.5">
@@ -831,7 +1036,7 @@ export default function AdvancedSearchPage() {
 
       {/* ── Results ── */}
       {tableProps && (
-        <div className="space-y-4 max-w-4xl">
+        <div className="max-w-4xl space-y-4">
           <Separator />
           <TokenTable
             searchQuery={tableProps.searchQuery}
@@ -851,7 +1056,10 @@ export default function AdvancedSearchPage() {
           criteria={criteria}
           excludeCriteria={excludeCriteria}
           {...sharedOptions}
-          onSaved={q => { setSavedQueries(prev => [q, ...prev]); setShowSaveDialog(false); }}
+          onSaved={(q) => {
+            setSavedQueries((prev) => [q, ...prev]);
+            setShowSaveDialog(false);
+          }}
           onClose={() => setShowSaveDialog(false)}
         />
       )}

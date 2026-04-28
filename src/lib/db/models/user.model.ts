@@ -32,5 +32,4 @@ const UserSchema = new Schema<IUserDoc>(
 );
 
 export const User =
-  (models.User as Model<IUserDoc> | undefined) ||
-  model<IUserDoc>("User", UserSchema);
+  (models.User as Model<IUserDoc> | undefined) || model<IUserDoc>("User", UserSchema);

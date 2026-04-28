@@ -142,12 +142,25 @@ function renderGroupNodes(
           />
         ))}
         {node.children.length > 0 &&
-          renderGroupNodes(node.children, tokensByGroupId, selectedIds, toggleGroup, toggleOne, handleDelete, handleFlagToggle, handleRename, setHistoryTokenId, setEditTokenId, setEditGroupId, columns, activeThemeIsBase)}
+          renderGroupNodes(
+            node.children,
+            tokensByGroupId,
+            selectedIds,
+            toggleGroup,
+            toggleOne,
+            handleDelete,
+            handleFlagToggle,
+            handleRename,
+            setHistoryTokenId,
+            setEditTokenId,
+            setEditGroupId,
+            columns,
+            activeThemeIsBase
+          )}
       </GroupRow>
     );
   });
 }
-
 
 export function TokenTable({
   collectionId,
@@ -186,7 +199,9 @@ export function TokenTable({
   const activeTheme = themes.find((t) => t._id === activeThemeId);
   const activeThemeIsBase = !activeTheme || activeTheme.isBase;
   const baseThemes = themes.filter((t) => t.isBase).sort((a, b) => a.name.localeCompare(b.name));
-  const modifierThemes = themes.filter((t) => !t.isBase).sort((a, b) => a.name.localeCompare(b.name));
+  const modifierThemes = themes
+    .filter((t) => !t.isBase)
+    .sort((a, b) => a.name.localeCompare(b.name));
   const visibleModifiers = modifierThemes.slice(0, 10);
   const overflowModifiers = modifierThemes.slice(10);
   const activeIsOverflow = overflowModifiers.some((t) => t._id === activeThemeId);
@@ -201,13 +216,13 @@ export function TokenTable({
     const sp = new URLSearchParams(window.location.search);
     sp.set("theme", activeThemeId);
     router.replace(`${window.location.pathname}?${sp.toString()}`, { scroll: false });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeThemeId]);
 
   // Fetch themes once on mount
   useEffect(() => {
     fetch("/api/themes")
-      .then((r) => r.ok ? r.json() : null)
+      .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!data?.data) return;
         const list: ThemeWithCount[] = data.data;
@@ -219,17 +234,20 @@ export function TokenTable({
         }
       })
       .catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch all groups in scope so every intermediate header is visible
   useEffect(() => {
-    if (!groupId && !collectionId) { setGroupTree([]); return; }
+    if (!groupId && !collectionId) {
+      setGroupTree([]);
+      return;
+    }
     const url = groupId
       ? `/api/groups?ancestor=${groupId}`
       : `/api/groups?collection=${collectionId}`;
     fetch(url)
-      .then((r) => r.ok ? r.json() : null)
+      .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!data?.data) return;
         const map = new Map<string, GroupNode>();
@@ -244,7 +262,11 @@ export function TokenTable({
           }
         }
         function sortNodes(nodes: GroupNode[]) {
-          nodes.sort((a, b) => (a.position ?? 0) - (b.position ?? 0) || (a.sortPath || a.path).localeCompare(b.sortPath || b.path));
+          nodes.sort(
+            (a, b) =>
+              (a.position ?? 0) - (b.position ?? 0) ||
+              (a.sortPath || a.path).localeCompare(b.sortPath || b.path)
+          );
           nodes.forEach((n) => sortNodes(n.children));
         }
         sortNodes(roots);
@@ -253,28 +275,32 @@ export function TokenTable({
       .catch(() => setGroupTree([]));
   }, [groupId, collectionId]);
 
-  const buildQuery = useCallback((cursor?: string) => {
-    const params = new URLSearchParams();
-    if (search) params.set("search", search);
-    if (collectionId) params.set("collection", collectionId);
-    if (groupId) params.set("group", groupId);
-    if (activeThemeId) params.set("theme", activeThemeId);
-    if (flaggedOnly) params.set("flagged", "true");
-    if (cursor) params.set("cursor", cursor);
-    filters.tokenTypes?.forEach((t) => params.append("tokenType", t));
-    filters.labels?.forEach((l) => params.append("label", l));
-    filters.components?.forEach((c) => params.append("component", c));
-    if (filters.modifiedAfter) params.set("modifiedAfter", filters.modifiedAfter);
-    if (filters.modifiedBefore) params.set("modifiedBefore", filters.modifiedBefore);
-    if (excludeFilters?.search) params.set("excludeSearch", excludeFilters.search);
-    if (excludeFilters?.collectionId) params.set("excludeCollection", excludeFilters.collectionId);
-    if (excludeFilters?.groupId) params.set("excludeGroup", excludeFilters.groupId);
-    if (excludeFilters?.flagged) params.set("excludeFlagged", "true");
-    excludeFilters?.tokenTypes?.forEach((t) => params.append("excludeTokenType", t));
-    excludeFilters?.labels?.forEach((l) => params.append("excludeLabel", l));
-    excludeFilters?.components?.forEach((c) => params.append("excludeComponent", c));
-    return params.toString();
-  }, [search, collectionId, groupId, activeThemeId, flaggedOnly, filters, excludeFilters]);
+  const buildQuery = useCallback(
+    (cursor?: string) => {
+      const params = new URLSearchParams();
+      if (search) params.set("search", search);
+      if (collectionId) params.set("collection", collectionId);
+      if (groupId) params.set("group", groupId);
+      if (activeThemeId) params.set("theme", activeThemeId);
+      if (flaggedOnly) params.set("flagged", "true");
+      if (cursor) params.set("cursor", cursor);
+      filters.tokenTypes?.forEach((t) => params.append("tokenType", t));
+      filters.labels?.forEach((l) => params.append("label", l));
+      filters.components?.forEach((c) => params.append("component", c));
+      if (filters.modifiedAfter) params.set("modifiedAfter", filters.modifiedAfter);
+      if (filters.modifiedBefore) params.set("modifiedBefore", filters.modifiedBefore);
+      if (excludeFilters?.search) params.set("excludeSearch", excludeFilters.search);
+      if (excludeFilters?.collectionId)
+        params.set("excludeCollection", excludeFilters.collectionId);
+      if (excludeFilters?.groupId) params.set("excludeGroup", excludeFilters.groupId);
+      if (excludeFilters?.flagged) params.set("excludeFlagged", "true");
+      excludeFilters?.tokenTypes?.forEach((t) => params.append("excludeTokenType", t));
+      excludeFilters?.labels?.forEach((l) => params.append("excludeLabel", l));
+      excludeFilters?.components?.forEach((c) => params.append("excludeComponent", c));
+      return params.toString();
+    },
+    [search, collectionId, groupId, activeThemeId, flaggedOnly, filters, excludeFilters]
+  );
 
   async function fetchTokens(cursor?: string) {
     if (cursor) setLoadingMore(true);
@@ -304,7 +330,7 @@ export function TokenTable({
     setNextCursor(undefined);
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
     fetchTokens();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buildQuery]);
 
   // Infinite scroll
@@ -320,33 +346,66 @@ export function TokenTable({
     );
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMore, loadingMore, nextCursor]);
 
   // Map of groupId → direct tokens
   const tokensByGroupId = new Map<string, (IToken & { updatedAt: Date | string })[]>();
   for (const token of tokens) {
-    const gId = typeof token.group === "object" && token.group !== null
-      ? (token.group as { _id: string })._id
-      : String(token.group);
+    const gId =
+      typeof token.group === "object" && token.group !== null
+        ? (token.group as { _id: string })._id
+        : String(token.group);
     if (!tokensByGroupId.has(gId)) tokensByGroupId.set(gId, []);
     tokensByGroupId.get(gId)!.push(token);
   }
 
   // Flat grouping fallback when no tree (all-tokens view)
-  const flatGrouped = groupTree.length === 0
-    ? Array.from((() => {
-        const m = new Map<string, { groupName: string; path: string; sortPath: string; depth: number; tokens: (IToken & { updatedAt: Date | string })[] }>();
-        for (const token of tokens) {
-          const g = typeof token.group === "object" && token.group !== null
-            ? token.group as { _id: string; name: string; path: string; depth?: number; sortPath?: string }
-            : { _id: String(token.group), name: "Unknown", path: "Unknown", depth: 0, sortPath: undefined };
-          if (!m.has(g._id)) m.set(g._id, { groupName: g.name, path: g.path, sortPath: g.sortPath ?? "", depth: g.depth ?? 0, tokens: [] });
-          m.get(g._id)!.tokens.push(token);
-        }
-        return m;
-      })()).sort(([, a], [, b]) => (a.sortPath || a.path).localeCompare(b.sortPath || b.path))
-    : [];
+  const flatGrouped =
+    groupTree.length === 0
+      ? Array.from(
+          (() => {
+            const m = new Map<
+              string,
+              {
+                groupName: string;
+                path: string;
+                sortPath: string;
+                depth: number;
+                tokens: (IToken & { updatedAt: Date | string })[];
+              }
+            >();
+            for (const token of tokens) {
+              const g =
+                typeof token.group === "object" && token.group !== null
+                  ? (token.group as {
+                      _id: string;
+                      name: string;
+                      path: string;
+                      depth?: number;
+                      sortPath?: string;
+                    })
+                  : {
+                      _id: String(token.group),
+                      name: "Unknown",
+                      path: "Unknown",
+                      depth: 0,
+                      sortPath: undefined,
+                    };
+              if (!m.has(g._id))
+                m.set(g._id, {
+                  groupName: g.name,
+                  path: g.path,
+                  sortPath: g.sortPath ?? "",
+                  depth: g.depth ?? 0,
+                  tokens: [],
+                });
+              m.get(g._id)!.tokens.push(token);
+            }
+            return m;
+          })()
+        ).sort(([, a], [, b]) => (a.sortPath || a.path).localeCompare(b.sortPath || b.path))
+      : [];
 
   const allIds = tokens.map((t) => t._id);
   const allSelected = allIds.length > 0 && allIds.every((id) => selectedIds.has(id));
@@ -381,7 +440,11 @@ export function TokenTable({
     const res = await fetch(`/api/tokens/${id}`, { method: "DELETE" });
     if (res.ok) {
       setTokens((prev) => prev.filter((t) => t._id !== id));
-      setSelectedIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
+      setSelectedIds((prev) => {
+        const n = new Set(prev);
+        n.delete(id);
+        return n;
+      });
     } else {
       toast.error("Failed to delete token");
     }
@@ -424,17 +487,18 @@ export function TokenTable({
 
   return (
     <>
-      <Card className="flex flex-col h-[calc(100vh-9rem)] overflow-hidden">
-        <CardContent className="p-0 flex flex-col flex-1 overflow-hidden min-h-0">
-
+      <Card className="flex h-[calc(100vh-9rem)] flex-col overflow-hidden">
+        <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
           {/* Theme selector */}
           {themes.length > 0 && (
-            <div className="flex items-center gap-1.5 px-4 py-2 border-b shrink-0">
+            <div className="flex shrink-0 items-center gap-1.5 border-b px-4 py-2">
               {/* Base theme */}
               <ToggleGroup
                 type="single"
                 value={baseThemes.some((t) => t._id === activeThemeId) ? activeThemeId : ""}
-                onValueChange={(v) => { if (v) setActiveThemeId(v); }}
+                onValueChange={(v) => {
+                  if (v) setActiveThemeId(v);
+                }}
                 className="gap-1"
               >
                 {baseThemes.map((theme) => (
@@ -454,7 +518,9 @@ export function TokenTable({
                 <ToggleGroup
                   type="single"
                   value={visibleModifiers.some((t) => t._id === activeThemeId) ? activeThemeId : ""}
-                  onValueChange={(v) => { if (v) setActiveThemeId(v); }}
+                  onValueChange={(v) => {
+                    if (v) setActiveThemeId(v);
+                  }}
                   className="gap-0"
                 >
                   {visibleModifiers.map((theme) => (
@@ -462,11 +528,14 @@ export function TokenTable({
                       key={theme._id}
                       value={theme._id}
                       variant="outline"
-                      className="h-7 px-2.5 text-xs gap-1.5"
+                      className="h-7 gap-1.5 px-2.5 text-xs"
                     >
                       {theme.name}
                       {theme.modificationCount > 0 && (
-                        <Badge variant="secondary" className="h-4 px-1.5 text-[10px] font-normal pointer-events-none">
+                        <Badge
+                          variant="secondary"
+                          className="pointer-events-none h-4 px-1.5 text-[10px] font-normal"
+                        >
                           {theme.modificationCount}
                         </Badge>
                       )}
@@ -483,13 +552,16 @@ export function TokenTable({
                       variant="outline"
                       size="sm"
                       className={cn(
-                        "h-7 px-2.5 text-xs gap-1",
+                        "h-7 gap-1 px-2.5 text-xs",
                         activeIsOverflow && "border-primary text-primary bg-primary/5"
                       )}
                     >
                       +{overflowModifiers.length}
                       {activeIsOverflow && (
-                        <Badge variant="secondary" className="h-4 px-1.5 text-[10px] font-normal pointer-events-none">
+                        <Badge
+                          variant="secondary"
+                          className="pointer-events-none h-4 px-1.5 text-[10px] font-normal"
+                        >
                           {activeTheme?.name}
                         </Badge>
                       )}
@@ -498,8 +570,12 @@ export function TokenTable({
                   <PopoverContent className="w-auto p-2" align="start">
                     <ToggleGroup
                       type="single"
-                      value={overflowModifiers.some((t) => t._id === activeThemeId) ? activeThemeId : ""}
-                      onValueChange={(v) => { if (v) setActiveThemeId(v); }}
+                      value={
+                        overflowModifiers.some((t) => t._id === activeThemeId) ? activeThemeId : ""
+                      }
+                      onValueChange={(v) => {
+                        if (v) setActiveThemeId(v);
+                      }}
                       className="flex flex-col items-stretch gap-0"
                     >
                       {overflowModifiers.map((theme) => (
@@ -507,11 +583,14 @@ export function TokenTable({
                           key={theme._id}
                           value={theme._id}
                           variant="outline"
-                          className="h-7 justify-between px-2.5 text-xs gap-3 w-full"
+                          className="h-7 w-full justify-between gap-3 px-2.5 text-xs"
                         >
                           {theme.name}
                           {theme.modificationCount > 0 && (
-                            <Badge variant="secondary" className="h-4 px-1.5 text-[10px] font-normal pointer-events-none">
+                            <Badge
+                              variant="secondary"
+                              className="pointer-events-none h-4 px-1.5 text-[10px] font-normal"
+                            >
                               {theme.modificationCount}
                             </Badge>
                           )}
@@ -525,34 +604,44 @@ export function TokenTable({
           )}
 
           {/* Toolbar */}
-          <div className="flex items-center gap-2 px-4 py-2 border-b shrink-0">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <div className="flex shrink-0 items-center gap-2 border-b px-4 py-2">
+            <div className="relative max-w-sm flex-1">
+              <Search className="text-muted-foreground absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" />
               <Input
                 placeholder="Search tokens…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 h-8 text-sm"
+                className="h-8 pl-8 text-sm"
               />
             </div>
 
-            <Tabs value={flaggedOnly ? "flagged" : "all"} onValueChange={(v) => setFlaggedOnly(v === "flagged")}>
+            <Tabs
+              value={flaggedOnly ? "flagged" : "all"}
+              onValueChange={(v) => setFlaggedOnly(v === "flagged")}
+            >
               <TabsList className="h-8">
-                <TabsTrigger value="all" className="text-xs px-3">All</TabsTrigger>
-                <TabsTrigger value="flagged" className="text-xs px-3">Flagged</TabsTrigger>
+                <TabsTrigger value="all" className="px-3 text-xs">
+                  All
+                </TabsTrigger>
+                <TabsTrigger value="flagged" className="px-3 text-xs">
+                  Flagged
+                </TabsTrigger>
               </TabsList>
             </Tabs>
 
             <Button
               variant="outline"
               size="sm"
-              className={cn("h-8 gap-1.5 text-xs", activeFilterCount > 0 && "border-primary text-primary")}
+              className={cn(
+                "h-8 gap-1.5 text-xs",
+                activeFilterCount > 0 && "border-primary text-primary"
+              )}
               onClick={() => setFilterOpen(true)}
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
               Filters
               {activeFilterCount > 0 && (
-                <Badge className="ml-0.5 h-4 px-1.5 text-[10px] font-normal pointer-events-none">
+                <Badge className="pointer-events-none ml-0.5 h-4 px-1.5 text-[10px] font-normal">
                   {activeFilterCount}
                 </Badge>
               )}
@@ -582,15 +671,20 @@ export function TokenTable({
           {/* Scrollable table area */}
           <div
             ref={scrollRef}
-            className="flex-1 overflow-auto min-h-0 [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar]:h-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full"
+            className="[&::-webkit-scrollbar-thumb]:bg-border min-h-0 flex-1 overflow-auto [&::-webkit-scrollbar]:h-[3px] [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
           >
-            <table className="min-w-full text-sm table-fixed">
+            <table className="min-w-full table-fixed text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-center sticky top-0 z-20 bg-muted" style={{ width: 40, minWidth: 40, maxWidth: 40 }}>
+                  <th
+                    className="bg-muted sticky top-0 z-20 text-center"
+                    style={{ width: 40, minWidth: 40, maxWidth: 40 }}
+                  >
                     <Checkbox
                       checked={allSelected}
-                      data-state={indeterminate ? "indeterminate" : allSelected ? "checked" : "unchecked"}
+                      data-state={
+                        indeterminate ? "indeterminate" : allSelected ? "checked" : "unchecked"
+                      }
                       onCheckedChange={toggleAll}
                     />
                   </th>
@@ -598,30 +692,30 @@ export function TokenTable({
                     <th
                       key={col.id}
                       className={cn(
-                        "py-2 px-4 text-left text-xs font-medium text-muted-foreground whitespace-nowrap sticky top-0 bg-muted",
+                        "text-muted-foreground bg-muted sticky top-0 px-4 py-2 text-left text-xs font-medium whitespace-nowrap",
                         idx === 0 && "z-20",
                         idx !== 0 && "z-20"
                       )}
                       style={{ width: COLUMN_WIDTHS[col.id] }}
                     >
-                      <button className="flex items-center gap-1 hover:text-foreground transition-colors">
+                      <button className="hover:text-foreground flex items-center gap-1 transition-colors">
                         {col.label}
                         <ArrowUpDown className="h-3 w-3 opacity-40" />
                       </button>
                     </th>
                   ))}
-                  <th className="sticky top-0 z-20 bg-muted" style={{ width: 120 }} />
+                  <th className="bg-muted sticky top-0 z-20" style={{ width: 120 }} />
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   Array.from({ length: 8 }).map((_, i) => (
                     <tr key={i} className="border-b">
-                      <td className="w-10 pl-3 pr-1 py-2">
+                      <td className="w-10 py-2 pr-1 pl-3">
                         <Skeleton className="h-4 w-4 rounded" />
                       </td>
                       {visibleColumns.map((col) => (
-                        <td key={col.id} className="py-2 px-4">
+                        <td key={col.id} className="px-4 py-2">
                           <Skeleton className="h-4 w-full max-w-[120px]" />
                         </td>
                       ))}
@@ -632,13 +726,19 @@ export function TokenTable({
                   <tr>
                     <td colSpan={visibleColumns.length + 2}>
                       <EmptyState
-                        title={flaggedOnly ? "No flagged tokens" : search ? "No tokens match your search" : "No tokens yet"}
+                        title={
+                          flaggedOnly
+                            ? "No flagged tokens"
+                            : search
+                              ? "No tokens match your search"
+                              : "No tokens yet"
+                        }
                         description={
                           flaggedOnly
                             ? "Flag tokens to track items that need rework or discussion"
                             : search
-                            ? "Try adjusting your filters or search query"
-                            : "Add your first token to get started"
+                              ? "Try adjusting your filters or search query"
+                              : "Add your first token to get started"
                         }
                         action={
                           !flaggedOnly && !search
@@ -648,38 +748,57 @@ export function TokenTable({
                       />
                     </td>
                   </tr>
+                ) : groupTree.length > 0 ? (
+                  renderGroupNodes(
+                    groupTree,
+                    tokensByGroupId,
+                    selectedIds,
+                    toggleGroup,
+                    toggleOne,
+                    handleDelete,
+                    handleFlagToggle,
+                    handleRename,
+                    setHistoryTokenId,
+                    setEditTokenId,
+                    setEditGroupId,
+                    columns,
+                    activeThemeIsBase
+                  )
                 ) : (
-                  groupTree.length > 0
-                    ? renderGroupNodes(groupTree, tokensByGroupId, selectedIds, toggleGroup, toggleOne, handleDelete, handleFlagToggle, handleRename, setHistoryTokenId, setEditTokenId, setEditGroupId, columns, activeThemeIsBase)
-                    : flatGrouped.map(([gId, { groupName, path, depth, tokens: groupTokens }]) => (
-                        <GroupRow
-                          key={gId}
-                          groupId={gId}
-                          groupName={groupName}
-                          groupPath={path}
-                          tokenCount={groupTokens.length}
-                          depth={depth}
-                          selectedCount={groupTokens.filter((t) => selectedIds.has(t._id)).length}
-                          onSelectAll={(checked) => toggleGroup(groupTokens.map((t) => t._id), checked)}
-                          onEditOpen={setEditGroupId}
-                        >
-                          {groupTokens.map((token) => (
-                            <TokenRow
-                              key={token._id}
-                              token={token}
-                              selected={selectedIds.has(token._id)}
-                              overridden={!activeThemeIsBase && !!token._overridden}
-                              onSelect={toggleOne}
-                              onDelete={handleDelete}
-                              onFlagToggle={handleFlagToggle}
-                              onRename={handleRename}
-                              onHistoryOpen={setHistoryTokenId}
-                              onEditOpen={setEditTokenId}
-                              columns={columns}
-                            />
-                          ))}
-                        </GroupRow>
-                      ))
+                  flatGrouped.map(([gId, { groupName, path, depth, tokens: groupTokens }]) => (
+                    <GroupRow
+                      key={gId}
+                      groupId={gId}
+                      groupName={groupName}
+                      groupPath={path}
+                      tokenCount={groupTokens.length}
+                      depth={depth}
+                      selectedCount={groupTokens.filter((t) => selectedIds.has(t._id)).length}
+                      onSelectAll={(checked) =>
+                        toggleGroup(
+                          groupTokens.map((t) => t._id),
+                          checked
+                        )
+                      }
+                      onEditOpen={setEditGroupId}
+                    >
+                      {groupTokens.map((token) => (
+                        <TokenRow
+                          key={token._id}
+                          token={token}
+                          selected={selectedIds.has(token._id)}
+                          overridden={!activeThemeIsBase && !!token._overridden}
+                          onSelect={toggleOne}
+                          onDelete={handleDelete}
+                          onFlagToggle={handleFlagToggle}
+                          onRename={handleRename}
+                          onHistoryOpen={setHistoryTokenId}
+                          onEditOpen={setEditTokenId}
+                          columns={columns}
+                        />
+                      ))}
+                    </GroupRow>
+                  ))
                 )}
               </tbody>
             </table>
@@ -687,7 +806,7 @@ export function TokenTable({
             <div ref={sentinelRef} className="h-1" />
             {loadingMore && (
               <div className="flex justify-center py-3">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-foreground" />
+                <div className="border-border border-t-foreground h-5 w-5 animate-spin rounded-full border-2" />
               </div>
             )}
           </div>

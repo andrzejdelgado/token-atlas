@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
 
   const settings = await Settings.findOne({}).lean();
@@ -30,12 +31,18 @@ export async function POST(req: NextRequest) {
 
   // Get existing variable collections to find IDs
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const existing = await client.getVariables(settings.figmaFileKey) as any;
+  const existing = (await client.getVariables(settings.figmaFileKey)) as any;
   const collections = existing?.meta?.variableCollections ?? {};
-  const colEntries = Object.values(collections) as Array<{ id: string; modes: Array<{ modeId: string; name: string }> }>;
+  const colEntries = Object.values(collections) as Array<{
+    id: string;
+    modes: Array<{ modeId: string; name: string }>;
+  }>;
 
   if (colEntries.length === 0) {
-    return NextResponse.json({ error: "No variable collections found in Figma file" }, { status: 400 });
+    return NextResponse.json(
+      { error: "No variable collections found in Figma file" },
+      { status: 400 }
+    );
   }
 
   const col = colEntries[0];
@@ -43,7 +50,10 @@ export async function POST(req: NextRequest) {
   const darkMode = col.modes.find((m) => m.name.toLowerCase() === "dark");
 
   if (!lightMode || !darkMode) {
-    return NextResponse.json({ error: "Figma collection must have Light and Dark modes" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Figma collection must have Light and Dark modes" },
+      { status: 400 }
+    );
   }
 
   const variables = mapTokensToFigma(

@@ -20,7 +20,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const { name, email, password } = await req.json();
 
@@ -30,7 +31,10 @@ export async function POST(req: NextRequest) {
 
   const existing = await User.findOne({ email: email.toLowerCase() });
   if (existing) {
-    return NextResponse.json({ error: "An account with this email already exists" }, { status: 409 });
+    return NextResponse.json(
+      { error: "An account with this email already exists" },
+      { status: 409 }
+    );
   }
 
   const passwordHash = await bcrypt.hash(password, 10);

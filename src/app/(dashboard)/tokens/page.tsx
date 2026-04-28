@@ -34,7 +34,7 @@ export default async function TokensPage({ searchParams }: TokensPageProps) {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">All Semantics</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-sm">
           Browse and filter all design tokens across collections, groups, and themes.
         </p>
       </div>

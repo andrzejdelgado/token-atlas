@@ -31,5 +31,4 @@ const GroupSchema = new Schema<IGroupDoc>(
 GroupSchema.index({ collection: 1, path: 1 });
 
 export const Group =
-  (models.Group as Model<IGroupDoc> | undefined) ||
-  model<IGroupDoc>("Group", GroupSchema);
+  (models.Group as Model<IGroupDoc> | undefined) || model<IGroupDoc>("Group", GroupSchema);

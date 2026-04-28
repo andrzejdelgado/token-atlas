@@ -15,6 +15,7 @@ Figma's Variables panel has no filtering, no contextual search, and no bulk acti
 ## Key Features
 
 ### Token Management
+
 - Collapsible grouped table with infinite scroll
 - Inline rename by double-clicking a token name
 - Per-token flag for "needs review", with optimistic UI toggle
@@ -22,35 +23,42 @@ Figma's Variables panel has no filtering, no contextual search, and no bulk acti
 - Per-token audit log — every change, who made it, before/after values
 
 ### Theme Overrides
+
 - **Light and Dark are not themes** — every token carries both values always
 - **Themes are brands** — orthogonal to the collection/group hierarchy
 - Switch between base theme and modifier themes; override Light/Dark values per brand without touching the base token
 - Override indicator in value columns; overflow themes tuck into a `+N` popover
 
 ### Bulk Operations
+
 - Select any number of tokens; floating action toolbar appears at the bottom
 - Bulk rename with prefix, suffix, swap, or remove — live highlighted preview
 - Bulk move, group, flag, label, and delete with popover confirmation
 
 ### Groups
+
 - Infinite-depth group hierarchy within each collection
 - Inline subgroup creation and rename from the sidebar
 - Delete with child-promotion logic: direct children are promoted to top-level, tokens can be rehomed or deleted
 
 ### Filtering & Search
+
 - Filter by type, group, theme, flagged status, label, component, or date range
 - Advanced Search page with always-visible filters and saved query history
 - Column manager: show/hide and reorder columns; Name column locked first
 
 ### Connectors
+
 - **Figma Variables** — push tokens as native Figma Variables via the Variables API (open beta); scoped per brand theme
 - **Storybook** (admin only) — commit a W3C `tokens.json` to a GitHub repo via Octokit; triggers Storybook rebuild if CI is configured
 
 ### Import / Export
+
 - Import W3C Design Tokens JSON with preview and conflict warnings
 - Export scoped by theme, collection, or group
 
 ### Access Control
+
 - Two roles: **Admin** (full access including Storybook push, settings, user management) and **User** (token operations only)
 - Role enforced server-side on every API route — UI hiding is supplemental only
 
@@ -58,19 +66,19 @@ Figma's Variables panel has no filtering, no contextual search, and no bulk acti
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 15 (App Router, Server Components) |
-| Language | TypeScript (strict mode) |
-| Database | MongoDB Atlas via Mongoose |
-| Auth | NextAuth.js v5 — Credentials + Google OAuth |
-| Styling | Tailwind CSS v4 |
-| Components | ShadCN/UI (never modified at source) |
-| Figma sync | Figma Variables API (open beta) |
-| Storybook sync | GitHub API via Octokit |
-| Token standard | W3C Design Tokens Community Group format |
-| Testing | Vitest + React Testing Library, Playwright |
-| CI | GitHub Actions |
+| Layer          | Technology                                  |
+| -------------- | ------------------------------------------- |
+| Framework      | Next.js 15 (App Router, Server Components)  |
+| Language       | TypeScript (strict mode)                    |
+| Database       | MongoDB Atlas via Mongoose                  |
+| Auth           | NextAuth.js v5 — Credentials + Google OAuth |
+| Styling        | Tailwind CSS v4                             |
+| Components     | ShadCN/UI (never modified at source)        |
+| Figma sync     | Figma Variables API (open beta)             |
+| Storybook sync | GitHub API via Octokit                      |
+| Token standard | W3C Design Tokens Community Group format    |
+| Testing        | Vitest + React Testing Library, Playwright  |
+| CI             | GitHub Actions                              |
 
 ---
 
@@ -156,13 +164,13 @@ Copy `.env.example` to `.env.local` and fill in the required values:
 cp .env.example .env.local
 ```
 
-| Variable | Required | Description |
-|---|---|---|
-| `MONGODB_URI` | Yes | MongoDB Atlas connection string |
-| `NEXTAUTH_SECRET` | Yes | Random secret — `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | Yes | `http://localhost:3000` in development |
-| `GOOGLE_CLIENT_ID` | Optional | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | Optional | Google OAuth client secret |
+| Variable               | Required | Description                               |
+| ---------------------- | -------- | ----------------------------------------- |
+| `MONGODB_URI`          | Yes      | MongoDB Atlas connection string           |
+| `NEXTAUTH_SECRET`      | Yes      | Random secret — `openssl rand -base64 32` |
+| `NEXTAUTH_URL`         | Yes      | `http://localhost:3000` in development    |
+| `GOOGLE_CLIENT_ID`     | Optional | Google OAuth client ID                    |
+| `GOOGLE_CLIENT_SECRET` | Optional | Google OAuth client secret                |
 
 ### 3. Seed the database
 
@@ -201,31 +209,31 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Available Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Development server |
-| `npm run build` | Production build |
-| `npm run start` | Production server |
-| `npm run lint` | ESLint |
-| `npm run test` | Unit tests (Vitest) |
-| `npm run test:coverage` | Unit tests with coverage |
-| `npm run e2e` | Playwright E2E tests |
-| `npm run e2e:ui` | Playwright with interactive UI |
-| `npm run prettier:fix` | Format all files |
+| Command                 | Description                    |
+| ----------------------- | ------------------------------ |
+| `npm run dev`           | Development server             |
+| `npm run build`         | Production build               |
+| `npm run start`         | Production server              |
+| `npm run lint`          | ESLint                         |
+| `npm run test`          | Unit tests (Vitest)            |
+| `npm run test:coverage` | Unit tests with coverage       |
+| `npm run e2e`           | Playwright E2E tests           |
+| `npm run e2e:ui`        | Playwright with interactive UI |
+| `npm run prettier:fix`  | Format all files               |
 
 ---
 
 ## Roles
 
-| Capability | Admin | User |
-|---|---|---|
-| Token CRUD and bulk operations | ✓ | ✓ |
-| Import and Export | ✓ | ✓ |
-| Push to Figma | ✓ | ✓ |
-| View Settings | ✓ | ✓ (read-only) |
-| Push to Storybook | ✓ | — |
-| Manage Figma / GitHub credentials | ✓ | — |
-| Invite, remove, and change user roles | ✓ | — |
+| Capability                            | Admin | User          |
+| ------------------------------------- | ----- | ------------- |
+| Token CRUD and bulk operations        | ✓     | ✓             |
+| Import and Export                     | ✓     | ✓             |
+| Push to Figma                         | ✓     | ✓             |
+| View Settings                         | ✓     | ✓ (read-only) |
+| Push to Storybook                     | ✓     | —             |
+| Manage Figma / GitHub credentials     | ✓     | —             |
+| Invite, remove, and change user roles | ✓     | —             |
 
 ---
 

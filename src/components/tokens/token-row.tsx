@@ -94,14 +94,14 @@ export function TokenRow({
   return (
     <tr
       className={cn(
-        "group/row border-b transition-colors hover:bg-muted/40",
+        "group/row hover:bg-muted/40 border-b transition-colors",
         selected && "bg-muted/60"
       )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       {/* Checkbox */}
-      <td className="py-2 pl-3 pr-1" style={{ width: 40, minWidth: 40, maxWidth: 40 }}>
+      <td className="py-2 pr-1 pl-3" style={{ width: 40, minWidth: 40, maxWidth: 40 }}>
         <Checkbox
           checked={selected}
           onCheckedChange={(v) => onSelect(token._id, !!v)}
@@ -110,7 +110,7 @@ export function TokenRow({
       </td>
 
       {/* Name — always visible, locked */}
-      <td className="py-2 pl-2 pr-4" style={{ minWidth: 192 }}>
+      <td className="py-2 pr-4 pl-2" style={{ minWidth: 192 }}>
         {renaming ? (
           <Input
             value={renameVal}
@@ -124,11 +124,11 @@ export function TokenRow({
                 setRenameVal(token.name);
               }
             }}
-            className="h-5 text-xs md:text-xs px-1 py-0 rounded-sm ring-1 ring-ring border-0 shadow-none focus-visible:ring-2 focus-visible:ring-ring/50"
+            className="ring-ring focus-visible:ring-ring/50 h-5 rounded-sm border-0 px-1 py-0 text-xs shadow-none ring-1 focus-visible:ring-2 md:text-xs"
           />
         ) : (
           <span
-            className="text-xs text-foreground truncate block max-w-[280px]"
+            className="text-foreground block max-w-[280px] truncate text-xs"
             title={token.name}
             onDoubleClick={() => setRenaming(true)}
           >
@@ -139,7 +139,7 @@ export function TokenRow({
 
       {/* Type */}
       {isVisible("type") && (
-        <td className="py-2 px-4">
+        <td className="px-4 py-2">
           <Badge
             variant="secondary"
             className={cn("text-[11px]", TYPE_BADGE_COLORS[token.tokenType])}
@@ -151,23 +151,26 @@ export function TokenRow({
 
       {/* Light value */}
       {isVisible("lightValue") && (
-        <td className="py-2 px-4 overflow-hidden">
-          <div className="flex items-center gap-2 min-w-0">
+        <td className="overflow-hidden px-4 py-2">
+          <div className="flex min-w-0 items-center gap-2">
             {token.tokenType === "Color" && isColorValue(token.lightValue) && (
               <span
-                className="h-4 w-4 rounded shrink-0 border border-border/50"
+                className="border-border/50 h-4 w-4 shrink-0 rounded border"
                 style={{ backgroundColor: token.lightValue }}
                 title={`Light: ${token.lightValue}`}
               />
             )}
             <span
-              className={cn("text-xs truncate", overridden ? "text-blue-600" : "text-foreground")}
+              className={cn("truncate text-xs", overridden ? "text-blue-600" : "text-foreground")}
               title={token.lightValue}
             >
               {token.lightValue}
             </span>
             {overridden && (
-              <CheckCheck className="h-3 w-3 text-blue-600 shrink-0" aria-label="Modified by active theme" />
+              <CheckCheck
+                className="h-3 w-3 shrink-0 text-blue-600"
+                aria-label="Modified by active theme"
+              />
             )}
           </div>
         </td>
@@ -175,23 +178,26 @@ export function TokenRow({
 
       {/* Dark value */}
       {isVisible("darkValue") && (
-        <td className="py-2 px-4 overflow-hidden">
-          <div className="flex items-center gap-2 min-w-0">
+        <td className="overflow-hidden px-4 py-2">
+          <div className="flex min-w-0 items-center gap-2">
             {token.tokenType === "Color" && token.darkValue && isColorValue(token.darkValue) && (
               <span
-                className="h-4 w-4 rounded shrink-0 border border-border/50"
+                className="border-border/50 h-4 w-4 shrink-0 rounded border"
                 style={{ backgroundColor: token.darkValue }}
                 title={`Dark: ${token.darkValue}`}
               />
             )}
             <span
-              className={cn("text-xs truncate", overridden ? "text-blue-600" : "text-foreground")}
+              className={cn("truncate text-xs", overridden ? "text-blue-600" : "text-foreground")}
               title={token.darkValue ?? "—"}
             >
               {token.darkValue ?? "—"}
             </span>
             {overridden && (
-              <CheckCheck className="h-3 w-3 text-blue-600 shrink-0" aria-label="Modified by active theme" />
+              <CheckCheck
+                className="h-3 w-3 shrink-0 text-blue-600"
+                aria-label="Modified by active theme"
+              />
             )}
           </div>
         </td>
@@ -199,18 +205,14 @@ export function TokenRow({
 
       {/* Flag */}
       {isVisible("flag") && (
-        <td className="py-2 px-4">
-          <FlagCell
-            flagged={token.flagged}
-            tokenId={token._id}
-            onToggle={onFlagToggle}
-          />
+        <td className="px-4 py-2">
+          <FlagCell flagged={token.flagged} tokenId={token._id} onToggle={onFlagToggle} />
         </td>
       )}
 
       {/* Components */}
       {isVisible("components") && (
-        <td className="py-2 px-4 overflow-hidden">
+        <td className="overflow-hidden px-4 py-2">
           <div className="flex flex-nowrap gap-1 overflow-hidden">
             {token.associatedComponents?.slice(0, 4).map((c, i) => (
               <Badge key={i} variant="outline" className="h-4 px-1.5 text-[10px] font-normal">
@@ -228,7 +230,7 @@ export function TokenRow({
 
       {/* Labels */}
       {isVisible("labels") && (
-        <td className="py-2 px-4 overflow-hidden">
+        <td className="overflow-hidden px-4 py-2">
           <div className="flex flex-nowrap gap-1 overflow-hidden">
             {token.labels?.slice(0, 3).map((l, i) => (
               <Badge key={i} variant="secondary" className="h-4 px-1.5 text-[10px] font-normal">
@@ -241,25 +243,29 @@ export function TokenRow({
 
       {/* Collection */}
       {isVisible("collection") && (
-        <td className="py-2 px-4 overflow-hidden">
-          <span className="text-xs text-muted-foreground truncate block">{collectionName}</span>
+        <td className="overflow-hidden px-4 py-2">
+          <span className="text-muted-foreground block truncate text-xs">{collectionName}</span>
         </td>
       )}
 
       {/* Last modified */}
       {isVisible("lastModified") && (
-        <td className="py-2 px-4">
+        <td className="px-4 py-2">
           <TimestampCell date={token.updatedAt} />
         </td>
       )}
 
       {/* Actions */}
-      <td className="py-2 pr-3 w-10">
+      <td className="w-10 py-2 pr-3">
         <div className={cn("flex items-center justify-end", !hovered && "opacity-0")}>
-          <DropdownMenu onOpenChange={(open) => { if (!open) setEllipsisDeleteConfirm(false); }}>
+          <DropdownMenu
+            onOpenChange={(open) => {
+              if (!open) setEllipsisDeleteConfirm(false);
+            }}
+          >
             <DropdownMenuTrigger asChild>
-              <button className="rounded p-1 hover:bg-muted transition-colors">
-                <span className="text-muted-foreground font-bold text-sm leading-none">···</span>
+              <button className="hover:bg-muted rounded p-1 transition-colors">
+                <span className="text-muted-foreground text-sm leading-none font-bold">···</span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
@@ -272,14 +278,20 @@ export function TokenRow({
               <DropdownMenuSeparator />
               {ellipsisDeleteConfirm ? (
                 <DropdownMenuItem
-                  onSelect={() => { onDelete(token._id); setEllipsisDeleteConfirm(false); }}
+                  onSelect={() => {
+                    onDelete(token._id);
+                    setEllipsisDeleteConfirm(false);
+                  }}
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="mr-2 h-3.5 w-3.5" /> Confirm delete
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem
-                  onSelect={(e) => { e.preventDefault(); setEllipsisDeleteConfirm(true); }}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setEllipsisDeleteConfirm(true);
+                  }}
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete

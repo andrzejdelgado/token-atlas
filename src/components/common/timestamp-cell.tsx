@@ -10,13 +10,9 @@ interface TimestampCellProps {
 }
 
 export function TimestampCell({ date, className }: TimestampCellProps) {
-  const dateObj = date
-    ? (typeof date === "string" ? new Date(date) : date)
-    : undefined;
+  const dateObj = date ? (typeof date === "string" ? new Date(date) : date) : undefined;
 
-  const [display, setDisplay] = useState(() =>
-    dateObj ? formatTimestamp(dateObj) : "—"
-  );
+  const [display, setDisplay] = useState(() => (dateObj ? formatTimestamp(dateObj) : "—"));
 
   useEffect(() => {
     if (!dateObj || !isLessThanOneHourOld(dateObj)) return;
@@ -27,18 +23,14 @@ export function TimestampCell({ date, className }: TimestampCellProps) {
   }, [dateObj]);
 
   if (!dateObj) {
-    return (
-      <span className={cn("text-xs tabular-nums text-muted-foreground", className)}>
-        —
-      </span>
-    );
+    return <span className={cn("text-muted-foreground text-xs tabular-nums", className)}>—</span>;
   }
 
   return (
     <time
       dateTime={dateObj.toISOString()}
       title={dateObj.toISOString()}
-      className={cn("text-xs tabular-nums text-muted-foreground", className)}
+      className={cn("text-muted-foreground text-xs tabular-nums", className)}
     >
       {display}
     </time>

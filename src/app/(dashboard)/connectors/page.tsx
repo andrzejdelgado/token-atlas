@@ -4,18 +4,25 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import {
-  Loader2, CircleCheck, CircleDot, ArrowUpFromLine,
-  Clock, Settings, ExternalLink,
+  Loader2,
+  CircleCheck,
+  CircleDot,
+  ArrowUpFromLine,
+  Clock,
+  Settings,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card, CardContent, CardDescription, CardHeader, CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { TimestampCell } from "@/components/common/timestamp-cell";
 import { toast } from "sonner";
@@ -95,7 +102,7 @@ export default function ConnectorsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed");
       toast.success(data.message);
-      setSettings((prev) => prev ? { ...prev, lastFigmaSync: new Date().toISOString() } : prev);
+      setSettings((prev) => (prev ? { ...prev, lastFigmaSync: new Date().toISOString() } : prev));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Figma push failed");
     } finally {
@@ -110,7 +117,9 @@ export default function ConnectorsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed");
       toast.success(data.message);
-      setSettings((prev) => prev ? { ...prev, lastStorybookSync: new Date().toISOString() } : prev);
+      setSettings((prev) =>
+        prev ? { ...prev, lastStorybookSync: new Date().toISOString() } : prev
+      );
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Storybook push failed");
     } finally {
@@ -122,10 +131,10 @@ export default function ConnectorsPage() {
   const storybookConfigured = !!(settings?.storybookGithubToken && settings?.storybookRepoUrl);
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Connectors</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-sm">
           Sync your design tokens to external tools in one click.
         </p>
       </div>
@@ -137,29 +146,28 @@ export default function ConnectorsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-
           {/* ── Figma Variables ── */}
           <Card>
             <CardHeader className="pb-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-xl shrink-0">
+                  <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xl">
                     ◈
                   </div>
                   <div>
                     <CardTitle className="text-base">Figma Variables</CardTitle>
-                    <CardDescription className="text-xs mt-0.5">
+                    <CardDescription className="mt-0.5 text-xs">
                       Push tokens as native Figma Variables into your design file.
                     </CardDescription>
                   </div>
                 </div>
                 {figmaConfigured ? (
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-green-600 dark:text-green-400 shrink-0 pt-0.5">
+                  <span className="flex shrink-0 items-center gap-1.5 pt-0.5 text-xs font-medium text-green-600 dark:text-green-400">
                     <CircleCheck className="h-3.5 w-3.5" />
                     Connected
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0 pt-0.5">
+                  <span className="text-muted-foreground flex shrink-0 items-center gap-1.5 pt-0.5 text-xs">
                     <CircleDot className="h-3.5 w-3.5" />
                     Not configured
                   </span>
@@ -169,10 +177,10 @@ export default function ConnectorsPage() {
 
             <Separator />
 
-            <CardContent className="pt-4 space-y-4">
+            <CardContent className="space-y-4 pt-4">
               {!figmaConfigured ? (
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Add your Figma access token and file key to get started.
                   </p>
                   <Button variant="outline" size="sm" asChild className="shrink-0 gap-1.5">
@@ -184,12 +192,14 @@ export default function ConnectorsPage() {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="bg-muted px-1.5 py-0.5 rounded text-[11px]">
+                  <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                    <span className="bg-muted rounded px-1.5 py-0.5 text-[11px]">
                       {maskToken(settings?.figmaPersonalAccessToken)}
                     </span>
                     <span className="text-muted-foreground/40">·</span>
-                    <span>File: <span className="">{settings?.figmaFileKey}</span></span>
+                    <span>
+                      File: <span className="">{settings?.figmaFileKey}</span>
+                    </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Select value={selectedTheme} onValueChange={setSelectedTheme}>
@@ -199,18 +209,27 @@ export default function ConnectorsPage() {
                       <SelectContent>
                         <SelectItem value="all">All tokens</SelectItem>
                         {themes.map((t) => (
-                          <SelectItem key={t._id} value={t._id}>{t.name}</SelectItem>
+                          <SelectItem key={t._id} value={t._id}>
+                            {t.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <Button size="sm" onClick={pushToFigma} disabled={figmaPushing} className="gap-1.5">
-                      {figmaPushing
-                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        : <ArrowUpFromLine className="h-3.5 w-3.5" />}
+                    <Button
+                      size="sm"
+                      onClick={pushToFigma}
+                      disabled={figmaPushing}
+                      className="gap-1.5"
+                    >
+                      {figmaPushing ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <ArrowUpFromLine className="h-3.5 w-3.5" />
+                      )}
                       Push to Figma
                     </Button>
                     {settings?.lastFigmaSync && (
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
+                      <span className="text-muted-foreground ml-auto flex items-center gap-1 text-xs">
                         <Clock className="h-3 w-3 shrink-0" />
                         <TimestampCell date={settings.lastFigmaSync} className="inline" />
                       </span>
@@ -226,28 +245,31 @@ export default function ConnectorsPage() {
             <CardHeader className="pb-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-xl shrink-0">
+                  <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xl">
                     ◉
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-base">Storybook</CardTitle>
                       {!isAdmin && (
-                        <Badge variant="outline" className="text-[10px] h-4 px-1.5">Admin only</Badge>
+                        <Badge variant="outline" className="h-4 px-1.5 text-[10px]">
+                          Admin only
+                        </Badge>
                       )}
                     </div>
-                    <CardDescription className="text-xs mt-0.5">
-                      Commit a token file to your GitHub repo so Storybook picks it up automatically.
+                    <CardDescription className="mt-0.5 text-xs">
+                      Commit a token file to your GitHub repo so Storybook picks it up
+                      automatically.
                     </CardDescription>
                   </div>
                 </div>
                 {storybookConfigured ? (
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-green-600 dark:text-green-400 shrink-0 pt-0.5">
+                  <span className="flex shrink-0 items-center gap-1.5 pt-0.5 text-xs font-medium text-green-600 dark:text-green-400">
                     <CircleCheck className="h-3.5 w-3.5" />
                     Connected
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0 pt-0.5">
+                  <span className="text-muted-foreground flex shrink-0 items-center gap-1.5 pt-0.5 text-xs">
                     <CircleDot className="h-3.5 w-3.5" />
                     Not configured
                   </span>
@@ -257,10 +279,10 @@ export default function ConnectorsPage() {
 
             <Separator />
 
-            <CardContent className="pt-4 space-y-4">
+            <CardContent className="space-y-4 pt-4">
               {!storybookConfigured ? (
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Add your GitHub token and repository URL to get started.
                   </p>
                   <Button variant="outline" size="sm" asChild className="shrink-0 gap-1.5">
@@ -277,7 +299,7 @@ export default function ConnectorsPage() {
                       href={settings.storybookRepoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors bg-muted px-2 py-1 rounded"
+                      className="text-muted-foreground hover:text-foreground bg-muted inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs transition-colors"
                     >
                       <ExternalLink className="h-3 w-3 shrink-0" />
                       {settings.storybookRepoUrl.replace(/^https?:\/\//, "")}
@@ -290,13 +312,15 @@ export default function ConnectorsPage() {
                       disabled={storybookPushing || !isAdmin}
                       className="gap-1.5"
                     >
-                      {storybookPushing
-                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        : <ArrowUpFromLine className="h-3.5 w-3.5" />}
+                      {storybookPushing ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <ArrowUpFromLine className="h-3.5 w-3.5" />
+                      )}
                       Push to Storybook
                     </Button>
                     {settings?.lastStorybookSync && (
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
+                      <span className="text-muted-foreground ml-auto flex items-center gap-1 text-xs">
                         <Clock className="h-3 w-3 shrink-0" />
                         <TimestampCell date={settings.lastStorybookSync} className="inline" />
                       </span>
@@ -306,7 +330,6 @@ export default function ConnectorsPage() {
               )}
             </CardContent>
           </Card>
-
         </div>
       )}
     </div>

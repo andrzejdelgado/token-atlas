@@ -19,7 +19,8 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json({ error: "Admin access required" }, { status: 403 });
   }
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const settings = await Settings.findOne({}).lean();
 

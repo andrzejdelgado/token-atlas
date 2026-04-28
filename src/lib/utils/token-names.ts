@@ -1,9 +1,6 @@
 import type { BulkRenameOptions, BulkRenamePreview } from "@/types/token";
 
-export function applyBulkRename(
-  name: string,
-  options: BulkRenameOptions
-): string {
+export function applyBulkRename(name: string, options: BulkRenameOptions): string {
   let result = name;
   if (options.remove) {
     result = result.split(options.remove).join("");

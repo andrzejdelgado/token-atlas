@@ -11,10 +11,11 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
 
-  const { items } = await req.json() as {
+  const { items } = (await req.json()) as {
     items: Array<{ id: string; parentId: string | null; position: number }>;
   };
 

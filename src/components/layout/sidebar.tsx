@@ -53,13 +53,17 @@ function useActiveParam() {
   const searchParams = useSearchParams();
   return {
     isGroupActive: (id: string) => pathname === "/tokens" && searchParams.get("group") === id,
-    isCollectionActive: (id: string) => pathname === "/tokens" && searchParams.get("collection") === id,
+    isCollectionActive: (id: string) =>
+      pathname === "/tokens" && searchParams.get("collection") === id,
   };
 }
 
 function TokenBadge({ count }: { count: number }) {
   return (
-    <Badge variant="secondary" className="ml-auto h-4 px-1.5 text-[10px] font-normal shrink-0 pointer-events-none">
+    <Badge
+      variant="secondary"
+      className="pointer-events-none ml-auto h-4 shrink-0 px-1.5 text-[10px] font-normal"
+    >
       {count}
     </Badge>
   );
@@ -93,10 +97,13 @@ function InlineInput({
         onChange={(e) => setVal(e.target.value)}
         onBlur={onCancel}
         onKeyDown={(e) => {
-          if (e.key === "Enter") { e.preventDefault(); commit(); }
+          if (e.key === "Enter") {
+            e.preventDefault();
+            commit();
+          }
           if (e.key === "Escape") onCancel();
         }}
-        className="h-6 text-xs px-2 py-0"
+        className="h-6 px-2 py-0 text-xs"
       />
     </div>
   );
@@ -104,28 +111,30 @@ function InlineInput({
 
 // ── Hover action buttons ──────────────────────────────────────────────────────
 
-function HoverActions({
-  onRename,
-  onAddChild,
-}: {
-  onRename: () => void;
-  onAddChild: () => void;
-}) {
+function HoverActions({ onRename, onAddChild }: { onRename: () => void; onAddChild: () => void }) {
   return (
-    <div className="hidden group-hover/item:flex items-center gap-0.5 shrink-0">
+    <div className="hidden shrink-0 items-center gap-0.5 group-hover/item:flex">
       <button
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRename(); }}
-        className="h-5 w-5 flex items-center justify-center rounded hover:bg-sidebar-accent transition-colors"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onRename();
+        }}
+        className="hover:bg-sidebar-accent flex h-5 w-5 items-center justify-center rounded transition-colors"
         title="Rename"
       >
-        <Pencil className="h-3 w-3 text-muted-foreground" />
+        <Pencil className="text-muted-foreground h-3 w-3" />
       </button>
       <button
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddChild(); }}
-        className="h-5 w-5 flex items-center justify-center rounded hover:bg-sidebar-accent transition-colors"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onAddChild();
+        }}
+        className="hover:bg-sidebar-accent flex h-5 w-5 items-center justify-center rounded transition-colors"
         title="Add sub-group"
       >
-        <Plus className="h-3 w-3 text-muted-foreground" />
+        <Plus className="text-muted-foreground h-3 w-3" />
       </button>
     </div>
   );
@@ -150,7 +159,10 @@ function GroupItem({ group }: { group: GroupTree }) {
       body: JSON.stringify({ name, collectionId, parentId: group._id }),
     });
     if (!res.ok) toast.error("Failed to add sub-group");
-    else { router.refresh(); onGroupCreated(); }
+    else {
+      router.refresh();
+      onGroupCreated();
+    }
   }
 
   async function handleRename(name: string) {
@@ -161,26 +173,32 @@ function GroupItem({ group }: { group: GroupTree }) {
       body: JSON.stringify({ name }),
     });
     if (!res.ok) toast.error("Failed to rename group");
-    else { router.refresh(); onGroupRenamed(); }
+    else {
+      router.refresh();
+      onGroupRenamed();
+    }
   }
 
   const content = (
     <SidebarMenuItem>
       {hasChildren ? (
         <>
-          <div className="group/item flex items-center w-full pr-1">
-            <CollapsibleTrigger className="flex items-center justify-center w-6 h-6 shrink-0 rounded hover:bg-sidebar-accent transition-colors">
-              <ChevronRight className="h-3.5 w-3.5 transition-transform group-data-[state=open]/collapsible:rotate-90 text-muted-foreground" />
+          <div className="group/item flex w-full items-center pr-1">
+            <CollapsibleTrigger className="hover:bg-sidebar-accent flex h-6 w-6 shrink-0 items-center justify-center rounded transition-colors">
+              <ChevronRight className="text-muted-foreground h-3.5 w-3.5 transition-transform group-data-[state=open]/collapsible:rotate-90" />
             </CollapsibleTrigger>
-            <SidebarMenuButton size="sm" isActive={isActive} asChild className="flex-1 min-w-0">
+            <SidebarMenuButton size="sm" isActive={isActive} asChild className="min-w-0 flex-1">
               <Link href={`/tokens?group=${group._id}`}>
-                <span className="capitalize truncate">{group.name}</span>
+                <span className="truncate capitalize">{group.name}</span>
               </Link>
             </SidebarMenuButton>
-            <span className="group-hover/item:hidden shrink-0">
+            <span className="shrink-0 group-hover/item:hidden">
               <TokenBadge count={group.tokenCount} />
             </span>
-            <HoverActions onRename={() => setRenaming(true)} onAddChild={() => setAddingChild(true)} />
+            <HoverActions
+              onRename={() => setRenaming(true)}
+              onAddChild={() => setAddingChild(true)}
+            />
           </div>
           {renaming && (
             <InlineInput
@@ -206,16 +224,19 @@ function GroupItem({ group }: { group: GroupTree }) {
         </>
       ) : (
         <>
-          <div className="group/item flex items-center w-full pr-1">
-            <SidebarMenuButton size="sm" isActive={isActive} asChild className="flex-1 min-w-0">
+          <div className="group/item flex w-full items-center pr-1">
+            <SidebarMenuButton size="sm" isActive={isActive} asChild className="min-w-0 flex-1">
               <Link href={`/tokens?group=${group._id}`}>
-                <span className="capitalize truncate">{group.name}</span>
+                <span className="truncate capitalize">{group.name}</span>
               </Link>
             </SidebarMenuButton>
-            <span className="group-hover/item:hidden shrink-0">
+            <span className="shrink-0 group-hover/item:hidden">
               <TokenBadge count={group.tokenCount} />
             </span>
-            <HoverActions onRename={() => setRenaming(true)} onAddChild={() => setAddingChild(true)} />
+            <HoverActions
+              onRename={() => setRenaming(true)}
+              onAddChild={() => setAddingChild(true)}
+            />
           </div>
           {renaming && (
             <InlineInput
@@ -264,7 +285,10 @@ function SubGroupItem({ group }: { group: GroupTree }) {
       body: JSON.stringify({ name, collectionId, parentId: group._id }),
     });
     if (!res.ok) toast.error("Failed to add sub-group");
-    else { router.refresh(); onGroupCreated(); }
+    else {
+      router.refresh();
+      onGroupCreated();
+    }
   }
 
   async function handleRename(name: string) {
@@ -275,26 +299,32 @@ function SubGroupItem({ group }: { group: GroupTree }) {
       body: JSON.stringify({ name }),
     });
     if (!res.ok) toast.error("Failed to rename group");
-    else { router.refresh(); onGroupRenamed(); }
+    else {
+      router.refresh();
+      onGroupRenamed();
+    }
   }
 
   const content = (
     <SidebarMenuSubItem>
       {hasChildren ? (
         <>
-          <div className="group/item flex items-center w-full pr-1">
-            <CollapsibleTrigger className="flex items-center justify-center w-5 h-5 shrink-0 rounded hover:bg-sidebar-accent transition-colors">
-              <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]/collapsible:rotate-90 text-muted-foreground" />
+          <div className="group/item flex w-full items-center pr-1">
+            <CollapsibleTrigger className="hover:bg-sidebar-accent flex h-5 w-5 shrink-0 items-center justify-center rounded transition-colors">
+              <ChevronRight className="text-muted-foreground h-3 w-3 transition-transform group-data-[state=open]/collapsible:rotate-90" />
             </CollapsibleTrigger>
-            <SidebarMenuSubButton size="sm" isActive={isActive} asChild className="flex-1 min-w-0">
+            <SidebarMenuSubButton size="sm" isActive={isActive} asChild className="min-w-0 flex-1">
               <Link href={`/tokens?group=${group._id}`}>
-                <span className="capitalize truncate">{group.name}</span>
+                <span className="truncate capitalize">{group.name}</span>
               </Link>
             </SidebarMenuSubButton>
-            <span className="group-hover/item:hidden shrink-0">
+            <span className="shrink-0 group-hover/item:hidden">
               <TokenBadge count={group.tokenCount} />
             </span>
-            <HoverActions onRename={() => setRenaming(true)} onAddChild={() => setAddingChild(true)} />
+            <HoverActions
+              onRename={() => setRenaming(true)}
+              onAddChild={() => setAddingChild(true)}
+            />
           </div>
           {renaming && (
             <InlineInput
@@ -320,16 +350,19 @@ function SubGroupItem({ group }: { group: GroupTree }) {
         </>
       ) : (
         <>
-          <div className="group/item flex items-center w-full pr-1">
-            <SidebarMenuSubButton size="sm" isActive={isActive} asChild className="flex-1 min-w-0">
+          <div className="group/item flex w-full items-center pr-1">
+            <SidebarMenuSubButton size="sm" isActive={isActive} asChild className="min-w-0 flex-1">
               <Link href={`/tokens?group=${group._id}`}>
-                <span className="capitalize truncate">{group.name}</span>
+                <span className="truncate capitalize">{group.name}</span>
               </Link>
             </SidebarMenuSubButton>
-            <span className="group-hover/item:hidden shrink-0">
+            <span className="shrink-0 group-hover/item:hidden">
               <TokenBadge count={group.tokenCount} />
             </span>
-            <HoverActions onRename={() => setRenaming(true)} onAddChild={() => setAddingChild(true)} />
+            <HoverActions
+              onRename={() => setRenaming(true)}
+              onAddChild={() => setAddingChild(true)}
+            />
           </div>
           {renaming && (
             <InlineInput
@@ -373,7 +406,8 @@ export function AppSidebar({ collections, groups, defaultCollectionId }: AppSide
 
   const displayedGroups = activeCollectionId
     ? groups.filter((g) => {
-        const coll = typeof g.collection === "string" ? g.collection : (g.collection as { _id: string })._id;
+        const coll =
+          typeof g.collection === "string" ? g.collection : (g.collection as { _id: string })._id;
         return coll === activeCollectionId;
       })
     : groups;
@@ -386,7 +420,10 @@ export function AppSidebar({ collections, groups, defaultCollectionId }: AppSide
 
   async function handleAddGroup(name: string) {
     setAddingGroup(false);
-    if (!activeCollectionId) { toast.error("Select a collection first"); return; }
+    if (!activeCollectionId) {
+      toast.error("Select a collection first");
+      return;
+    }
     const res = await fetch("/api/groups", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -405,22 +442,24 @@ export function AppSidebar({ collections, groups, defaultCollectionId }: AppSide
   return (
     <SidebarContext.Provider value={ctxValue}>
       <Sidebar className="bg-background border-r">
-        <SidebarHeader className="h-14 flex-row items-center gap-2 px-4 py-0 border-b shrink-0">
+        <SidebarHeader className="h-14 shrink-0 flex-row items-center gap-2 border-b px-4 py-0">
           <Globe className="h-5 w-5 shrink-0" />
           <span className="font-semibold">Token Atlas</span>
         </SidebarHeader>
 
-        <SidebarContent className="gap-0 [&::-webkit-scrollbar]:w-[2px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full">
-
+        <SidebarContent className="[&::-webkit-scrollbar-thumb]:bg-border gap-0 [&::-webkit-scrollbar]:w-[2px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
           {/* Collections — toggle */}
-          <SidebarGroup className="py-2 px-3">
+          <SidebarGroup className="px-3 py-2">
             <SidebarGroupContent>
               <Tabs value={activeCollectionId ?? ""} onValueChange={handleCollectionChange}>
-                <TabsList className="w-full h-8">
+                <TabsList className="h-8 w-full">
                   {collections.map((col) => (
-                    <TabsTrigger key={col._id} value={col._id} className="flex-1 text-xs gap-1.5">
+                    <TabsTrigger key={col._id} value={col._id} className="flex-1 gap-1.5 text-xs">
                       {col.name}
-                      <Badge variant="secondary" className="h-4 px-1.5 text-[10px] font-normal pointer-events-none">
+                      <Badge
+                        variant="secondary"
+                        className="pointer-events-none h-4 px-1.5 text-[10px] font-normal"
+                      >
                         {col.tokenCount}
                       </Badge>
                     </TabsTrigger>
@@ -431,15 +470,15 @@ export function AppSidebar({ collections, groups, defaultCollectionId }: AppSide
           </SidebarGroup>
 
           {/* Groups */}
-          <SidebarGroup className="py-1 px-2">
-            <div className="flex items-center justify-between h-6 px-2">
-              <span className="text-xs font-medium text-muted-foreground">Groups</span>
+          <SidebarGroup className="px-2 py-1">
+            <div className="flex h-6 items-center justify-between px-2">
+              <span className="text-muted-foreground text-xs font-medium">Groups</span>
               <button
                 title="Add group"
                 onClick={() => setAddingGroup(true)}
-                className="flex items-center justify-center h-4 w-4 rounded hover:bg-sidebar-accent transition-colors"
+                className="hover:bg-sidebar-accent flex h-4 w-4 items-center justify-center rounded transition-colors"
               >
-                <Plus className="h-3.5 w-3.5 text-muted-foreground" />
+                <Plus className="text-muted-foreground h-3.5 w-3.5" />
               </button>
             </div>
             <SidebarGroupContent>

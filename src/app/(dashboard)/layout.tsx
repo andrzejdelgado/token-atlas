@@ -28,7 +28,9 @@ async function getSidebarData() {
   const collectionCountResults = await Token.aggregate([
     { $group: { _id: "$collection", count: { $sum: 1 } } },
   ]);
-  const collectionCountMap = new Map(collectionCountResults.map((r) => [r._id.toString(), r.count]));
+  const collectionCountMap = new Map(
+    collectionCountResults.map((r) => [r._id.toString(), r.count])
+  );
 
   // Token counts per group
   const groupCountResults = await Token.aggregate([
@@ -102,10 +104,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <SidebarProvider>
       <Suspense fallback={null}>
-        <AppSidebar collections={collections} groups={groups} defaultCollectionId={defaultCollectionId} />
+        <AppSidebar
+          collections={collections}
+          groups={groups}
+          defaultCollectionId={defaultCollectionId}
+        />
       </Suspense>
       <SidebarInset className="flex flex-col overflow-hidden">
-        <div className="flex lg:hidden items-center justify-center p-4 bg-muted border-b text-sm text-muted-foreground shrink-0">
+        <div className="bg-muted text-muted-foreground flex shrink-0 items-center justify-center border-b p-4 text-sm lg:hidden">
           Read-only mode — Token Atlas requires a desktop browser (1024px+) for editing.
         </div>
         <TopNav />

@@ -17,7 +17,9 @@ try {
     const match = line.match(/^([^#=]+)=(.*)$/);
     if (match) process.env[match[1].trim()] = match[2].trim();
   }
-} catch { /* no .env.local */ }
+} catch {
+  /* no .env.local */
+}
 
 // ─── Minimal schemas (standalone, no Next.js imports needed) ────────────────
 
@@ -64,11 +66,7 @@ const Token = mongoose.model("Token", TokenSchema);
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function isToken(val: unknown): val is { $type: string; $value: unknown } {
-  return (
-    typeof val === "object" &&
-    val !== null &&
-    "$value" in (val as object)
-  );
+  return typeof val === "object" && val !== null && "$value" in (val as object);
 }
 
 function mapTokenType(type: string): string {
@@ -107,7 +105,9 @@ async function getOrCreateGroup(
 
   let doc = await Group.findOne({ collection: collectionId, path }).lean();
   if (!doc) {
-    doc = (await Group.create({ name, collection: collectionId, parent: parentId, path, depth })).toObject();
+    doc = (
+      await Group.create({ name, collection: collectionId, parent: parentId, path, depth })
+    ).toObject();
     groupsCreated++;
   }
   const id = doc._id as Types.ObjectId;
@@ -224,7 +224,13 @@ async function main() {
   for (const def of themeDefs) {
     let t = await Theme.findOne({ slug: def.slug });
     if (!t) {
-      t = await Theme.create({ name: def.name, slug: def.slug, isBase: def.isBase, position: def.position, description: `${def.name} theme` });
+      t = await Theme.create({
+        name: def.name,
+        slug: def.slug,
+        isBase: def.isBase,
+        position: def.position,
+        description: `${def.name} theme`,
+      });
       console.log(`  + Theme: ${def.name}`);
     } else {
       console.log(`  ~ Theme already exists: ${def.name}`);
@@ -238,7 +244,10 @@ async function main() {
   console.log("\nCreating collections…");
   let foundationsColl = await Collection.findOne({ name: "Global" });
   if (!foundationsColl) {
-    foundationsColl = await Collection.create({ name: "Global", description: "Global design tokens" });
+    foundationsColl = await Collection.create({
+      name: "Global",
+      description: "Global design tokens",
+    });
     console.log("  + Collection: Global");
   } else {
     console.log("  ~ Collection already exists: Global");
@@ -276,9 +285,7 @@ async function main() {
 
   // 4. Import text.json
   console.log("\nImporting text.json…");
-  const textData = JSON.parse(
-    readFileSync(resolve("variables/text.json"), "utf-8")
-  ) as ModeNode;
+  const textData = JSON.parse(readFileSync(resolve("variables/text.json"), "utf-8")) as ModeNode;
 
   for (const [groupName, groupVal] of Object.entries(textData)) {
     if (groupName.startsWith("$")) continue;
@@ -287,7 +294,14 @@ async function main() {
     if (isToken(groupVal)) {
       // Top-level token (edge case)
       const rootGroupId = await getOrCreateGroup("root", textCollId, null, "root", 0);
-      await createToken(groupName, groupVal.$value, groupVal.$value, groupVal.$type, textCollId, rootGroupId);
+      await createToken(
+        groupName,
+        groupVal.$value,
+        groupVal.$value,
+        groupVal.$type,
+        textCollId,
+        rootGroupId
+      );
     } else if (typeof groupVal === "object" && groupVal !== null) {
       const rootGroupId = await getOrCreateGroup(groupName, textCollId, null, slug, 0);
       await processTextNode(groupVal as ModeNode, textCollId, rootGroupId, slug, 1);

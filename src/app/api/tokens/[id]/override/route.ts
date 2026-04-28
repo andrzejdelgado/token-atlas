@@ -6,7 +6,8 @@ import { ThemeOverride } from "@/lib/db/models/theme-override.model";
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
 
   await connectToDatabase();
   const { id } = await params;
@@ -20,7 +21,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
 
   await connectToDatabase();
   const { id } = await params;
@@ -39,7 +41,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
 
   await connectToDatabase();
   const { id } = await params;

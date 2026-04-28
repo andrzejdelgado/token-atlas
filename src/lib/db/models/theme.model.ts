@@ -22,5 +22,4 @@ const ThemeSchema = new Schema<IThemeDoc>(
 );
 
 export const Theme =
-  (models.Theme as Model<IThemeDoc> | undefined) ||
-  model<IThemeDoc>("Theme", ThemeSchema);
+  (models.Theme as Model<IThemeDoc> | undefined) || model<IThemeDoc>("Theme", ThemeSchema);

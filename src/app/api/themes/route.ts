@@ -31,12 +31,14 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const { name, slug, description } = await req.json();
 
   const existing = await Theme.findOne({ slug });
-  if (existing) return NextResponse.json({ error: "Theme with this slug already exists" }, { status: 409 });
+  if (existing)
+    return NextResponse.json({ error: "Theme with this slug already exists" }, { status: 409 });
 
   const theme = await Theme.create({ name, slug, description });
   return NextResponse.json({ data: JSON.parse(JSON.stringify(theme)) }, { status: 201 });

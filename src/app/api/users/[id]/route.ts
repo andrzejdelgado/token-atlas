@@ -18,7 +18,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const body = await req.json();
 
@@ -27,9 +28,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     delete body.role;
   }
 
-  const user = await User.findByIdAndUpdate(id, body, { new: true })
-    .select("-passwordHash")
-    .lean();
+  const user = await User.findByIdAndUpdate(id, body, { new: true }).select("-passwordHash").lean();
 
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ data: JSON.parse(JSON.stringify(user)) });
@@ -42,7 +41,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const role = (session.user as { role?: string }).role as UserRole;
   if (!isAdmin(role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const { id } = await params;
   await User.findByIdAndDelete(id);

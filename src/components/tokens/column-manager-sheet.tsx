@@ -15,12 +15,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { GripVertical, Lock } from "lucide-react";
@@ -40,31 +35,43 @@ interface ColumnManagerSheetProps {
   onColumnsChange: (columns: ColumnDef[]) => void;
 }
 
-const DEFAULT_VISIBLE = ["name", "type", "lightValue", "darkValue", "swatch", "flag", "themes", "labels", "lastModified"];
+const DEFAULT_VISIBLE = [
+  "name",
+  "type",
+  "lightValue",
+  "darkValue",
+  "swatch",
+  "flag",
+  "themes",
+  "labels",
+  "lastModified",
+];
 
 function SortableRow({ col, onToggle }: { col: ColumnDef; onToggle: (id: string) => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: col.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: col.id,
+  });
 
   return (
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        "flex items-center justify-between rounded-md px-2 py-2 hover:bg-muted select-none",
-        isDragging && "opacity-50 bg-muted z-50"
+        "hover:bg-muted flex items-center justify-between rounded-md px-2 py-2 select-none",
+        isDragging && "bg-muted z-50 opacity-50"
       )}
     >
       <div className="flex items-center gap-2">
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing p-0.5 rounded text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-none"
+          className="text-muted-foreground/40 hover:text-muted-foreground cursor-grab touch-none rounded p-0.5 transition-colors active:cursor-grabbing"
           tabIndex={-1}
           aria-label="Drag to reorder"
         >
           <GripVertical className="h-4 w-4" />
         </button>
-        {col.locked && <Lock className="h-3 w-3 text-muted-foreground/60 shrink-0" />}
+        {col.locked && <Lock className="text-muted-foreground/60 h-3 w-3 shrink-0" />}
         <span className="text-sm">{col.label}</span>
       </div>
       <Switch
@@ -76,11 +83,18 @@ function SortableRow({ col, onToggle }: { col: ColumnDef; onToggle: (id: string)
   );
 }
 
-export function ColumnManagerSheet({ open, onOpenChange, columns, onColumnsChange }: ColumnManagerSheetProps) {
+export function ColumnManagerSheet({
+  open,
+  onOpenChange,
+  columns,
+  onColumnsChange,
+}: ColumnManagerSheetProps) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   function toggle(id: string) {
-    onColumnsChange(columns.map((c) => (c.id === id && !c.locked ? { ...c, visible: !c.visible } : c)));
+    onColumnsChange(
+      columns.map((c) => (c.id === id && !c.locked ? { ...c, visible: !c.visible } : c))
+    );
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -97,14 +111,21 @@ export function ColumnManagerSheet({ open, onOpenChange, columns, onColumnsChang
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[360px] flex flex-col gap-0 p-0">
-        <SheetHeader className="px-6 py-5 border-b">
+      <SheetContent className="flex w-[360px] flex-col gap-0 p-0">
+        <SheetHeader className="border-b px-6 py-5">
           <SheetTitle className="text-base">Manage columns</SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-4 py-4">
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={columns.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={columns.map((c) => c.id)}
+              strategy={verticalListSortingStrategy}
+            >
               <div className="space-y-0.5">
                 {columns.map((col) => (
                   <SortableRow key={col.id} col={col} onToggle={toggle} />
@@ -115,7 +136,7 @@ export function ColumnManagerSheet({ open, onOpenChange, columns, onColumnsChang
         </div>
 
         {/* ── Footer ───────────────────────────── */}
-        <div className="flex gap-2 px-6 py-4 border-t">
+        <div className="flex gap-2 border-t px-6 py-4">
           <Button variant="outline" className="flex-1" onClick={resetDefaults}>
             Reset defaults
           </Button>

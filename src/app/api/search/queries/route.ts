@@ -18,7 +18,8 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
 
   const body = await req.json();
@@ -26,6 +27,10 @@ export async function POST(req: NextRequest) {
 
   if (!name?.trim()) return NextResponse.json({ error: "Name is required" }, { status: 400 });
 
-  const query = await SavedQuery.create({ name: name.trim(), criteria: criteria ?? [], excludeCriteria: excludeCriteria ?? [] });
+  const query = await SavedQuery.create({
+    name: name.trim(),
+    criteria: criteria ?? [],
+    excludeCriteria: excludeCriteria ?? [],
+  });
   return NextResponse.json({ data: JSON.parse(JSON.stringify(query.toObject())) }, { status: 201 });
 }

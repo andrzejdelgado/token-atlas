@@ -25,7 +25,8 @@ export async function PATCH(req: NextRequest) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   if (!process.env.MONGODB_URI) return NextResponse.json({ message: "Updated" });
-  if (!mongoose.Types.ObjectId.isValid(session.user.id)) return NextResponse.json({ message: "Updated" });
+  if (!mongoose.Types.ObjectId.isValid(session.user.id))
+    return NextResponse.json({ message: "Updated" });
 
   await connectToDatabase();
   const { id, all } = await req.json();

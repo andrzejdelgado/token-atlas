@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,8 +15,16 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
-interface Collection { _id: string; name: string; }
-interface Group { _id: string; name: string; path: string; depth: number; }
+interface Collection {
+  _id: string;
+  name: string;
+}
+interface Group {
+  _id: string;
+  name: string;
+  path: string;
+  depth: number;
+}
 
 interface BulkGroupSheetProps {
   open: boolean;
@@ -32,7 +35,12 @@ interface BulkGroupSheetProps {
 
 const NONE_VALUE = "__none__";
 
-export function BulkGroupSheet({ open, onOpenChange, selectedIds, onApplied }: BulkGroupSheetProps) {
+export function BulkGroupSheet({
+  open,
+  onOpenChange,
+  selectedIds,
+  onApplied,
+}: BulkGroupSheetProps) {
   const [groupName, setGroupName] = useState("");
   const [collectionId, setCollectionId] = useState("");
   const [parentId, setParentId] = useState<string | null>(null);
@@ -45,16 +53,27 @@ export function BulkGroupSheet({ open, onOpenChange, selectedIds, onApplied }: B
   useEffect(() => {
     if (!open) return;
     fetch("/api/collections")
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (d?.data) setCollections(d.data); })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.data) setCollections(d.data);
+      })
       .catch(() => {});
   }, [open]);
 
   useEffect(() => {
-    if (!collectionId) { setGroups([]); setParentId(null); return; }
+    if (!collectionId) {
+      setGroups([]);
+      setParentId(null);
+      return;
+    }
     fetch(`/api/groups?collection=${collectionId}`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (d?.data) { setGroups(d.data); setParentId(null); } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.data) {
+          setGroups(d.data);
+          setParentId(null);
+        }
+      })
       .catch(() => {});
   }, [collectionId]);
 
@@ -69,8 +88,14 @@ export function BulkGroupSheet({ open, onOpenChange, selectedIds, onApplied }: B
   }
 
   async function handleApply() {
-    if (!groupName.trim()) { toast.error("Enter a group name"); return; }
-    if (!collectionId) { toast.error("Select a collection"); return; }
+    if (!groupName.trim()) {
+      toast.error("Enter a group name");
+      return;
+    }
+    if (!collectionId) {
+      toast.error("Select a collection");
+      return;
+    }
     setApplying(true);
     try {
       // 1. Create the group
@@ -92,11 +117,17 @@ export function BulkGroupSheet({ open, onOpenChange, selectedIds, onApplied }: B
       const moveRes = await fetch("/api/tokens/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "move", tokenIds: selectedIds, payload: { groupId: newGroupId } }),
+        body: JSON.stringify({
+          action: "move",
+          tokenIds: selectedIds,
+          payload: { groupId: newGroupId },
+        }),
       });
       if (!moveRes.ok) throw new Error("Failed to move tokens");
 
-      toast.success(`Created "${groupName.trim()}" and moved ${count} token${count !== 1 ? "s" : ""} into it`);
+      toast.success(
+        `Created "${groupName.trim()}" and moved ${count} token${count !== 1 ? "s" : ""} into it`
+      );
       onApplied();
       reset();
       onOpenChange(false);
@@ -108,18 +139,24 @@ export function BulkGroupSheet({ open, onOpenChange, selectedIds, onApplied }: B
   }
 
   return (
-    <Sheet open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
-      <SheetContent className="w-[440px] sm:w-[500px] flex flex-col gap-0 p-0">
-        <SheetHeader className="px-6 py-5 border-b">
+    <Sheet
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) reset();
+        onOpenChange(v);
+      }}
+    >
+      <SheetContent className="flex w-[440px] flex-col gap-0 p-0 sm:w-[500px]">
+        <SheetHeader className="border-b px-6 py-5">
           <SheetTitle className="text-base">Group tokens</SheetTitle>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Create a new group and move {count} selected token{count !== 1 ? "s" : ""} into it
           </p>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="px-6 py-5 space-y-1.5">
-            <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <div className="space-y-1.5 px-6 py-5">
+            <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               New group name
             </Label>
             <Input
@@ -133,27 +170,29 @@ export function BulkGroupSheet({ open, onOpenChange, selectedIds, onApplied }: B
 
           <Separator />
 
-          <div className="px-6 py-5 space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <div className="space-y-4 px-6 py-5">
+            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               Location
             </p>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Collection</Label>
+              <Label className="text-muted-foreground text-xs">Collection</Label>
               <Select value={collectionId} onValueChange={setCollectionId}>
-                <SelectTrigger className="w-full h-9 text-sm">
+                <SelectTrigger className="h-9 w-full text-sm">
                   <SelectValue placeholder="Select collection…" />
                 </SelectTrigger>
                 <SelectContent>
                   {collections.map((c) => (
-                    <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                    <SelectItem key={c._id} value={c._id}>
+                      {c.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">
+              <Label className="text-muted-foreground text-xs">
                 Parent group <span className="text-muted-foreground/60">(optional)</span>
               </Label>
               <Select
@@ -161,9 +200,11 @@ export function BulkGroupSheet({ open, onOpenChange, selectedIds, onApplied }: B
                 onValueChange={(v) => setParentId(v === NONE_VALUE ? null : v)}
                 disabled={!collectionId}
               >
-                <SelectTrigger className="w-full h-9 text-sm">
+                <SelectTrigger className="h-9 w-full text-sm">
                   <SelectValue
-                    placeholder={!collectionId ? "Select a collection first…" : "Top-level (no parent)"}
+                    placeholder={
+                      !collectionId ? "Select a collection first…" : "Top-level (no parent)"
+                    }
                   />
                 </SelectTrigger>
                 <SelectContent className="max-h-64">
@@ -175,7 +216,7 @@ export function BulkGroupSheet({ open, onOpenChange, selectedIds, onApplied }: B
                       <span className="flex items-center gap-1">
                         {g.depth > 0 && (
                           <span
-                            className="text-muted-foreground text-xs shrink-0"
+                            className="text-muted-foreground shrink-0 text-xs"
                             style={{ paddingLeft: `${(g.depth - 1) * 10}px` }}
                           >
                             └
@@ -191,7 +232,7 @@ export function BulkGroupSheet({ open, onOpenChange, selectedIds, onApplied }: B
           </div>
         </div>
 
-        <div className="flex gap-2 px-6 py-4 border-t">
+        <div className="flex gap-2 border-t px-6 py-4">
           <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

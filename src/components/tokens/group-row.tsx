@@ -46,15 +46,12 @@ export function GroupRow({
         data-group-name={groupName}
         data-group-depth={String(depth)}
         data-group-count={String(tokenCount)}
-        className="border-b group/row cursor-pointer select-none bg-muted/20 transition-colors hover:bg-muted/40"
+        className="group/row bg-muted/20 hover:bg-muted/40 cursor-pointer border-b transition-colors select-none"
         onClick={() => setExpanded(!expanded)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <td
-          className="py-2 pl-3 pr-1"
-          style={{ width: 40, minWidth: 40, maxWidth: 40 }}
-        >
+        <td className="py-2 pr-1 pl-3" style={{ width: 40, minWidth: 40, maxWidth: 40 }}>
           <Checkbox
             checked={allSelected}
             ref={(el) => {
@@ -66,24 +63,22 @@ export function GroupRow({
               }
             }}
             data-state={indeterminate ? "indeterminate" : allSelected ? "checked" : "unchecked"}
-            onCheckedChange={(v) => { onSelectAll(!!v); }}
+            onCheckedChange={(v) => {
+              onSelectAll(!!v);
+            }}
             onClick={(e) => e.stopPropagation()}
             aria-label={`Select all in ${groupName}`}
           />
         </td>
-        <td
-          colSpan={20}
-          className="py-2 pr-3"
-          style={{ paddingLeft: `${8 + depth * 12}px` }}
-        >
+        <td colSpan={20} className="py-2 pr-3" style={{ paddingLeft: `${8 + depth * 12}px` }}>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-foreground">{groupName}</span>
+            <span className="text-foreground text-xs font-semibold">{groupName}</span>
             <Badge variant="secondary" className="h-4 px-1.5 text-[10px] font-normal">
               {tokenCount}
             </Badge>
             <ChevronRight
               className={cn(
-                "h-3.5 w-3.5 text-muted-foreground transition-transform shrink-0",
+                "text-muted-foreground h-3.5 w-3.5 shrink-0 transition-transform",
                 expanded && "rotate-90"
               )}
             />
@@ -94,8 +89,10 @@ export function GroupRow({
               >
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="rounded p-1 hover:bg-muted transition-colors">
-                      <span className="text-muted-foreground font-bold text-sm leading-none">···</span>
+                    <button className="hover:bg-muted rounded p-1 transition-colors">
+                      <span className="text-muted-foreground text-sm leading-none font-bold">
+                        ···
+                      </span>
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-36">

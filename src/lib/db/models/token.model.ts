@@ -52,5 +52,4 @@ TokenSchema.index({ collection: 1, group: 1 });
 TokenSchema.index({ flagged: 1 });
 
 export const Token =
-  (models.Token as Model<ITokenDoc> | undefined) ||
-  model<ITokenDoc>("Token", TokenSchema);
+  (models.Token as Model<ITokenDoc> | undefined) || model<ITokenDoc>("Token", TokenSchema);

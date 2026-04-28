@@ -13,7 +13,10 @@ const config = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     rules: {
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
       "react/no-unescaped-entities": "off",
       // Downgrade setState-in-effect to warn — the pattern is valid for data fetching
       "react-hooks/set-state-in-effect": "warn",

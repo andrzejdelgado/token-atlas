@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,8 +13,16 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-interface Collection { _id: string; name: string; }
-interface Group { _id: string; name: string; path: string; depth: number; }
+interface Collection {
+  _id: string;
+  name: string;
+}
+interface Group {
+  _id: string;
+  name: string;
+  path: string;
+  depth: number;
+}
 
 interface BulkMoveSheetProps {
   open: boolean;
@@ -41,17 +44,28 @@ export function BulkMoveSheet({ open, onOpenChange, selectedIds, onApplied }: Bu
   useEffect(() => {
     if (!open) return;
     fetch("/api/collections")
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (d?.data) setCollections(d.data); })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.data) setCollections(d.data);
+      })
       .catch(() => {});
   }, [open]);
 
   // Fetch groups whenever the selected collection changes
   useEffect(() => {
-    if (!collectionId) { setGroups([]); setGroupId(""); return; }
+    if (!collectionId) {
+      setGroups([]);
+      setGroupId("");
+      return;
+    }
     fetch(`/api/groups?collection=${collectionId}`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (d?.data) { setGroups(d.data); setGroupId(""); } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.data) {
+          setGroups(d.data);
+          setGroupId("");
+        }
+      })
       .catch(() => {});
   }, [collectionId]);
 
@@ -61,7 +75,10 @@ export function BulkMoveSheet({ open, onOpenChange, selectedIds, onApplied }: Bu
   }
 
   async function handleApply() {
-    if (!groupId) { toast.error("Select a destination group"); return; }
+    if (!groupId) {
+      toast.error("Select a destination group");
+      return;
+    }
     setApplying(true);
     try {
       const res = await fetch("/api/tokens/bulk", {
@@ -86,50 +103,58 @@ export function BulkMoveSheet({ open, onOpenChange, selectedIds, onApplied }: Bu
   }
 
   return (
-    <Sheet open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
-      <SheetContent className="w-[440px] sm:w-[500px] flex flex-col gap-0 p-0">
-        <SheetHeader className="px-6 py-5 border-b">
+    <Sheet
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) reset();
+        onOpenChange(v);
+      }}
+    >
+      <SheetContent className="flex w-[440px] flex-col gap-0 p-0 sm:w-[500px]">
+        <SheetHeader className="border-b px-6 py-5">
           <SheetTitle className="text-base">Move tokens</SheetTitle>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Move {count} selected token{count !== 1 ? "s" : ""} to a different group
           </p>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="px-6 py-5 space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <div className="space-y-4 px-6 py-5">
+            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               Destination
             </p>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Collection</Label>
+              <Label className="text-muted-foreground text-xs">Collection</Label>
               <Select value={collectionId} onValueChange={setCollectionId}>
-                <SelectTrigger className="w-full h-9 text-sm">
+                <SelectTrigger className="h-9 w-full text-sm">
                   <SelectValue placeholder="Select collection…" />
                 </SelectTrigger>
                 <SelectContent>
                   {collections.map((c) => (
-                    <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                    <SelectItem key={c._id} value={c._id}>
+                      {c.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Group</Label>
+              <Label className="text-muted-foreground text-xs">Group</Label>
               <Select
                 value={groupId}
                 onValueChange={setGroupId}
                 disabled={!collectionId || groups.length === 0}
               >
-                <SelectTrigger className="w-full h-9 text-sm">
+                <SelectTrigger className="h-9 w-full text-sm">
                   <SelectValue
                     placeholder={
                       !collectionId
                         ? "Select a collection first…"
                         : groups.length === 0
-                        ? "No groups in this collection"
-                        : "Select group…"
+                          ? "No groups in this collection"
+                          : "Select group…"
                     }
                   />
                 </SelectTrigger>
@@ -139,7 +164,7 @@ export function BulkMoveSheet({ open, onOpenChange, selectedIds, onApplied }: Bu
                       <span className="flex items-center gap-1">
                         {g.depth > 0 && (
                           <span
-                            className="text-muted-foreground text-xs shrink-0"
+                            className="text-muted-foreground shrink-0 text-xs"
                             style={{ paddingLeft: `${(g.depth - 1) * 10}px` }}
                           >
                             └
@@ -155,15 +180,11 @@ export function BulkMoveSheet({ open, onOpenChange, selectedIds, onApplied }: Bu
           </div>
         </div>
 
-        <div className="flex gap-2 px-6 py-4 border-t">
+        <div className="flex gap-2 border-t px-6 py-4">
           <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            className="flex-1"
-            onClick={handleApply}
-            disabled={!groupId || applying}
-          >
+          <Button className="flex-1" onClick={handleApply} disabled={!groupId || applying}>
             {applying ? "Moving…" : `Move ${count} token${count !== 1 ? "s" : ""}`}
           </Button>
         </div>

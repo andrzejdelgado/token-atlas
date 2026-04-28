@@ -63,16 +63,16 @@ export function FloatingActionToolbar({
     <>
       <div
         className={cn(
-          "fixed bottom-6 left-1/2 -translate-x-1/2 z-50",
-          "flex items-center gap-2 rounded-xl border bg-popover px-4 py-2.5 shadow-xl",
+          "fixed bottom-6 left-1/2 z-50 -translate-x-1/2",
+          "bg-popover flex items-center gap-2 rounded-xl border px-4 py-2.5 shadow-xl",
           "animate-in slide-in-from-bottom-4 duration-200"
         )}
       >
-        <span className="text-sm font-medium text-muted-foreground mr-1 whitespace-nowrap">
+        <span className="text-muted-foreground mr-1 text-sm font-medium whitespace-nowrap">
           {count} selected
         </span>
 
-        <div className="h-4 w-px bg-border" />
+        <div className="bg-border h-4 w-px" />
 
         <Button
           variant="ghost"
@@ -126,15 +126,25 @@ export function FloatingActionToolbar({
         </Button>
 
         {/* Delete with popover confirmation */}
-        <Popover open={deletePopoverOpen} onOpenChange={(o) => { setDeletePopoverOpen(o); if (!o) setDeleteConfirm(false); }}>
+        <Popover
+          open={deletePopoverOpen}
+          onOpenChange={(o) => {
+            setDeletePopoverOpen(o);
+            if (!o) setDeleteConfirm(false);
+          }}
+        >
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs text-destructive hover:text-destructive">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive h-8 gap-1.5 text-xs"
+            >
               <Trash2 className="h-3.5 w-3.5" />
               Delete
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-72 p-4" side="top">
-            <p className="text-sm text-center mb-4">
+            <p className="mb-4 text-center text-sm">
               You&apos;re about to delete <strong>{count}</strong> token(s). This cannot be undone.
             </p>
             {!deleteConfirm ? (
@@ -154,7 +164,10 @@ export function FloatingActionToolbar({
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => { setDeleteConfirm(false); setDeletePopoverOpen(false); }}
+                  onClick={() => {
+                    setDeleteConfirm(false);
+                    setDeletePopoverOpen(false);
+                  }}
                 >
                   No
                 </Button>
@@ -163,11 +176,11 @@ export function FloatingActionToolbar({
           </PopoverContent>
         </Popover>
 
-        <div className="h-4 w-px bg-border" />
+        <div className="bg-border h-4 w-px" />
 
         <button
           onClick={onDeselect}
-          className="rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted rounded-md p-1 transition-colors"
           title="Deselect all"
         >
           <X className="h-4 w-4" />
@@ -178,25 +191,37 @@ export function FloatingActionToolbar({
         open={groupOpen}
         onOpenChange={setGroupOpen}
         selectedIds={selectedIds}
-        onApplied={() => { onBulkApplied(); setGroupOpen(false); }}
+        onApplied={() => {
+          onBulkApplied();
+          setGroupOpen(false);
+        }}
       />
       <BulkRenameSheet
         open={renameOpen}
         onOpenChange={setRenameOpen}
         selectedIds={selectedIds}
-        onApplied={() => { onBulkApplied(); setRenameOpen(false); }}
+        onApplied={() => {
+          onBulkApplied();
+          setRenameOpen(false);
+        }}
       />
       <BulkMoveSheet
         open={moveOpen}
         onOpenChange={setMoveOpen}
         selectedIds={selectedIds}
-        onApplied={() => { onBulkApplied(); setMoveOpen(false); }}
+        onApplied={() => {
+          onBulkApplied();
+          setMoveOpen(false);
+        }}
       />
       <BulkLabelSheet
         open={labelOpen}
         onOpenChange={setLabelOpen}
         selectedIds={selectedIds}
-        onApplied={() => { onBulkApplied(); setLabelOpen(false); }}
+        onApplied={() => {
+          onBulkApplied();
+          setLabelOpen(false);
+        }}
       />
     </>
   );

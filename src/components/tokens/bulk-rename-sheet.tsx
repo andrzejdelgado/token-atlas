@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +18,12 @@ interface BulkRenameSheetProps {
   onApplied: () => void;
 }
 
-export function BulkRenameSheet({ open, onOpenChange, selectedIds, onApplied }: BulkRenameSheetProps) {
+export function BulkRenameSheet({
+  open,
+  onOpenChange,
+  selectedIds,
+  onApplied,
+}: BulkRenameSheetProps) {
   const [prefix, setPrefix] = useState("");
   const [suffix, setSuffix] = useState("");
   const [swapFind, setSwapFind] = useState("");
@@ -43,16 +43,22 @@ export function BulkRenameSheet({ open, onOpenChange, selectedIds, onApplied }: 
   const hasChanges = !!(prefix || suffix || swapFind || remove);
 
   useEffect(() => {
-    if (!hasChanges || selectedIds.length === 0) { setPreviews([]); return; }
+    if (!hasChanges || selectedIds.length === 0) {
+      setPreviews([]);
+      return;
+    }
     setLoading(true);
     fetch(`/api/tokens?${selectedIds.map((id) => `id=${id}`).join("&")}&preview=true`)
       .then((r) => r.json())
       .then((data) => {
-        const tokens = (data.data ?? []).map((t: { _id: string; name: string }) => ({ _id: t._id, name: t.name }));
+        const tokens = (data.data ?? []).map((t: { _id: string; name: string }) => ({
+          _id: t._id,
+          name: t.name,
+        }));
         setPreviews(previewBulkRename(tokens, options));
       })
       .finally(() => setLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefix, suffix, swapFind, swapReplace, remove]);
 
   async function handleApply() {
@@ -74,26 +80,34 @@ export function BulkRenameSheet({ open, onOpenChange, selectedIds, onApplied }: 
   }
 
   function reset() {
-    setPrefix(""); setSuffix(""); setSwapFind(""); setSwapReplace(""); setRemove("");
+    setPrefix("");
+    setSuffix("");
+    setSwapFind("");
+    setSwapReplace("");
+    setRemove("");
   }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[440px] sm:w-[500px] flex flex-col gap-0 p-0">
-        <SheetHeader className="px-6 py-5 border-b">
+      <SheetContent className="flex w-[440px] flex-col gap-0 p-0 sm:w-[500px]">
+        <SheetHeader className="border-b px-6 py-5">
           <SheetTitle className="text-base">Bulk rename</SheetTitle>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Applies to {selectedIds.length} selected token{selectedIds.length !== 1 ? "s" : ""}
           </p>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto">
           {/* ── Transform options ─────────────────── */}
-          <div className="px-6 py-5 space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Transform</p>
+          <div className="space-y-4 px-6 py-5">
+            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+              Transform
+            </p>
 
             <div className="space-y-1.5">
-              <Label htmlFor="rename-prefix" className="text-xs text-muted-foreground">Add prefix</Label>
+              <Label htmlFor="rename-prefix" className="text-muted-foreground text-xs">
+                Add prefix
+              </Label>
               <Input
                 id="rename-prefix"
                 placeholder="e.g. legacy/"
@@ -104,7 +118,9 @@ export function BulkRenameSheet({ open, onOpenChange, selectedIds, onApplied }: 
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="rename-suffix" className="text-xs text-muted-foreground">Add suffix</Label>
+              <Label htmlFor="rename-suffix" className="text-muted-foreground text-xs">
+                Add suffix
+              </Label>
               <Input
                 id="rename-suffix"
                 placeholder="e.g. -v2"
@@ -116,7 +132,9 @@ export function BulkRenameSheet({ open, onOpenChange, selectedIds, onApplied }: 
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="rename-find" className="text-xs text-muted-foreground">Find</Label>
+                <Label htmlFor="rename-find" className="text-muted-foreground text-xs">
+                  Find
+                </Label>
                 <Input
                   id="rename-find"
                   placeholder="color/"
@@ -126,7 +144,9 @@ export function BulkRenameSheet({ open, onOpenChange, selectedIds, onApplied }: 
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="rename-replace" className="text-xs text-muted-foreground">Replace with</Label>
+                <Label htmlFor="rename-replace" className="text-muted-foreground text-xs">
+                  Replace with
+                </Label>
                 <Input
                   id="rename-replace"
                   placeholder="colour/"
@@ -138,7 +158,9 @@ export function BulkRenameSheet({ open, onOpenChange, selectedIds, onApplied }: 
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="rename-remove" className="text-xs text-muted-foreground">Remove text</Label>
+              <Label htmlFor="rename-remove" className="text-muted-foreground text-xs">
+                Remove text
+              </Label>
               <Input
                 id="rename-remove"
                 placeholder="text to remove"
@@ -153,17 +175,21 @@ export function BulkRenameSheet({ open, onOpenChange, selectedIds, onApplied }: 
           {hasChanges && (
             <>
               <Separator />
-              <div className="px-6 py-5 space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Preview</p>
+              <div className="space-y-3 px-6 py-5">
+                <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                  Preview
+                </p>
                 {loading ? (
-                  <p className="text-xs text-muted-foreground">Loading preview…</p>
+                  <p className="text-muted-foreground text-xs">Loading preview…</p>
                 ) : previews.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No tokens to preview</p>
+                  <p className="text-muted-foreground text-xs">No tokens to preview</p>
                 ) : (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                  <div className="max-h-64 space-y-2 overflow-y-auto">
                     {previews.slice(0, 20).map((p) => (
                       <div key={p.tokenId} className="flex flex-col text-xs">
-                        <span className="text-muted-foreground line-through opacity-60">{p.originalName}</span>
+                        <span className="text-muted-foreground line-through opacity-60">
+                          {p.originalName}
+                        </span>
                         <span className="flex items-center gap-1">
                           <span className="text-muted-foreground">→</span>
                           <RenamePreviewName preview={p} />
@@ -171,7 +197,9 @@ export function BulkRenameSheet({ open, onOpenChange, selectedIds, onApplied }: 
                       </div>
                     ))}
                     {previews.length > 20 && (
-                      <p className="text-xs text-muted-foreground">…and {previews.length - 20} more</p>
+                      <p className="text-muted-foreground text-xs">
+                        …and {previews.length - 20} more
+                      </p>
                     )}
                   </div>
                 )}
@@ -181,7 +209,7 @@ export function BulkRenameSheet({ open, onOpenChange, selectedIds, onApplied }: 
         </div>
 
         {/* ── Footer ───────────────────────────── */}
-        <div className="flex gap-2 px-6 py-4 border-t">
+        <div className="flex gap-2 border-t px-6 py-4">
           <Button variant="outline" className="flex-1" onClick={reset}>
             Reset
           </Button>
@@ -198,7 +226,7 @@ function RenamePreviewName({ preview }: { preview: BulkRenamePreview }) {
   const changeColors: Record<string, string> = {
     prefix: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
     suffix: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-    swap:   "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+    swap: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
     remove: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
   };
 
@@ -207,7 +235,7 @@ function RenamePreviewName({ preview }: { preview: BulkRenamePreview }) {
   return (
     <span>
       {preview.changes.map((c, i) => (
-        <span key={i} className={cn("px-0.5 rounded-sm", changeColors[c.type])}>
+        <span key={i} className={cn("rounded-sm px-0.5", changeColors[c.type])}>
           {c.segment}
         </span>
       ))}

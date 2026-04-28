@@ -2,23 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { X, Check, ChevronsUpDown, Flag, Loader2, Layers } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -44,16 +35,28 @@ const TOKEN_TYPES = ["Color", "Number", "String", "Boolean"] as const;
 type TokenType = (typeof TOKEN_TYPES)[number];
 
 const TYPE_COLORS: Record<TokenType, string> = {
-  Color: "data-[active=true]:bg-blue-500/15 data-[active=true]:text-blue-700 dark:data-[active=true]:text-blue-400 data-[active=true]:border-blue-500/30",
-  Number: "data-[active=true]:bg-emerald-500/15 data-[active=true]:text-emerald-700 dark:data-[active=true]:text-emerald-400 data-[active=true]:border-emerald-500/30",
-  String: "data-[active=true]:bg-amber-500/15 data-[active=true]:text-amber-700 dark:data-[active=true]:text-amber-400 data-[active=true]:border-amber-500/30",
-  Boolean: "data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-700 dark:data-[active=true]:text-purple-400 data-[active=true]:border-purple-500/30",
+  Color:
+    "data-[active=true]:bg-blue-500/15 data-[active=true]:text-blue-700 dark:data-[active=true]:text-blue-400 data-[active=true]:border-blue-500/30",
+  Number:
+    "data-[active=true]:bg-emerald-500/15 data-[active=true]:text-emerald-700 dark:data-[active=true]:text-emerald-400 data-[active=true]:border-emerald-500/30",
+  String:
+    "data-[active=true]:bg-amber-500/15 data-[active=true]:text-amber-700 dark:data-[active=true]:text-amber-400 data-[active=true]:border-amber-500/30",
+  Boolean:
+    "data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-700 dark:data-[active=true]:text-purple-400 data-[active=true]:border-purple-500/30",
 };
 
 const isColorValue = (v: string) => /^#|^rgb|^hsl|^oklch/.test(v);
 
-interface Collection { _id: string; name: string; }
-interface Group { _id: string; name: string; path: string; depth: number; }
+interface Collection {
+  _id: string;
+  name: string;
+}
+interface Group {
+  _id: string;
+  name: string;
+  path: string;
+  depth: number;
+}
 
 function TagCombobox({
   label,
@@ -73,10 +76,12 @@ function TagCombobox({
 
   return (
     <div className="space-y-2">
-      <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</Label>
+      <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+        {label}
+      </Label>
       <div className="flex flex-wrap gap-1.5">
         {selected.map((s) => (
-          <Badge key={s} variant="secondary" className="gap-1 text-xs pr-1">
+          <Badge key={s} variant="secondary" className="gap-1 pr-1 text-xs">
             {s}
             <button
               type="button"
@@ -89,7 +94,7 @@ function TagCombobox({
         ))}
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-6 px-2 text-xs gap-1 border-dashed">
+            <Button variant="outline" size="sm" className="h-6 gap-1 border-dashed px-2 text-xs">
               Add <ChevronsUpDown className="h-3 w-3 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -101,8 +106,20 @@ function TagCombobox({
                 {popular.length > 0 && (
                   <CommandGroup heading="Popular">
                     {popular.map((o) => (
-                      <CommandItem key={o} value={o} onSelect={() => { onToggle(o); setOpen(false); }}>
-                        <Check className={cn("mr-2 h-3.5 w-3.5 shrink-0", selected.includes(o) ? "opacity-100" : "opacity-0")} />
+                      <CommandItem
+                        key={o}
+                        value={o}
+                        onSelect={() => {
+                          onToggle(o);
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-3.5 w-3.5 shrink-0",
+                            selected.includes(o) ? "opacity-100" : "opacity-0"
+                          )}
+                        />
                         {o}
                       </CommandItem>
                     ))}
@@ -111,8 +128,20 @@ function TagCombobox({
                 {rest.length > 0 && (
                   <CommandGroup heading={popular.length > 0 ? "All" : undefined}>
                     {rest.map((o) => (
-                      <CommandItem key={o} value={o} onSelect={() => { onToggle(o); setOpen(false); }}>
-                        <Check className={cn("mr-2 h-3.5 w-3.5 shrink-0", selected.includes(o) ? "opacity-100" : "opacity-0")} />
+                      <CommandItem
+                        key={o}
+                        value={o}
+                        onSelect={() => {
+                          onToggle(o);
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-3.5 w-3.5 shrink-0",
+                            selected.includes(o) ? "opacity-100" : "opacity-0"
+                          )}
+                        />
                         {o}
                       </CommandItem>
                     ))}
@@ -147,7 +176,7 @@ function ColorInput({
     <div className="relative flex items-center">
       {hasSwatch && (
         <span
-          className="absolute left-2.5 h-3.5 w-3.5 rounded-sm border border-border/50 shrink-0"
+          className="border-border/50 absolute left-2.5 h-3.5 w-3.5 shrink-0 rounded-sm border"
           style={{ backgroundColor: value }}
         />
       )}
@@ -237,8 +266,10 @@ export function EditTokenSheet({
     // Non-base theme: fetch base values + existing override in parallel
     setLoadingOverride(true);
     Promise.all([
-      fetch(`/api/tokens/${token._id}`).then((r) => r.ok ? r.json() : null),
-      fetch(`/api/tokens/${token._id}/override?themeId=${activeThemeId}`).then((r) => r.ok ? r.json() : null),
+      fetch(`/api/tokens/${token._id}`).then((r) => (r.ok ? r.json() : null)),
+      fetch(`/api/tokens/${token._id}/override?themeId=${activeThemeId}`).then((r) =>
+        r.ok ? r.json() : null
+      ),
     ])
       .then(([baseData, overrideData]) => {
         const baseLv = baseData?.data?.lightValue ?? token.lightValue;
@@ -266,23 +297,26 @@ export function EditTokenSheet({
         setOverrideDark(token.darkValue ?? "");
       })
       .finally(() => setLoadingOverride(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token?._id, open, activeThemeId, showOverrideSection]);
 
   // Fetch collections once
   useEffect(() => {
     if (!open) return;
     fetch("/api/collections")
-      .then((r) => r.ok ? r.json() : null)
+      .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setCollections(d.data ?? []))
       .catch(() => {});
   }, [open]);
 
   // Fetch groups whenever collection changes
   useEffect(() => {
-    if (!collectionId) { setGroups([]); return; }
+    if (!collectionId) {
+      setGroups([]);
+      return;
+    }
     fetch(`/api/groups?collection=${collectionId}`)
-      .then((r) => r.ok ? r.json() : null)
+      .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setGroups(d.data ?? []))
       .catch(() => {});
   }, [collectionId]);
@@ -293,11 +327,11 @@ export function EditTokenSheet({
   }
 
   function toggleLabel(l: string) {
-    setLabels((prev) => prev.includes(l) ? prev.filter((x) => x !== l) : [...prev, l]);
+    setLabels((prev) => (prev.includes(l) ? prev.filter((x) => x !== l) : [...prev, l]));
   }
 
   function toggleComponent(c: string) {
-    setComponents((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
+    setComponents((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
   }
 
   function groupLabel(g: Group) {
@@ -306,9 +340,18 @@ export function EditTokenSheet({
 
   async function handleSave() {
     if (!token) return;
-    if (!name.trim()) { toast.error("Name is required"); return; }
-    if (!lightValue.trim()) { toast.error("Light value is required"); return; }
-    if (!groupId) { toast.error("Group is required"); return; }
+    if (!name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+    if (!lightValue.trim()) {
+      toast.error("Light value is required");
+      return;
+    }
+    if (!groupId) {
+      toast.error("Group is required");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -382,19 +425,22 @@ export function EditTokenSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[440px] sm:w-[500px] flex flex-col gap-0 p-0">
-        <SheetHeader className="px-6 py-5 border-b">
+      <SheetContent className="flex w-[440px] flex-col gap-0 p-0 sm:w-[500px]">
+        <SheetHeader className="border-b px-6 py-5">
           <SheetTitle className="text-base">Edit token</SheetTitle>
-          {token && (
-            <p className="text-xs text-muted-foreground truncate">{token.name}</p>
-          )}
+          {token && <p className="text-muted-foreground truncate text-xs">{token.name}</p>}
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto">
           {/* ── Identity ─────────────────────────────── */}
-          <div className="px-6 py-5 space-y-4">
+          <div className="space-y-4 px-6 py-5">
             <div className="space-y-1.5">
-              <Label htmlFor="edit-name" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Name</Label>
+              <Label
+                htmlFor="edit-name"
+                className="text-muted-foreground text-xs font-semibold tracking-wide uppercase"
+              >
+                Name
+              </Label>
               <Input
                 id="edit-name"
                 value={name}
@@ -405,7 +451,9 @@ export function EditTokenSheet({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Type</Label>
+              <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                Type
+              </Label>
               <div className="flex gap-1.5">
                 {TOKEN_TYPES.map((t) => (
                   <button
@@ -429,13 +477,15 @@ export function EditTokenSheet({
           <Separator />
 
           {/* ── Base Values ───────────────────────────── */}
-          <div className="px-6 py-5 space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <div className="space-y-3 px-6 py-5">
+            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               {showOverrideSection ? "Base values" : "Values"}
             </p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-light" className="text-xs text-muted-foreground">Light</Label>
+                <Label htmlFor="edit-light" className="text-muted-foreground text-xs">
+                  Light
+                </Label>
                 <ColorInput
                   id="edit-light"
                   value={lightValue}
@@ -445,7 +495,9 @@ export function EditTokenSheet({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-dark" className="text-xs text-muted-foreground">Dark</Label>
+                <Label htmlFor="edit-dark" className="text-muted-foreground text-xs">
+                  Dark
+                </Label>
                 <ColorInput
                   id="edit-dark"
                   value={darkValue}
@@ -461,33 +513,36 @@ export function EditTokenSheet({
           {showOverrideSection && (
             <>
               <Separator />
-              <div className="px-6 py-5 space-y-3">
+              <div className="space-y-3 px-6 py-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Layers className="h-3.5 w-3.5 text-muted-foreground" />
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <Layers className="text-muted-foreground h-3.5 w-3.5" />
+                    <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                       Override for {activeThemeName ?? "theme"}
                     </p>
                   </div>
                   {hasExistingOverride && (
-                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5">Active</Badge>
+                    <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
+                      Active
+                    </Badge>
                   )}
                 </div>
 
-                <p className="text-[11px] text-muted-foreground">
-                  These values override the base values when the <strong>{activeThemeName}</strong> theme is active.
+                <p className="text-muted-foreground text-[11px]">
+                  These values override the base values when the <strong>{activeThemeName}</strong>{" "}
+                  theme is active.
                 </p>
 
                 {loadingOverride ? (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+                  <div className="text-muted-foreground flex items-center gap-2 py-2 text-xs">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     Loading base values…
                   </div>
                 ) : (
-                  <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
+                  <div className="bg-muted/30 space-y-3 rounded-lg border p-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Light override</Label>
+                        <Label className="text-muted-foreground text-xs">Light override</Label>
                         <ColorInput
                           value={overrideLight}
                           onChange={setOverrideLight}
@@ -496,7 +551,7 @@ export function EditTokenSheet({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Dark override</Label>
+                        <Label className="text-muted-foreground text-xs">Dark override</Label>
                         <ColorInput
                           value={overrideDark}
                           onChange={setOverrideDark}
@@ -509,7 +564,7 @@ export function EditTokenSheet({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 text-xs text-muted-foreground hover:text-destructive px-2"
+                        className="text-muted-foreground hover:text-destructive h-7 px-2 text-xs"
                         onClick={handleRemoveOverride}
                         disabled={removingOverride}
                       >
@@ -526,14 +581,14 @@ export function EditTokenSheet({
           <Separator />
 
           {/* ── Status & Taxonomy ─────────────────────── */}
-          <div className="px-6 py-5 space-y-5">
+          <div className="space-y-5 px-6 py-5">
             {/* Flagged */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Flag className="h-3.5 w-3.5 text-muted-foreground" />
+                <Flag className="text-muted-foreground h-3.5 w-3.5" />
                 <div>
                   <p className="text-sm font-medium">Flag token</p>
-                  <p className="text-xs text-muted-foreground">Mark for review or attention</p>
+                  <p className="text-muted-foreground text-xs">Mark for review or attention</p>
                 </div>
               </div>
               <Switch checked={flagged} onCheckedChange={setFlagged} />
@@ -559,35 +614,48 @@ export function EditTokenSheet({
           <Separator />
 
           {/* ── Location ─────────────────────────────── */}
-          <div className="px-6 py-5 space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Location</p>
+          <div className="space-y-4 px-6 py-5">
+            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+              Location
+            </p>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Collection</Label>
+              <Label className="text-muted-foreground text-xs">Collection</Label>
               <Select value={collectionId} onValueChange={handleCollectionChange}>
-                <SelectTrigger className="w-full h-9 text-sm">
+                <SelectTrigger className="h-9 w-full text-sm">
                   <SelectValue placeholder="Select collection…" />
                 </SelectTrigger>
                 <SelectContent>
                   {collections.map((c) => (
-                    <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                    <SelectItem key={c._id} value={c._id}>
+                      {c.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Group</Label>
-              <Select value={groupId} onValueChange={setGroupId} disabled={!collectionId || groups.length === 0}>
-                <SelectTrigger className="w-full h-9 text-sm">
-                  <SelectValue placeholder={!collectionId ? "Select a collection first…" : "Select group…"} />
+              <Label className="text-muted-foreground text-xs">Group</Label>
+              <Select
+                value={groupId}
+                onValueChange={setGroupId}
+                disabled={!collectionId || groups.length === 0}
+              >
+                <SelectTrigger className="h-9 w-full text-sm">
+                  <SelectValue
+                    placeholder={!collectionId ? "Select a collection first…" : "Select group…"}
+                  />
                 </SelectTrigger>
                 <SelectContent className="max-h-64">
                   {groups.map((g) => (
                     <SelectItem key={g._id} value={g._id}>
                       <span className="flex items-center gap-1">
                         {g.depth > 0 && (
-                          <span className="text-muted-foreground text-xs" style={{ paddingLeft: `${(g.depth - 1) * 10}px` }}>
+                          <span
+                            className="text-muted-foreground text-xs"
+                            style={{ paddingLeft: `${(g.depth - 1) * 10}px` }}
+                          >
                             └
                           </span>
                         )}
@@ -602,7 +670,7 @@ export function EditTokenSheet({
         </div>
 
         {/* ── Footer ───────────────────────────────── */}
-        <div className="flex gap-2 px-6 py-4 border-t">
+        <div className="flex gap-2 border-t px-6 py-4">
           <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

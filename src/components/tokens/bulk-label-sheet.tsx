@@ -2,20 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { X, Check, ChevronsUpDown } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -37,7 +28,12 @@ interface BulkLabelSheetProps {
   onApplied: () => void;
 }
 
-export function BulkLabelSheet({ open, onOpenChange, selectedIds, onApplied }: BulkLabelSheetProps) {
+export function BulkLabelSheet({
+  open,
+  onOpenChange,
+  selectedIds,
+  onApplied,
+}: BulkLabelSheetProps) {
   const [comboOpen, setComboOpen] = useState(false);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [applying, setApplying] = useState(false);
@@ -46,7 +42,9 @@ export function BulkLabelSheet({ open, onOpenChange, selectedIds, onApplied }: B
   const popular = allLabels.slice(0, POPULAR_COUNT);
   const rest = allLabels.filter((l) => !popular.includes(l));
 
-  useEffect(() => { if (!open) setSelectedLabels([]); }, [open]);
+  useEffect(() => {
+    if (!open) setSelectedLabels([]);
+  }, [open]);
 
   function toggleLabel(label: string) {
     const trimmed = label.trim().toLowerCase();
@@ -58,13 +56,20 @@ export function BulkLabelSheet({ open, onOpenChange, selectedIds, onApplied }: B
   }
 
   async function handleApply() {
-    if (selectedLabels.length === 0) { toast.error("Select at least one label"); return; }
+    if (selectedLabels.length === 0) {
+      toast.error("Select at least one label");
+      return;
+    }
     setApplying(true);
     try {
       const res = await fetch("/api/tokens/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "label", tokenIds: selectedIds, payload: { labels: selectedLabels } }),
+        body: JSON.stringify({
+          action: "label",
+          tokenIds: selectedIds,
+          payload: { labels: selectedLabels },
+        }),
       });
       if (!res.ok) throw new Error();
       toast.success(`Applied ${selectedLabels.length} label(s) to ${selectedIds.length} token(s)`);
@@ -78,25 +83,27 @@ export function BulkLabelSheet({ open, onOpenChange, selectedIds, onApplied }: B
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[440px] sm:w-[500px] flex flex-col gap-0 p-0">
-        <SheetHeader className="px-6 py-5 border-b">
+      <SheetContent className="flex w-[440px] flex-col gap-0 p-0 sm:w-[500px]">
+        <SheetHeader className="border-b px-6 py-5">
           <SheetTitle className="text-base">Apply labels</SheetTitle>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Adding to {selectedIds.length} selected token{selectedIds.length !== 1 ? "s" : ""}
           </p>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto">
           {/* ── Label picker ─────────────────────── */}
-          <div className="px-6 py-5 space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Labels</p>
+          <div className="space-y-3 px-6 py-5">
+            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+              Labels
+            </p>
             <Popover open={comboOpen} onOpenChange={setComboOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   role="combobox"
                   aria-expanded={comboOpen}
-                  className="w-full justify-between font-normal h-9 text-sm"
+                  className="h-9 w-full justify-between text-sm font-normal"
                 >
                   <span className="text-muted-foreground">Search or pick a label…</span>
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -111,7 +118,12 @@ export function BulkLabelSheet({ open, onOpenChange, selectedIds, onApplied }: B
                       <CommandGroup heading="Popular">
                         {popular.map((l) => (
                           <CommandItem key={l} value={l} onSelect={() => toggleLabel(l)}>
-                            <Check className={cn("mr-2 h-4 w-4 shrink-0", selectedLabels.includes(l) ? "opacity-100" : "opacity-0")} />
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4 shrink-0",
+                                selectedLabels.includes(l) ? "opacity-100" : "opacity-0"
+                              )}
+                            />
                             {l}
                           </CommandItem>
                         ))}
@@ -121,7 +133,12 @@ export function BulkLabelSheet({ open, onOpenChange, selectedIds, onApplied }: B
                       <CommandGroup heading={popular.length > 0 ? "All" : undefined}>
                         {rest.map((l) => (
                           <CommandItem key={l} value={l} onSelect={() => toggleLabel(l)}>
-                            <Check className={cn("mr-2 h-4 w-4 shrink-0", selectedLabels.includes(l) ? "opacity-100" : "opacity-0")} />
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4 shrink-0",
+                                selectedLabels.includes(l) ? "opacity-100" : "opacity-0"
+                              )}
+                            />
                             {l}
                           </CommandItem>
                         ))}
@@ -137,8 +154,10 @@ export function BulkLabelSheet({ open, onOpenChange, selectedIds, onApplied }: B
           {selectedLabels.length > 0 && (
             <>
               <Separator />
-              <div className="px-6 py-5 space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Selected</p>
+              <div className="space-y-3 px-6 py-5">
+                <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                  Selected
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedLabels.map((l) => (
                     <Badge key={l} variant="secondary" className="gap-1 text-xs">
@@ -155,7 +174,7 @@ export function BulkLabelSheet({ open, onOpenChange, selectedIds, onApplied }: B
         </div>
 
         {/* ── Footer ───────────────────────────── */}
-        <div className="flex gap-2 px-6 py-4 border-t">
+        <div className="flex gap-2 border-t px-6 py-4">
           <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

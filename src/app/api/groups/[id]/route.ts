@@ -8,7 +8,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const { id } = await params;
   const group = await Group.findById(id).lean();
@@ -39,7 +40,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const { id } = await params;
 
@@ -139,7 +141,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const { id } = await params;
 
@@ -154,9 +157,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const descendants = await Group.find({ path: { $regex: `^${escapedPath}/` } }).lean();
 
   // Direct children of the deleted group (to be promoted to top-level)
-  const directChildren = descendants.filter(
-    (d) => d.parent?.toString() === id
-  );
+  const directChildren = descendants.filter((d) => d.parent?.toString() === id);
 
   // Promote direct children to top-level, cascade their descendants
   const bulkOps: Parameters<typeof Group.bulkWrite>[0] = [];
@@ -176,9 +177,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     });
 
     // Cascade path/depth to grandchildren (descendants of this child)
-    const childDescendants = descendants.filter(
-      (d) => d.path.startsWith(oldChildPath + "/")
-    );
+    const childDescendants = descendants.filter((d) => d.path.startsWith(oldChildPath + "/"));
     for (const grandchild of childDescendants) {
       bulkOps.push({
         updateOne: {

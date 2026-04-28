@@ -11,10 +11,14 @@ type W3CTokenTree = {
 
 function w3cType(tokenType: string): string {
   switch (tokenType) {
-    case "Color": return "color";
-    case "Number": return "number";
-    case "Boolean": return "boolean";
-    default: return "string";
+    case "Color":
+      return "color";
+    case "Number":
+      return "number";
+    case "Boolean":
+      return "boolean";
+    default:
+      return "string";
   }
 }
 

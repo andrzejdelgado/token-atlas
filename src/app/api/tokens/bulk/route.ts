@@ -10,7 +10,8 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const { action, tokenIds, payload } = await req.json();
 
@@ -48,10 +49,7 @@ export async function POST(req: NextRequest) {
 
     case "move": {
       const { groupId } = payload;
-      await Token.updateMany(
-        { _id: { $in: tokenIds } },
-        { group: groupId, updatedBy: userId }
-      );
+      await Token.updateMany({ _id: { $in: tokenIds } }, { group: groupId, updatedBy: userId });
       await AuditLog.insertMany(
         tokenIds.map((id: string) => ({
           tokenId: id,
@@ -66,10 +64,7 @@ export async function POST(req: NextRequest) {
 
     case "flag": {
       const { flagged } = payload;
-      await Token.updateMany(
-        { _id: { $in: tokenIds } },
-        { flagged, updatedBy: userId }
-      );
+      await Token.updateMany({ _id: { $in: tokenIds } }, { flagged, updatedBy: userId });
       await AuditLog.insertMany(
         tokenIds.map((id: string) => ({
           tokenId: id,

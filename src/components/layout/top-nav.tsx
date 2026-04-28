@@ -17,11 +17,10 @@ export function TopNav() {
   const pathname = usePathname();
 
   return (
-    <div className="flex items-center h-14 border-b px-6 shrink-0">
+    <div className="flex h-14 shrink-0 items-center border-b px-6">
       <nav className="flex items-center gap-1 text-sm">
         {NAV_ITEMS.map(({ label, href }) => {
-          const isActive =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
+          const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
             <Link
               key={href}
@@ -29,7 +28,7 @@ export function TopNav() {
               className={cn(
                 "rounded-md px-3 py-1.5 transition-colors",
                 isActive
-                  ? "bg-muted font-medium text-foreground"
+                  ? "bg-muted text-foreground font-medium"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >

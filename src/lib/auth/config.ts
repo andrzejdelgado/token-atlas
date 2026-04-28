@@ -52,10 +52,7 @@ export const authConfig: NextAuthConfig = {
 
         if (!user || !user.passwordHash) return null;
 
-        const valid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        );
+        const valid = await bcrypt.compare(credentials.password as string, user.passwordHash);
         if (!valid) return null;
 
         return {
@@ -96,7 +93,8 @@ export const authConfig: NextAuthConfig = {
         token.role = (user as { role?: string }).role ?? "user";
       }
       // Refresh token if role is missing or id is not a valid ObjectId (e.g. stale "demo-user" token)
-      const needsRefresh = !token.role || (typeof token.id === "string" && !/^[a-f\d]{24}$/i.test(token.id));
+      const needsRefresh =
+        !token.role || (typeof token.id === "string" && !/^[a-f\d]{24}$/i.test(token.id));
       if (needsRefresh && token.email && process.env.MONGODB_URI) {
         await connectToDatabase();
         const dbUser = await User.findOne({ email: token.email });

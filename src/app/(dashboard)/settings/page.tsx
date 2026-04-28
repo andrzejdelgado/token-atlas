@@ -210,13 +210,13 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="max-w-4xl space-y-8">
       <PageHeader title="Settings" />
 
       {/* Figma */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-base">
             <span className="">◈</span> Figma
           </CardTitle>
           {!isAdmin && (
@@ -244,11 +244,7 @@ export default function SettingsPage() {
           </div>
           {isAdmin && (
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={testFigmaConnection}
-                disabled={testingFigma}
-              >
+              <Button variant="outline" onClick={testFigmaConnection} disabled={testingFigma}>
                 {testingFigma && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Test connection
               </Button>
@@ -265,9 +261,11 @@ export default function SettingsPage() {
       {isAdmin && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <span className="">◉</span> Storybook
-              <Badge variant="outline" className="text-xs ml-1">Admin only</Badge>
+              <Badge variant="outline" className="ml-1 text-xs">
+                Admin only
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -300,7 +298,9 @@ export default function SettingsPage() {
                 <Label>Token file path</Label>
                 <Input
                   value={settings.storybookTokenPath ?? "tokens/tokens.json"}
-                  onChange={(e) => setSettings((p) => ({ ...p, storybookTokenPath: e.target.value }))}
+                  onChange={(e) =>
+                    setSettings((p) => ({ ...p, storybookTokenPath: e.target.value }))
+                  }
                   placeholder="tokens/tokens.json"
                 />
               </div>
@@ -359,7 +359,7 @@ export default function SettingsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          className="text-muted-foreground hover:text-destructive h-7 w-7"
                           onClick={() => removeUser(user._id)}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -383,10 +383,7 @@ export default function SettingsPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Name</Label>
-              <Input
-                value={profileName}
-                onChange={(e) => setProfileName(e.target.value)}
-              />
+              <Input value={profileName} onChange={(e) => setProfileName(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>Email</Label>

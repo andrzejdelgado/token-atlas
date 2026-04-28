@@ -19,15 +19,36 @@ import { toast } from "sonner";
 
 type Scope = "all" | "theme" | "collection" | "group";
 
-interface Theme { _id: string; name: string; tokenCount: number; }
-interface Collection { _id: string; name: string; tokenCount: number; }
-interface Group { _id: string; name: string; path: string; depth: number; }
+interface Theme {
+  _id: string;
+  name: string;
+  tokenCount: number;
+}
+interface Collection {
+  _id: string;
+  name: string;
+  tokenCount: number;
+}
+interface Group {
+  _id: string;
+  name: string;
+  path: string;
+  depth: number;
+}
 
 const SCOPE_OPTIONS: { value: Scope; label: string; description: string }[] = [
   { value: "all", label: "All tokens", description: "Export the complete token library" },
   { value: "theme", label: "By theme", description: "Only tokens belonging to a specific theme" },
-  { value: "collection", label: "By collection", description: "Only tokens in a specific collection" },
-  { value: "group", label: "By group", description: "Only tokens in a specific group or sub-group" },
+  {
+    value: "collection",
+    label: "By collection",
+    description: "Only tokens in a specific collection",
+  },
+  {
+    value: "group",
+    label: "By group",
+    description: "Only tokens in a specific group or sub-group",
+  },
 ];
 
 function ScopeCard({
@@ -37,7 +58,7 @@ function ScopeCard({
   children,
   onClick,
 }: {
-  option: typeof SCOPE_OPTIONS[number];
+  option: (typeof SCOPE_OPTIONS)[number];
   selected: boolean;
   tokenCount?: number;
   children?: React.ReactNode;
@@ -57,14 +78,14 @@ function ScopeCard({
         <div className="flex items-center gap-3">
           <RadioGroupItem value={option.value} id={option.value} className="mt-0.5 shrink-0" />
           <div>
-            <Label htmlFor={option.value} className="cursor-pointer font-medium text-sm">
+            <Label htmlFor={option.value} className="cursor-pointer text-sm font-medium">
               {option.label}
             </Label>
-            <p className="text-xs text-muted-foreground mt-0.5">{option.description}</p>
+            <p className="text-muted-foreground mt-0.5 text-xs">{option.description}</p>
           </div>
         </div>
         {tokenCount !== undefined && (
-          <Badge variant="secondary" className="h-5 px-2 text-[10px] font-normal shrink-0">
+          <Badge variant="secondary" className="h-5 shrink-0 px-2 text-[10px] font-normal">
             {tokenCount.toLocaleString()} tokens
           </Badge>
         )}
@@ -137,9 +158,7 @@ export default function ExportPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = scope === "all"
-        ? "tokens.json"
-        : `tokens-${scope}-${scopeId || "all"}.json`;
+      a.download = scope === "all" ? "tokens.json" : `tokens-${scope}-${scopeId || "all"}.json`;
       a.click();
       URL.revokeObjectURL(url);
 
@@ -158,8 +177,9 @@ export default function ExportPage() {
     <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Export Tokens</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Download your design tokens as a W3C Design Token Format JSON file. Choose a scope to narrow the export to a specific theme, collection, or group.
+        <p className="text-muted-foreground mt-1 text-sm">
+          Download your design tokens as a W3C Design Token Format JSON file. Choose a scope to
+          narrow the export to a specific theme, collection, or group.
         </p>
       </div>
 
@@ -167,7 +187,7 @@ export default function ExportPage() {
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium">Export scope</p>
           {totalCount !== undefined && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">
               {totalCount.toLocaleString()} tokens selected
             </span>
           )}
@@ -192,15 +212,17 @@ export default function ExportPage() {
             >
               {option.value === "theme" && (
                 <Select value={scopeId} onValueChange={setScopeId} disabled={loading}>
-                  <SelectTrigger className="h-8 text-xs w-full">
+                  <SelectTrigger className="h-8 w-full text-xs">
                     <SelectValue placeholder={loading ? "Loading themes…" : "Select a theme"} />
                   </SelectTrigger>
                   <SelectContent>
                     {themes.map((t) => (
                       <SelectItem key={t._id} value={t._id}>
-                        <span className="flex items-center justify-between gap-6 w-full">
+                        <span className="flex w-full items-center justify-between gap-6">
                           <span>{t.name}</span>
-                          <span className="text-muted-foreground text-[10px]">{t.tokenCount} tokens</span>
+                          <span className="text-muted-foreground text-[10px]">
+                            {t.tokenCount} tokens
+                          </span>
                         </span>
                       </SelectItem>
                     ))}
@@ -210,15 +232,19 @@ export default function ExportPage() {
 
               {option.value === "collection" && (
                 <Select value={scopeId} onValueChange={setScopeId} disabled={loading}>
-                  <SelectTrigger className="h-8 text-xs w-full">
-                    <SelectValue placeholder={loading ? "Loading collections…" : "Select a collection"} />
+                  <SelectTrigger className="h-8 w-full text-xs">
+                    <SelectValue
+                      placeholder={loading ? "Loading collections…" : "Select a collection"}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {collections.map((c) => (
                       <SelectItem key={c._id} value={c._id}>
-                        <span className="flex items-center justify-between gap-6 w-full">
+                        <span className="flex w-full items-center justify-between gap-6">
                           <span>{c.name}</span>
-                          <span className="text-muted-foreground text-[10px]">{c.tokenCount} tokens</span>
+                          <span className="text-muted-foreground text-[10px]">
+                            {c.tokenCount} tokens
+                          </span>
                         </span>
                       </SelectItem>
                     ))}
@@ -228,19 +254,14 @@ export default function ExportPage() {
 
               {option.value === "group" && (
                 <Select value={scopeId} onValueChange={setScopeId} disabled={loading}>
-                  <SelectTrigger className="h-8 text-xs w-full">
+                  <SelectTrigger className="h-8 w-full text-xs">
                     <SelectValue placeholder={loading ? "Loading groups…" : "Select a group"} />
                   </SelectTrigger>
                   <SelectContent className="max-h-64">
                     {groups.map((g) => (
                       <SelectItem key={g._id} value={g._id}>
-                        <span
-                          className="text-xs"
-                          style={{ paddingLeft: `${g.depth * 12}px` }}
-                        >
-                          {g.depth > 0 && (
-                            <span className="text-muted-foreground mr-1">{"└"}</span>
-                          )}
+                        <span className="text-xs" style={{ paddingLeft: `${g.depth * 12}px` }}>
+                          {g.depth > 0 && <span className="text-muted-foreground mr-1">{"└"}</span>}
                           {g.name}
                         </span>
                       </SelectItem>
@@ -256,9 +277,14 @@ export default function ExportPage() {
       <Separator />
 
       <div className="flex items-center justify-between">
-        <div className="text-xs text-muted-foreground space-y-0.5">
-          <p>Output format: <span className="font-medium text-foreground">W3C Design Token Format</span></p>
-          <p>File: <span className="font-medium text-foreground">tokens.json</span></p>
+        <div className="text-muted-foreground space-y-0.5 text-xs">
+          <p>
+            Output format:{" "}
+            <span className="text-foreground font-medium">W3C Design Token Format</span>
+          </p>
+          <p>
+            File: <span className="text-foreground font-medium">tokens.json</span>
+          </p>
         </div>
 
         <Button

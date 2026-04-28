@@ -22,20 +22,28 @@ function hexToRgba(hex: string): { r: number; g: number; b: number; a: number } 
 
 function tokenTypeToFigmaType(type: string): FigmaVariable["resolvedType"] {
   switch (type) {
-    case "Color": return "COLOR";
-    case "Number": return "FLOAT";
-    case "Boolean": return "BOOLEAN";
-    default: return "STRING";
+    case "Color":
+      return "COLOR";
+    case "Number":
+      return "FLOAT";
+    case "Boolean":
+      return "BOOLEAN";
+    default:
+      return "STRING";
   }
 }
 
 function valueToFigma(token: IToken, mode: "light" | "dark"): FigmaVariableValue["value"] {
   const raw = mode === "light" ? token.lightValue : (token.darkValue ?? token.lightValue);
   switch (token.tokenType) {
-    case "Color": return hexToRgba(raw);
-    case "Number": return parseFloat(raw);
-    case "Boolean": return raw === "true";
-    default: return raw;
+    case "Color":
+      return hexToRgba(raw);
+    case "Number":
+      return parseFloat(raw);
+    case "Boolean":
+      return raw === "true";
+    default:
+      return raw;
   }
 }
 

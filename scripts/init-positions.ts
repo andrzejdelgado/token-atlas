@@ -16,7 +16,9 @@ try {
     const match = line.match(/^([^#=]+)=(.*)$/);
     if (match) process.env[match[1].trim()] = match[2].trim();
   }
-} catch { /* no .env.local */ }
+} catch {
+  /* no .env.local */
+}
 
 // ─── Minimal schemas ────────────────────────────────────────────────────────
 
@@ -130,10 +132,7 @@ async function main() {
       const paddedPos = padPosition(i);
       const sortPath = parentSortPath ? `${parentSortPath}/${paddedPos}` : paddedPos;
 
-      await Group.updateOne(
-        { _id: node._id },
-        { $set: { position: i, sortPath } }
-      );
+      await Group.updateOne({ _id: node._id }, { $set: { position: i, sortPath } });
       updatedCount++;
 
       if (node.children.length > 0) {

@@ -11,7 +11,12 @@ interface FlagCellProps {
   showOnHoverIfUnflagged?: boolean;
 }
 
-export function FlagCell({ flagged, tokenId, onToggle, showOnHoverIfUnflagged = true }: FlagCellProps) {
+export function FlagCell({
+  flagged,
+  tokenId,
+  onToggle,
+  showOnHoverIfUnflagged = true,
+}: FlagCellProps) {
   const [optimistic, setOptimistic] = useState(flagged);
   const [loading, setLoading] = useState(false);
 

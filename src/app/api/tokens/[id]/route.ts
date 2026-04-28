@@ -29,7 +29,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const { id } = await params;
   const body = await req.json();
@@ -42,11 +43,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     updatePayload.updatedBy = session.user.id;
   }
 
-  const updated = await Token.findByIdAndUpdate(
-    id,
-    updatePayload,
-    { new: true }
-  ).lean();
+  const updated = await Token.findByIdAndUpdate(id, updatePayload, { new: true }).lean();
 
   if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -77,7 +74,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const { id } = await params;
   const token = await Token.findByIdAndDelete(id).lean();

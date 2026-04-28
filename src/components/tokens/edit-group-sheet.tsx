@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   Dialog,
   DialogContent,
@@ -29,7 +24,10 @@ import { Trash2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-interface Collection { _id: string; name: string; }
+interface Collection {
+  _id: string;
+  name: string;
+}
 interface Group {
   _id: string;
   name: string;
@@ -52,7 +50,13 @@ interface EditGroupSheetProps {
 
 const NONE_VALUE = "__none__";
 
-export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted }: EditGroupSheetProps) {
+export function EditGroupSheet({
+  groupId,
+  open,
+  onOpenChange,
+  onSaved,
+  onDeleted,
+}: EditGroupSheetProps) {
   const [group, setGroup] = useState<Group | null>(null);
   const [name, setName] = useState("");
   const [collectionId, setCollectionId] = useState("");
@@ -74,13 +78,17 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
   useEffect(() => {
     if (!groupId || !open) return;
     fetch(`/api/groups/${groupId}`)
-      .then((r) => r.ok ? r.json() : null)
+      .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (!d?.data) return;
         const g = d.data as Group;
         setGroup(g);
         setName(g.name);
-        setCollectionId(typeof g.collection === "object" ? (g.collection as unknown as Collection)._id : g.collection);
+        setCollectionId(
+          typeof g.collection === "object"
+            ? (g.collection as unknown as Collection)._id
+            : g.collection
+        );
         setParentId(g.parent ?? null);
       })
       .catch(() => {});
@@ -90,16 +98,19 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
   useEffect(() => {
     if (!open) return;
     fetch("/api/collections")
-      .then((r) => r.ok ? r.json() : null)
+      .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setCollections(d.data ?? []))
       .catch(() => {});
   }, [open]);
 
   // Fetch sibling groups when collection changes
   useEffect(() => {
-    if (!collectionId) { setAvailableGroups([]); return; }
+    if (!collectionId) {
+      setAvailableGroups([]);
+      return;
+    }
     fetch(`/api/groups?collection=${collectionId}`)
-      .then((r) => r.ok ? r.json() : null)
+      .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (!d?.data) return;
         // Exclude this group and all its descendants
@@ -121,10 +132,18 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
     return g.path.split("/").join(" › ");
   }
 
-  const collectionChanged = group ? collectionId !== (typeof group.collection === "object" ? (group.collection as unknown as Collection)._id : group.collection) : false;
+  const collectionChanged = group
+    ? collectionId !==
+      (typeof group.collection === "object"
+        ? (group.collection as unknown as Collection)._id
+        : group.collection)
+    : false;
 
   function handleSaveClick() {
-    if (!name.trim()) { toast.error("Name is required"); return; }
+    if (!name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
     if (collectionChanged) {
       setConfirmOpen(true);
     } else {
@@ -140,7 +159,11 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
       const payload: Record<string, unknown> = { name: name.trim() };
 
       const originalParent = group?.parent ?? null;
-      const originalCollection = group ? (typeof group.collection === "object" ? (group.collection as unknown as Collection)._id : group.collection) : "";
+      const originalCollection = group
+        ? typeof group.collection === "object"
+          ? (group.collection as unknown as Collection)._id
+          : group.collection
+        : "";
 
       if (collectionId !== originalCollection) payload.collectionId = collectionId;
       if (parentId !== originalParent) payload.parentId = parentId;
@@ -192,10 +215,17 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
   }
 
   const targetCollectionName = collections.find((c) => c._id === collectionId)?.name ?? "";
-  const originalCollectionName = collections.find((c) => c._id !== collectionId && collections.length > 0
-    ? c._id === (group ? (typeof group.collection === "object" ? (group.collection as unknown as Collection)._id : group.collection) : "")
-    : false
-  )?.name ?? "";
+  const originalCollectionName =
+    collections.find((c) =>
+      c._id !== collectionId && collections.length > 0
+        ? c._id ===
+          (group
+            ? typeof group.collection === "object"
+              ? (group.collection as unknown as Collection)._id
+              : group.collection
+            : "")
+        : false
+    )?.name ?? "";
 
   const directTokenCount = group?.directTokenCount ?? 0;
   const totalTokenCount = group?.totalTokenCount ?? 0;
@@ -207,11 +237,11 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="w-[440px] sm:w-[500px] flex flex-col gap-0 p-0">
-          <SheetHeader className="px-6 py-5 border-b">
+        <SheetContent className="flex w-[440px] flex-col gap-0 p-0 sm:w-[500px]">
+          <SheetHeader className="border-b px-6 py-5">
             <SheetTitle className="text-base">Edit group</SheetTitle>
             {group && (
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-muted-foreground truncate text-xs">
                 {group.path.split("/").join(" › ")}
               </p>
             )}
@@ -219,8 +249,11 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
 
           <div className="flex-1 overflow-y-auto">
             {/* ── Identity ─────────────────────────── */}
-            <div className="px-6 py-5 space-y-1.5">
-              <Label htmlFor="group-name" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="space-y-1.5 px-6 py-5">
+              <Label
+                htmlFor="group-name"
+                className="text-muted-foreground text-xs font-semibold tracking-wide uppercase"
+              >
                 Name
               </Label>
               <Input
@@ -235,25 +268,29 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
             <Separator />
 
             {/* ── Location ─────────────────────────── */}
-            <div className="px-6 py-5 space-y-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Location</p>
+            <div className="space-y-4 px-6 py-5">
+              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                Location
+              </p>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Collection</Label>
+                <Label className="text-muted-foreground text-xs">Collection</Label>
                 <Select value={collectionId} onValueChange={handleCollectionChange}>
-                  <SelectTrigger className="w-full h-9 text-sm">
+                  <SelectTrigger className="h-9 w-full text-sm">
                     <SelectValue placeholder="Select collection…" />
                   </SelectTrigger>
                   <SelectContent>
                     {collections.map((c) => (
-                      <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                      <SelectItem key={c._id} value={c._id}>
+                        {c.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">
+                <Label className="text-muted-foreground text-xs">
                   Parent group <span className="text-muted-foreground/60">(optional)</span>
                 </Label>
                 <Select
@@ -261,7 +298,7 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
                   onValueChange={(v) => setParentId(v === NONE_VALUE ? null : v)}
                   disabled={!collectionId}
                 >
-                  <SelectTrigger className="w-full h-9 text-sm">
+                  <SelectTrigger className="h-9 w-full text-sm">
                     <SelectValue placeholder="Top-level (no parent)" />
                   </SelectTrigger>
                   <SelectContent className="max-h-64">
@@ -273,7 +310,7 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
                         <span className="flex items-center">
                           {g.depth > 0 && (
                             <span
-                              className="text-muted-foreground mr-1 text-xs shrink-0"
+                              className="text-muted-foreground mr-1 shrink-0 text-xs"
                               style={{ paddingLeft: `${(g.depth - 1) * 10}px` }}
                             >
                               └
@@ -285,7 +322,7 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-muted-foreground text-[11px]">
                   Subgroups of this group will move with it.
                 </p>
               </div>
@@ -294,19 +331,23 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
             <Separator />
 
             {/* ── Danger zone ──────────────────────── */}
-            <div className="px-6 py-5 space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-destructive/70">
+            <div className="space-y-3 px-6 py-5">
+              <p className="text-destructive/70 text-xs font-semibold tracking-wide uppercase">
                 Danger zone
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Deleting this group promotes its sub-groups to the top level.
-                {totalTokenCount > 0 && ` ${totalTokenCount} token${totalTokenCount !== 1 ? "s" : ""} will be affected.`}
+                {totalTokenCount > 0 &&
+                  ` ${totalTokenCount} token${totalTokenCount !== 1 ? "s" : ""} will be affected.`}
               </p>
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/5 hover:text-destructive"
-                onClick={() => { setTokenTarget(NONE_VALUE); setDeleteOpen(true); }}
+                className="text-destructive border-destructive/30 hover:bg-destructive/5 hover:text-destructive gap-2"
+                onClick={() => {
+                  setTokenTarget(NONE_VALUE);
+                  setDeleteOpen(true);
+                }}
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Delete group
@@ -315,7 +356,7 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
           </div>
 
           {/* ── Footer ───────────────────────────── */}
-          <div className="flex gap-2 px-6 py-4 border-t">
+          <div className="flex gap-2 border-t px-6 py-4">
             <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
@@ -333,8 +374,10 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
             <DialogTitle>Move to "{targetCollectionName}"</DialogTitle>
           </DialogHeader>
 
-          <p className="text-sm text-muted-foreground">
-            This group is moving from <strong>{originalCollectionName || "its current collection"}</strong> to <strong>{targetCollectionName}</strong>. What should happen to the tokens inside?
+          <p className="text-muted-foreground text-sm">
+            This group is moving from{" "}
+            <strong>{originalCollectionName || "its current collection"}</strong> to{" "}
+            <strong>{targetCollectionName}</strong>. What should happen to the tokens inside?
           </p>
 
           <div className="space-y-2 pt-1">
@@ -342,15 +385,14 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
               type="button"
               onClick={() => setMoveTokens(false)}
               className={cn(
-                "w-full text-left rounded-lg border px-4 py-3 transition-colors",
-                !moveTokens
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:bg-muted"
+                "w-full rounded-lg border px-4 py-3 text-left transition-colors",
+                !moveTokens ? "border-primary bg-primary/5" : "border-border hover:bg-muted"
               )}
             >
               <p className="text-sm font-medium">Move group structure only</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Tokens stay in <strong>{originalCollectionName || "original collection"}</strong>. Only the group hierarchy moves.
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                Tokens stay in <strong>{originalCollectionName || "original collection"}</strong>.
+                Only the group hierarchy moves.
               </p>
             </button>
 
@@ -358,21 +400,22 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
               type="button"
               onClick={() => setMoveTokens(true)}
               className={cn(
-                "w-full text-left rounded-lg border px-4 py-3 transition-colors",
-                moveTokens
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:bg-muted"
+                "w-full rounded-lg border px-4 py-3 text-left transition-colors",
+                moveTokens ? "border-primary bg-primary/5" : "border-border hover:bg-muted"
               )}
             >
               <p className="text-sm font-medium">Move group with all tokens</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                All tokens inside this group and its subgroups also move to <strong>{targetCollectionName}</strong>.
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                All tokens inside this group and its subgroups also move to{" "}
+                <strong>{targetCollectionName}</strong>.
               </p>
             </button>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+              Cancel
+            </Button>
             <Button onClick={() => performSave(moveTokens)} disabled={saving}>
               {saving ? "Moving…" : "Confirm move"}
             </Button>
@@ -385,21 +428,29 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-destructive" />
+              <AlertTriangle className="text-destructive h-4 w-4" />
               Delete "{group?.name}"?
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-3 text-sm">
-            <div className="rounded-lg bg-muted px-4 py-3 space-y-1 text-xs text-muted-foreground">
+            <div className="bg-muted text-muted-foreground space-y-1 rounded-lg px-4 py-3 text-xs">
               {directChildCount > 0 && (
-                <p>• {directChildCount} sub-group{directChildCount !== 1 ? "s" : ""} will be promoted to the top level</p>
+                <p>
+                  • {directChildCount} sub-group{directChildCount !== 1 ? "s" : ""} will be promoted
+                  to the top level
+                </p>
               )}
               {totalTokenCount > 0 && (
-                <p>• {totalTokenCount} token{totalTokenCount !== 1 ? "s" : ""} total will be affected</p>
+                <p>
+                  • {totalTokenCount} token{totalTokenCount !== 1 ? "s" : ""} total will be affected
+                </p>
               )}
               {directTokenCount > 0 && (
-                <p className="text-destructive/80">• {directTokenCount} token{directTokenCount !== 1 ? "s" : ""} are directly in this group and must be moved or will be deleted</p>
+                <p className="text-destructive/80">
+                  • {directTokenCount} token{directTokenCount !== 1 ? "s" : ""} are directly in this
+                  group and must be moved or will be deleted
+                </p>
               )}
               {directChildCount === 0 && totalTokenCount === 0 && (
                 <p>This group is empty and will be permanently removed.</p>
@@ -408,11 +459,11 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
 
             {directTokenCount > 0 && (
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">
+                <Label className="text-muted-foreground text-xs">
                   Move {directTokenCount} token{directTokenCount !== 1 ? "s" : ""} to:
                 </Label>
                 <Select value={tokenTarget} onValueChange={setTokenTarget}>
-                  <SelectTrigger className="w-full h-9 text-sm">
+                  <SelectTrigger className="h-9 w-full text-sm">
                     <SelectValue placeholder="Select a group…" />
                   </SelectTrigger>
                   <SelectContent className="max-h-56">
@@ -424,7 +475,7 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
                         <span className="flex items-center">
                           {g.depth > 0 && (
                             <span
-                              className="text-muted-foreground mr-1 text-xs shrink-0"
+                              className="text-muted-foreground mr-1 shrink-0 text-xs"
                               style={{ paddingLeft: `${(g.depth - 1) * 10}px` }}
                             >
                               └
@@ -439,18 +490,14 @@ export function EditGroupSheet({ groupId, open, onOpenChange, onSaved, onDeleted
               </div>
             )}
 
-            <p className="text-xs text-muted-foreground">
-              This action cannot be undone.
-            </p>
+            <p className="text-muted-foreground text-xs">This action cannot be undone.</p>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
               {deleting ? "Deleting…" : "Delete group"}
             </Button>
           </DialogFooter>

@@ -13,7 +13,10 @@ interface W3CToken {
 
 type W3CTree = { [key: string]: W3CToken | W3CTree };
 
-function flattenW3C(tree: W3CTree, prefix = ""): Array<{ name: string; value: string; type: string }> {
+function flattenW3C(
+  tree: W3CTree,
+  prefix = ""
+): Array<{ name: string; value: string; type: string }> {
   const result: Array<{ name: string; value: string; type: string }> = [];
   for (const [key, val] of Object.entries(tree)) {
     const path = prefix ? `${prefix}/${key}` : key;
@@ -33,10 +36,14 @@ function flattenW3C(tree: W3CTree, prefix = ""): Array<{ name: string; value: st
 
 function w3cTypeToTokenType(type: string): string {
   switch (type.toLowerCase()) {
-    case "color": return "Color";
-    case "number": return "Number";
-    case "boolean": return "Boolean";
-    default: return "String";
+    case "color":
+      return "Color";
+    case "number":
+      return "Number";
+    case "boolean":
+      return "Boolean";
+    default:
+      return "String";
   }
 }
 
@@ -44,7 +51,8 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.MONGODB_URI) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  if (!process.env.MONGODB_URI)
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   await connectToDatabase();
   const { tokens: rawTokens, confirm = false } = await req.json();
 
