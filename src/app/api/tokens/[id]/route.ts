@@ -4,6 +4,9 @@ import { connectToDatabase } from "@/lib/db/mongodb";
 import { Token } from "@/lib/db/models/token.model";
 import { AuditLog } from "@/lib/db/models/audit-log.model";
 import { Notification } from "@/lib/db/models/notification.model";
+import "@/lib/db/models/collection.model";
+import "@/lib/db/models/group.model";
+import "@/lib/db/models/theme.model";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();

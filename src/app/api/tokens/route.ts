@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/db/mongodb";
 import { Token } from "@/lib/db/models/token.model";
-import { Collection } from "@/lib/db/models/collection.model";
+import "@/lib/db/models/collection.model";
 import { Theme } from "@/lib/db/models/theme.model";
 import { ThemeOverride } from "@/lib/db/models/theme-override.model";
 import { Group } from "@/lib/db/models/group.model";
