@@ -115,29 +115,44 @@ export async function GET(req: NextRequest) {
 
     // If a specific non-base theme is requested, apply its overrides
     const overrideMap = new Map<string, { lightValue?: string; darkValue?: string }>();
+    const disabledOverrideSet = new Set<string>();
     if (themeId) {
       const theme = await Theme.findById(themeId).select("isBase").lean();
       if (theme && !theme.isBase) {
-        const overrides = await ThemeOverride.find({
-          theme: themeId,
-          token: { $in: page.map((t) => t._id) },
-          disabled: { $ne: true },
-        })
-          .select("token lightValue darkValue")
-          .lean();
+        const [overrides, disabledOverrides] = await Promise.all([
+          ThemeOverride.find({
+            theme: themeId,
+            token: { $in: page.map((t) => t._id) },
+            disabled: { $ne: true },
+          })
+            .select("token lightValue darkValue")
+            .lean(),
+          ThemeOverride.find({
+            theme: themeId,
+            token: { $in: page.map((t) => t._id) },
+            disabled: true,
+          })
+            .select("token")
+            .lean(),
+        ]);
         for (const o of overrides) {
           overrideMap.set(o.token.toString(), { lightValue: o.lightValue, darkValue: o.darkValue });
+        }
+        for (const o of disabledOverrides) {
+          disabledOverrideSet.add(o.token.toString());
         }
       }
     }
 
     const data = page.map((token) => {
       const override = overrideMap.get(token._id.toString());
+      const overrideDisabled = disabledOverrideSet.has(token._id.toString());
       return serialize({
         ...token,
         lightValue: override?.lightValue ?? token.lightValue,
         darkValue: override?.darkValue ?? token.darkValue,
         _overridden: !!override,
+        _overrideDisabled: overrideDisabled || undefined,
         ...(override
           ? { _baseLightValue: token.lightValue, _baseDarkValue: token.darkValue ?? "" }
           : {}),

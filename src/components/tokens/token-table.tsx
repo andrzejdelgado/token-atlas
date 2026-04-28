@@ -132,6 +132,7 @@ function renderGroupNodes(
             token={token}
             selected={selectedIds.has(token._id)}
             overridden={!activeThemeIsBase && !!token._overridden}
+            overrideDisabled={!activeThemeIsBase && !!token._overrideDisabled}
             onSelect={toggleOne}
             onDelete={handleDelete}
             onFlagToggle={handleFlagToggle}
@@ -788,6 +789,7 @@ export function TokenTable({
                           token={token}
                           selected={selectedIds.has(token._id)}
                           overridden={!activeThemeIsBase && !!token._overridden}
+                          overrideDisabled={!activeThemeIsBase && !!token._overrideDisabled}
                           onSelect={toggleOne}
                           onDelete={handleDelete}
                           onFlagToggle={handleFlagToggle}

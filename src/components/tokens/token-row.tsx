@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, Trash2, CheckCheck, SquarePen } from "lucide-react";
+import { Clock, Trash2, CheckCheck, SquarePen, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ interface TokenRowProps {
   token: IToken & { updatedAt: Date | string };
   selected: boolean;
   overridden?: boolean;
+  overrideDisabled?: boolean;
   onSelect: (id: string, checked: boolean) => void;
   onDelete: (id: string) => void;
   onFlagToggle: (id: string, flagged: boolean) => void;
@@ -49,6 +50,7 @@ export function TokenRow({
   token,
   selected,
   overridden = false,
+  overrideDisabled = false,
   onSelect,
   onDelete,
   onFlagToggle,
@@ -161,16 +163,19 @@ export function TokenRow({
               />
             )}
             <span
-              className={cn("truncate text-xs", overridden ? "text-blue-600" : "text-foreground")}
+              className={cn(
+                "truncate text-xs",
+                overridden ? "text-blue-600" : overrideDisabled ? "text-red-500" : "text-foreground"
+              )}
               title={token.lightValue}
             >
               {token.lightValue}
             </span>
             {overridden && (
-              <CheckCheck
-                className="h-3 w-3 shrink-0 text-blue-600"
-                aria-label="Modified by active theme"
-              />
+              <CheckCheck className="h-3 w-3 shrink-0 text-blue-600" aria-label="Override active" />
+            )}
+            {overrideDisabled && (
+              <X className="h-3 w-3 shrink-0 text-red-500" aria-label="Override inactive" />
             )}
           </div>
         </td>
@@ -188,16 +193,19 @@ export function TokenRow({
               />
             )}
             <span
-              className={cn("truncate text-xs", overridden ? "text-blue-600" : "text-foreground")}
+              className={cn(
+                "truncate text-xs",
+                overridden ? "text-blue-600" : overrideDisabled ? "text-red-500" : "text-foreground"
+              )}
               title={token.darkValue ?? "—"}
             >
               {token.darkValue ?? "—"}
             </span>
             {overridden && (
-              <CheckCheck
-                className="h-3 w-3 shrink-0 text-blue-600"
-                aria-label="Modified by active theme"
-              />
+              <CheckCheck className="h-3 w-3 shrink-0 text-blue-600" aria-label="Override active" />
+            )}
+            {overrideDisabled && (
+              <X className="h-3 w-3 shrink-0 text-red-500" aria-label="Override inactive" />
             )}
           </div>
         </td>

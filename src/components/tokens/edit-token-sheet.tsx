@@ -447,10 +447,10 @@ export function EditTokenSheet({
                     </p>
                   </div>
                   {hasExistingOverride && (
-                    <Badge variant="secondary" className="h-4 gap-1 px-1.5 text-[10px]">
+                    <Badge variant="secondary" className="gap-1.5 px-2 py-0.5 text-[10px]">
                       <span
                         className={cn(
-                          "h-1.5 w-1.5 rounded-full",
+                          "h-2 w-2 shrink-0 rounded-full",
                           overrideDisabled ? "bg-red-500" : "bg-green-500"
                         )}
                       />
@@ -521,9 +521,13 @@ export function EditTokenSheet({
           {/* ── Status & Taxonomy ─────────────────────── */}
           <div className="space-y-5 px-6 py-5">
             {/* Flagged */}
-            <div className="flex items-center justify-between border-b pb-5">
-              <p className="text-sm font-medium">Flag</p>
-              <Switch checked={flagged} onCheckedChange={setFlagged} />
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                Flag Status
+              </Label>
+              <div className="flex items-center justify-between">
+                <Switch checked={flagged} onCheckedChange={setFlagged} />
+              </div>
             </div>
 
             <TagCombobox
