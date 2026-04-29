@@ -203,12 +203,14 @@ export default function ThemeReviewPage({ params }: { params: Promise<{ id: stri
                 variant={isDraft ? "outline" : "secondary"}
                 className={cn(
                   "text-[11px]",
-                  isDraft
-                    ? "border-amber-400 text-amber-600"
-                    : "text-emerald-700 dark:text-emerald-400"
+                  isDraft && !theme.reviewerId
+                    ? "border-amber-400 text-amber-600 dark:text-amber-400"
+                    : isDraft && theme.reviewerId
+                      ? "border-blue-400 text-blue-600 dark:text-blue-400"
+                      : "text-emerald-700 dark:text-emerald-400"
                 )}
               >
-                {isDraft ? "Draft" : "Approved"}
+                {isDraft ? (theme.reviewerId ? "In Review" : "Draft") : "Approved"}
               </Badge>
             )}
           </div>
