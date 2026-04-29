@@ -8,6 +8,7 @@ import {
   MinusCircle,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
   Trash2,
   BookmarkPlus,
   Clock,
@@ -15,6 +16,7 @@ import {
   Check,
   ChevronsUpDown,
 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -869,9 +871,16 @@ export default function AdvancedSearchPage() {
 
   return (
     <div className="space-y-6">
-      <div className="max-w-4xl">
-        <h1 className="text-xl font-semibold tracking-tight">Advanced Search</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
+      <div className="max-w-4xl space-y-1">
+        <Link
+          href="/tokens"
+          className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm transition-colors"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Back to Semantics
+        </Link>
+        <h1 className="text-xl font-semibold tracking-tight">Build Query</h1>
+        <p className="text-muted-foreground text-sm">
           Build queries with multiple criteria to find exactly the tokens you need.
         </p>
       </div>
