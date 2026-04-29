@@ -55,6 +55,7 @@ function useActiveParam() {
     isGroupActive: (id: string) => pathname === "/tokens" && searchParams.get("group") === id,
     isCollectionActive: (id: string) =>
       pathname === "/tokens" && searchParams.get("collection") === id,
+    isAllActive: () => pathname === "/tokens" && !searchParams.get("group"),
   };
 }
 
@@ -137,6 +138,32 @@ function HoverActions({ onRename, onAddChild }: { onRename: () => void; onAddChi
         <Plus className="text-muted-foreground h-3 w-3" />
       </button>
     </div>
+  );
+}
+
+// ── AllItem ───────────────────────────────────────────────────────────────────
+
+function AllItem({
+  collectionId,
+  tokenCount,
+}: {
+  collectionId: string | null;
+  tokenCount: number;
+}) {
+  const { isAllActive } = useActiveParam();
+  const href = collectionId ? `/tokens?collection=${collectionId}` : "/tokens";
+
+  return (
+    <SidebarMenuItem>
+      <div className="flex w-full items-center pr-1">
+        <SidebarMenuButton size="sm" isActive={isAllActive()} asChild className="min-w-0 flex-1">
+          <Link href={href}>
+            <span>All</span>
+          </Link>
+        </SidebarMenuButton>
+        <TokenBadge count={tokenCount} />
+      </div>
+    </SidebarMenuItem>
   );
 }
 
@@ -412,6 +439,9 @@ export function AppSidebar({ collections, groups, defaultCollectionId }: AppSide
       })
     : groups;
 
+  const activeCollection = collections.find((c) => c._id === activeCollectionId);
+  const activeCollectionTokenCount = activeCollection?.tokenCount ?? 0;
+
   function handleCollectionChange(collectionId: string) {
     if (!collectionId) return;
     document.cookie = `active_collection=${collectionId}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`;
@@ -486,6 +516,10 @@ export function AppSidebar({ collections, groups, defaultCollectionId }: AppSide
                 <InlineInput onSave={handleAddGroup} onCancel={() => setAddingGroup(false)} />
               )}
               <SidebarMenu>
+                <AllItem
+                  collectionId={activeCollectionId}
+                  tokenCount={activeCollectionTokenCount}
+                />
                 {displayedGroups.map((group) => (
                   <GroupItem key={group._id} group={group} />
                 ))}
