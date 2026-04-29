@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, SlidersHorizontal, Plus, Columns3, ArrowUpDown } from "lucide-react";
+import { Search, SlidersHorizontal, Plus, Columns3, ArrowUpDown, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -637,23 +637,41 @@ export function TokenTable({
               </TabsList>
             </Tabs>
 
-            <Button
-              variant="outline"
-              size="sm"
+            <div
               className={cn(
-                "h-8 gap-1.5 text-xs",
-                activeFilterCount > 0 && "border-primary text-primary"
+                "border-input inline-flex h-8 items-center rounded-md border text-xs transition-colors",
+                activeFilterCount > 0
+                  ? "border-primary text-primary"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
               )}
-              onClick={() => setFilterOpen(true)}
             >
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              Filters
+              <button
+                className="flex h-full items-center gap-1.5 rounded-l-md px-3 transition-opacity hover:opacity-70"
+                onClick={() => setFilterOpen(true)}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Filters
+                {activeFilterCount > 0 && (
+                  <Badge className="pointer-events-none ml-0.5 h-4 px-1.5 text-[10px] font-normal">
+                    {activeFilterCount}
+                  </Badge>
+                )}
+              </button>
               {activeFilterCount > 0 && (
-                <Badge className="pointer-events-none ml-0.5 h-4 px-1.5 text-[10px] font-normal">
-                  {activeFilterCount}
-                </Badge>
+                <>
+                  <div className="bg-primary/20 h-4 w-px" />
+                  <button
+                    className="flex h-full items-center rounded-r-md px-2 transition-opacity hover:opacity-70"
+                    onClick={() => setFilters({})}
+                    title="Clear all filters"
+                  >
+                    <span className="bg-muted flex h-4 w-4 items-center justify-center rounded-full">
+                      <X className="text-primary h-2.5 w-2.5" />
+                    </span>
+                  </button>
+                </>
               )}
-            </Button>
+            </div>
 
             <div className="ml-auto flex items-center gap-2">
               <Button
