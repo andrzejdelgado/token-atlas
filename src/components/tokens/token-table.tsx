@@ -674,7 +674,7 @@ export function TokenTable({
                 onClick={() => setBuildQueryOpen(true)}
               >
                 <Search className="h-3.5 w-3.5" />
-                Build query
+                Query
                 {activeQuery && (
                   <Badge className="pointer-events-none ml-0.5 h-4 px-1.5 text-[10px] font-normal">
                     {activeQuery.criteriaCount}
