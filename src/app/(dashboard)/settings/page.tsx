@@ -1,9 +1,52 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { Eye, EyeOff, Loader2, Trash2, KeyRound, Copy, Check, X } from "lucide-react";
+function sRGBtoLinear(c: number): number {
+  const s = c / 255;
+  return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+}
+
+function relativeLuminance(hex: string): number {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return 0.2126 * sRGBtoLinear(r) + 0.7152 * sRGBtoLinear(g) + 0.0722 * sRGBtoLinear(b);
+}
+
+function apcaTextColor(bgHex: string): "#000000" | "#ffffff" {
+  const Y = relativeLuminance(bgHex);
+  // Compare perceived contrast of black vs white on this background using APCA power curves
+  const blackContrast = Math.pow(Y, 0.56);
+  const whiteContrast = 1 - Math.pow(Y, 0.65);
+  return blackContrast >= whiteContrast ? "#000000" : "#ffffff";
+}
+
+function getInitialsFromName(name: string, email?: string | null): string {
+  const n = name.trim();
+  if (n) {
+    const words = n.split(/\s+/);
+    return words.length >= 2
+      ? (words[0][0] + words[1][0]).toUpperCase()
+      : n.slice(0, 2).toUpperCase();
+  }
+  return email?.[0]?.toUpperCase() ?? "U";
+}
+
+import { useState, useEffect, useRef } from "react";
+import { useSession, signOut } from "next-auth/react";
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  Trash2,
+  KeyRound,
+  Copy,
+  Check,
+  X,
+  Upload,
+  Mail,
+  ImageIcon,
+  CaseUpper,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +72,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/layout/page-header";
+import { ColorSwatch } from "@/components/tokens/color-swatch";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -62,6 +109,7 @@ interface IUser {
   name?: string;
   email: string;
   role: string;
+  avatarUrl?: string;
   createdAt: string;
 }
 
@@ -218,7 +266,7 @@ function ResetPasswordDialog({
 }
 
 export default function SettingsPage() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const isAdmin = (session?.user as { role?: string })?.role === "admin";
 
   const [settings, setSettings] = useState<ISettings>({});
@@ -231,6 +279,19 @@ export default function SettingsPage() {
   // Profile state
   const [profileName, setProfileName] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [deletingAvatar, setDeletingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initials popover state
+  const [initialsPopoverOpen, setInitialsPopoverOpen] = useState(false);
+  const [initialsColor, setInitialsColor] = useState("#18181b");
+
+  // Delete account state
+  const [deleteAccountPopoverOpen, setDeleteAccountPopoverOpen] = useState(false);
+  const [deleteAccountConfirm, setDeleteAccountConfirm] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   // Invite state
   const [inviteEmail, setInviteEmail] = useState("");
@@ -254,6 +315,16 @@ export default function SettingsPage() {
     }
     setProfileName(session?.user?.name ?? "");
   }, [isAdmin, session]);
+
+  // Initialize avatarUrl from session once — not on every session change so
+  // local updates from upload/delete are not overwritten by intermediate states.
+  const avatarInitialized = useRef(false);
+  useEffect(() => {
+    if (!avatarInitialized.current && session !== undefined) {
+      setAvatarUrl(session?.user?.image ?? null);
+      avatarInitialized.current = true;
+    }
+  }, [session]);
 
   async function saveFigmaSettings() {
     setSavingFigma(true);
@@ -395,6 +466,111 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !session?.user?.id) return;
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch(`/api/users/${session.user.id}/avatar`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Failed to upload avatar");
+        return;
+      }
+      setAvatarUrl(data.data.avatarUrl);
+      await update();
+      toast.success("Avatar updated");
+    } catch {
+      toast.error("Failed to upload avatar");
+    } finally {
+      setUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleDeleteAvatar() {
+    if (!session?.user?.id) return;
+    setDeletingAvatar(true);
+    try {
+      const res = await fetch(`/api/users/${session.user.id}/avatar`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      setAvatarUrl(null);
+      await update();
+      toast.success("Avatar removed");
+    } catch {
+      toast.error("Failed to remove avatar");
+    } finally {
+      setDeletingAvatar(false);
+    }
+  }
+
+  async function handleInitialsAvatar(bgColor: string) {
+    if (!session?.user?.id) return;
+    const initials = getInitialsFromName(profileName, session?.user?.email);
+    const textColor = apcaTextColor(bgColor);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 200;
+    canvas.height = 200;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, 200, 200);
+    ctx.fillStyle = textColor;
+    ctx.font = "bold 80px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(initials, 100, 102);
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      setInitialsPopoverOpen(false);
+      setUploadingAvatar(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", new File([blob], "avatar.png", { type: "image/png" }));
+        const res = await fetch(`/api/users/${session.user!.id}/avatar`, {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          toast.error(data.error ?? "Failed to set avatar");
+          return;
+        }
+        setAvatarUrl(data.data.avatarUrl);
+        await update();
+        toast.success("Avatar updated");
+      } catch {
+        toast.error("Failed to set avatar");
+      } finally {
+        setUploadingAvatar(false);
+      }
+    }, "image/png");
+  }
+
+  async function deleteAccount() {
+    if (!session?.user?.id) return;
+    setDeletingAccount(true);
+    try {
+      const res = await fetch(`/api/users/${session.user.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        toast.error(data.error ?? "Failed to delete account");
+        setDeletingAccount(false);
+        return;
+      }
+      await signOut({ callbackUrl: "/login" });
+    } catch {
+      toast.error("Failed to delete account");
+      setDeletingAccount(false);
+    }
+  }
+
   const defaultTab = isAdmin ? "team" : "profile";
 
   return (
@@ -513,7 +689,24 @@ export default function SettingsPage() {
                     <TableBody>
                       {users.map((user) => (
                         <TableRow key={user._id}>
-                          <TableCell className="font-medium">{user.name ?? "—"}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6 shrink-0">
+                                <AvatarImage src={user.avatarUrl ?? undefined} />
+                                <AvatarFallback className="bg-foreground text-background text-[10px]">
+                                  {user.name
+                                    ? user.name
+                                        .split(" ")
+                                        .map((w) => w[0])
+                                        .join("")
+                                        .toUpperCase()
+                                        .slice(0, 2)
+                                    : user.email[0].toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium">{user.name ?? "—"}</span>
+                            </div>
+                          </TableCell>
                           <TableCell className="text-muted-foreground text-sm">
                             {user.email}
                           </TableCell>
@@ -703,24 +896,208 @@ export default function SettingsPage() {
 
         {/* ── Profile tab ── */}
         <TabsContent value="profile" className="mt-6">
-          <Card>
-            <CardContent className="space-y-4 pt-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Name</Label>
-                  <Input value={profileName} onChange={(e) => setProfileName(e.target.value)} />
+          <div className="space-y-8">
+            {/* Personal Information */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-base font-semibold">Profile Information</h3>
+                <p className="text-muted-foreground text-sm">Manage your profile information.</p>
+              </div>
+
+              {/* Avatar */}
+              <div className="space-y-3">
+                <p className="text-sm font-medium">Your Avatar</p>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-16 w-16 rounded-full border-2 border-dashed">
+                    <AvatarImage src={avatarUrl ?? undefined} />
+                    <AvatarFallback className="bg-transparent">
+                      <ImageIcon className="text-muted-foreground/50 h-6 w-6" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingAvatar}
+                  >
+                    {uploadingAvatar ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="mr-2 h-4 w-4" />
+                    )}
+                    Upload avatar
+                  </Button>
+                  <Popover open={initialsPopoverOpen} onOpenChange={setInitialsPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" disabled={uploadingAvatar}>
+                        <CaseUpper className="mr-2 h-4 w-4" />
+                        Use Initials
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-56 p-4" side="bottom" align="start">
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Background color</Label>
+                          <div className="flex items-center gap-2">
+                            <label className="ring-offset-background hover:ring-ring cursor-pointer rounded transition-shadow hover:ring-2 hover:ring-offset-1">
+                              <input
+                                type="color"
+                                value={initialsColor}
+                                onChange={(e) => setInitialsColor(e.target.value)}
+                                className="sr-only"
+                              />
+                              <ColorSwatch lightValue={initialsColor} size="md" />
+                            </label>
+                            <span className="text-muted-foreground text-xs uppercase">
+                              {initialsColor}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex justify-center">
+                          <div
+                            className="flex h-14 w-14 items-center justify-center rounded-full text-xl font-bold select-none"
+                            style={{
+                              backgroundColor: initialsColor,
+                              color: apcaTextColor(initialsColor),
+                            }}
+                          >
+                            {getInitialsFromName(profileName, session?.user?.email)}
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleInitialsAvatar(initialsColor)}
+                          disabled={uploadingAvatar}
+                        >
+                          Apply
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive h-8 w-8"
+                    onClick={handleDeleteAvatar}
+                    disabled={deletingAvatar || !avatarUrl}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                  />
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Email</Label>
-                  <Input value={session?.user?.email ?? ""} disabled />
+                <p className="text-muted-foreground text-xs">
+                  Pick a photo up to 1MB. Only PNG or JPG files.
+                </p>
+              </div>
+
+              {/* Name */}
+              <div className="space-y-1.5">
+                <Label>Name</Label>
+                <Input value={profileName} onChange={(e) => setProfileName(e.target.value)} />
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1.5">
+                <Label>Email</Label>
+                <div className="relative">
+                  <Input value={session?.user?.email ?? ""} disabled className="pr-10" />
+                  <Mail className="text-muted-foreground absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
                 </div>
               </div>
+
               <Button onClick={saveProfile} disabled={savingProfile} size="sm">
                 {savingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save profile
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+
+            <Separator />
+
+            {/* Danger Zone */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-base font-semibold">Danger Zone</h3>
+                <p className="text-muted-foreground text-sm">
+                  These actions cannot be undone, please think twice.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <p className="text-sm font-medium">Delete account</p>
+                  <p className="text-muted-foreground text-sm">
+                    Delete your account permanently. This action will remove all your data and
+                    cannot be undone. If you are the admin, please indicate different admin first.
+                  </p>
+                </div>
+                <Popover
+                  open={deleteAccountPopoverOpen}
+                  onOpenChange={(o) => {
+                    setDeleteAccountPopoverOpen(o);
+                    if (!o) setDeleteAccountConfirm(false);
+                  }}
+                >
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive border-destructive hover:bg-destructive/10 ml-4 shrink-0"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72 p-4" side="top">
+                    <p className="mb-4 text-center text-sm">
+                      You&apos;re about to permanently delete your account. This cannot be undone.
+                    </p>
+                    {!deleteAccountConfirm ? (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => setDeleteAccountConfirm(true)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete account
+                      </Button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="flex-1"
+                          onClick={deleteAccount}
+                          disabled={deletingAccount}
+                        >
+                          {deletingAccount && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          Yes
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => {
+                            setDeleteAccountConfirm(false);
+                            setDeleteAccountPopoverOpen(false);
+                          }}
+                        >
+                          No
+                        </Button>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
 

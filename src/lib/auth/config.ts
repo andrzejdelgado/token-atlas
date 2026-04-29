@@ -108,20 +108,23 @@ export const authConfig: NextAuthConfig = {
       }
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role ?? "user";
       }
-      // Refresh token if role is missing or id is not a valid ObjectId (e.g. stale "demo-user" token)
+      // Refresh token if role is missing, id is stale, or a session update was triggered
       const needsRefresh =
-        !token.role || (typeof token.id === "string" && !/^[a-f\d]{24}$/i.test(token.id));
+        trigger === "update" ||
+        !token.role ||
+        (typeof token.id === "string" && !/^[a-f\d]{24}$/i.test(token.id));
       if (needsRefresh && token.email && process.env.MONGODB_URI) {
         await connectToDatabase();
         const dbUser = await User.findOne({ email: token.email });
         if (dbUser) {
           token.id = dbUser._id.toString();
           token.role = dbUser.role;
+          token.picture = dbUser.avatarUrl ?? null;
         }
       }
       return token;
@@ -130,6 +133,7 @@ export const authConfig: NextAuthConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         (session.user as { role?: string }).role = token.role as string;
+        session.user.image = (token.picture as string | null | undefined) ?? null;
       }
       return session;
     },
