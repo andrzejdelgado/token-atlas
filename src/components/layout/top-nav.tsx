@@ -37,7 +37,7 @@ export function TopNav() {
               key={href}
               href={href}
               className={cn(
-                "rounded-md px-3 py-1.5 transition-colors",
+                "rounded-md px-3 py-1.5 whitespace-nowrap transition-colors",
                 isActive
                   ? "bg-muted text-foreground font-medium"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -51,7 +51,7 @@ export function TopNav() {
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
-              "flex items-center gap-1 rounded-md px-3 py-1.5 transition-colors outline-none",
+              "flex items-center gap-1 rounded-md px-3 py-1.5 whitespace-nowrap transition-colors outline-none",
               isDataTransferActive
                 ? "bg-muted text-foreground font-medium"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
