@@ -658,18 +658,15 @@ export function TokenTable({
                 )}
               </button>
               {activeFilterCount > 0 && (
-                <>
-                  <div className="bg-primary/20 h-4 w-px" />
-                  <button
-                    className="flex h-full items-center rounded-r-md px-2 transition-opacity hover:opacity-70"
-                    onClick={() => setFilters({})}
-                    title="Clear all filters"
-                  >
-                    <span className="bg-muted flex h-4 w-4 items-center justify-center rounded-full">
-                      <X className="text-primary h-2.5 w-2.5" />
-                    </span>
-                  </button>
-                </>
+                <button
+                  className="flex h-full items-center rounded-r-md px-2 transition-opacity hover:opacity-70"
+                  onClick={() => setFilters({})}
+                  title="Clear all filters"
+                >
+                  <span className="bg-muted border-primary flex h-4 w-4 items-center justify-center rounded-full border">
+                    <X className="text-primary h-2.5 w-2.5" />
+                  </span>
+                </button>
               )}
             </div>
 
