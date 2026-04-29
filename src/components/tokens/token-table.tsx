@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, SlidersHorizontal, Plus, Columns3, ArrowUpDown, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -17,6 +16,7 @@ import { TokenRow } from "./token-row";
 import { GroupRow } from "./group-row";
 import { FloatingActionToolbar } from "./floating-action-toolbar";
 import { FilterSheet } from "./filter-sheet";
+import { BuildQuerySheet, type QueryResult } from "./build-query-sheet";
 import { ColumnManagerSheet } from "./column-manager-sheet";
 import { AddTokenSheet } from "./add-token-sheet";
 import { VersionHistorySheet } from "./version-history-sheet";
@@ -184,6 +184,11 @@ export function TokenTable({
   const [columns, setColumns] = useState<ColumnDef[]>(DEFAULT_COLUMNS);
   const [filters, setFilters] = useState<TokenFilters>(initialFilters ?? {});
   const [filterOpen, setFilterOpen] = useState(false);
+  const [buildQueryOpen, setBuildQueryOpen] = useState(false);
+  const [activeQuery, setActiveQuery] = useState<QueryResult | null>(null);
+  const [queryCollectionId, setQueryCollectionId] = useState<string | undefined>();
+  const [queryGroupId, setQueryGroupId] = useState<string | undefined>();
+  const [queryExcludeFilters, setQueryExcludeFilters] = useState<ExcludeFilters | null>(null);
   const [columnManagerOpen, setColumnManagerOpen] = useState(false);
   const [addTokenOpen, setAddTokenOpen] = useState(false);
   const [historyTokenId, setHistoryTokenId] = useState<string | null>(null);
@@ -279,10 +284,13 @@ export function TokenTable({
 
   const buildQuery = useCallback(
     (cursor?: string) => {
+      const effectiveCollectionId = queryCollectionId ?? collectionId;
+      const effectiveGroupId = queryGroupId ?? groupId;
+      const ef = queryExcludeFilters ?? excludeFilters;
       const params = new URLSearchParams();
       if (search) params.set("search", search);
-      if (collectionId) params.set("collection", collectionId);
-      if (groupId) params.set("group", groupId);
+      if (effectiveCollectionId) params.set("collection", effectiveCollectionId);
+      if (effectiveGroupId) params.set("group", effectiveGroupId);
       if (activeThemeId) params.set("theme", activeThemeId);
       if (flaggedOnly) params.set("flagged", "true");
       if (cursor) params.set("cursor", cursor);
@@ -291,17 +299,27 @@ export function TokenTable({
       filters.components?.forEach((c) => params.append("component", c));
       if (filters.modifiedAfter) params.set("modifiedAfter", filters.modifiedAfter);
       if (filters.modifiedBefore) params.set("modifiedBefore", filters.modifiedBefore);
-      if (excludeFilters?.search) params.set("excludeSearch", excludeFilters.search);
-      if (excludeFilters?.collectionId)
-        params.set("excludeCollection", excludeFilters.collectionId);
-      if (excludeFilters?.groupId) params.set("excludeGroup", excludeFilters.groupId);
-      if (excludeFilters?.flagged) params.set("excludeFlagged", "true");
-      excludeFilters?.tokenTypes?.forEach((t) => params.append("excludeTokenType", t));
-      excludeFilters?.labels?.forEach((l) => params.append("excludeLabel", l));
-      excludeFilters?.components?.forEach((c) => params.append("excludeComponent", c));
+      if (ef?.search) params.set("excludeSearch", ef.search);
+      if (ef?.collectionId) params.set("excludeCollection", ef.collectionId);
+      if (ef?.groupId) params.set("excludeGroup", ef.groupId);
+      if (ef?.flagged) params.set("excludeFlagged", "true");
+      ef?.tokenTypes?.forEach((t) => params.append("excludeTokenType", t));
+      ef?.labels?.forEach((l) => params.append("excludeLabel", l));
+      ef?.components?.forEach((c) => params.append("excludeComponent", c));
       return params.toString();
     },
-    [search, collectionId, groupId, activeThemeId, flaggedOnly, filters, excludeFilters]
+    [
+      search,
+      collectionId,
+      groupId,
+      activeThemeId,
+      flaggedOnly,
+      filters,
+      excludeFilters,
+      queryCollectionId,
+      queryGroupId,
+      queryExcludeFilters,
+    ]
   );
 
   async function fetchTokens(cursor?: string) {
@@ -482,6 +500,31 @@ export function TokenTable({
     setTokens((prev) => [token, ...prev]);
   }
 
+  function handleQuerySearch(result: QueryResult) {
+    setSearch(result.searchQuery ?? "");
+    setFlaggedOnly(result.initialFlaggedOnly ?? false);
+    setFilters(result.initialFilters ?? {});
+    setQueryExcludeFilters(
+      result.excludeFilters && Object.keys(result.excludeFilters).length > 0
+        ? result.excludeFilters
+        : null
+    );
+    setQueryCollectionId(result.collectionId);
+    setQueryGroupId(result.groupId);
+    if (result.themeId) setActiveThemeId(result.themeId);
+    setActiveQuery(result);
+  }
+
+  function handleQueryClear() {
+    setSearch("");
+    setFlaggedOnly(false);
+    setFilters({});
+    setQueryExcludeFilters(null);
+    setQueryCollectionId(undefined);
+    setQueryGroupId(undefined);
+    setActiveQuery(null);
+  }
+
   const visibleColumns = columns.filter((c) => c.visible);
   const activeFilterCount = Object.values(filters).filter((v) =>
     Array.isArray(v) ? v.length > 0 : !!v
@@ -607,20 +650,53 @@ export function TokenTable({
 
           {/* Toolbar */}
           <div className="flex shrink-0 items-center gap-2 border-b px-4 py-2">
-            <div className="relative max-w-sm flex-1">
+            <div className="relative max-w-xs flex-1">
               <Search className="text-muted-foreground absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" />
               <Input
                 placeholder="Search tokens…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-8 pr-24 pl-8 text-sm"
+                className="h-8 pl-8 text-sm"
               />
-              <Link
-                href="/search"
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2 text-[11px] transition-colors"
+            </div>
+
+            {/* Build query split-button */}
+            <div
+              className={cn(
+                "border-input inline-flex h-8 items-center rounded-md border text-xs transition-colors",
+                activeQuery
+                  ? "border-primary text-primary"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              )}
+            >
+              <button
+                className="flex h-full items-center gap-1.5 rounded-l-md px-3 transition-opacity hover:opacity-70"
+                onClick={() => setBuildQueryOpen(true)}
               >
+                <Search className="h-3.5 w-3.5" />
                 Build query
-              </Link>
+                {activeQuery && (
+                  <Badge className="pointer-events-none ml-0.5 h-4 px-1.5 text-[10px] font-normal">
+                    {activeQuery.criteriaCount}
+                  </Badge>
+                )}
+              </button>
+              {activeQuery && (
+                <button
+                  className="flex h-full items-center rounded-r-md pr-3 transition-opacity hover:opacity-70"
+                  onClick={handleQueryClear}
+                  title="Clear query"
+                >
+                  <span
+                    className="bg-muted flex h-4 w-4 items-center justify-center rounded-full border"
+                    style={{
+                      borderColor: "color-mix(in oklab, var(--ring) 50%, transparent)",
+                    }}
+                  >
+                    <X className="text-primary h-2.5 w-2.5" />
+                  </span>
+                </button>
+              )}
             </div>
 
             <Tabs
@@ -853,6 +929,11 @@ export function TokenTable({
         onBulkApplied={() => fetchTokens()}
       />
 
+      <BuildQuerySheet
+        open={buildQueryOpen}
+        onOpenChange={setBuildQueryOpen}
+        onSearch={handleQuerySearch}
+      />
       <FilterSheet
         open={filterOpen}
         onOpenChange={setFilterOpen}
