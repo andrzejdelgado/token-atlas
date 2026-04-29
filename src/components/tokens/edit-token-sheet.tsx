@@ -537,7 +537,7 @@ export function EditTokenSheet({
             <div className="space-y-1.5">
               <Label className="text-muted-foreground text-xs">Collection</Label>
               <Select value={collectionId} onValueChange={handleCollectionChange}>
-                <SelectTrigger className="h-9 w-full text-sm">
+                <SelectTrigger className="h-8 w-full text-sm">
                   <SelectValue placeholder="Select collection…" />
                 </SelectTrigger>
                 <SelectContent>
@@ -557,7 +557,7 @@ export function EditTokenSheet({
                 onValueChange={setGroupId}
                 disabled={!collectionId || groups.length === 0}
               >
-                <SelectTrigger className="h-9 w-full text-sm">
+                <SelectTrigger className="h-8 w-full text-sm">
                   <SelectValue
                     placeholder={!collectionId ? "Select a collection first…" : "Select group…"}
                   />
@@ -586,10 +586,20 @@ export function EditTokenSheet({
 
         {/* ── Footer ───────────────────────────────── */}
         <div className="flex gap-2 border-t px-6 py-4">
-          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
-          <Button className="flex-1" onClick={handleSave} disabled={saving || loadingOverride}>
+          <Button
+            size="sm"
+            className="flex-1"
+            onClick={handleSave}
+            disabled={saving || loadingOverride}
+          >
             {saving ? "Saving…" : "Save changes"}
           </Button>
         </div>

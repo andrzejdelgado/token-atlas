@@ -132,6 +132,7 @@ function RegisterContent() {
 
       <Button
         variant="outline"
+        size="sm"
         className="w-full gap-2"
         onClick={handleGoogle}
         disabled={googleLoading}
@@ -233,7 +234,7 @@ function RegisterContent() {
             </button>
           </div>
         </div>
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" size="sm" className="w-full" disabled={loading}>
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create account
         </Button>

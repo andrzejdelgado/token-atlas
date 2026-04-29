@@ -178,7 +178,7 @@ export function BulkGroupSheet({
             <div className="space-y-1.5">
               <Label className="text-muted-foreground text-xs">Collection</Label>
               <Select value={collectionId} onValueChange={setCollectionId}>
-                <SelectTrigger className="h-9 w-full text-sm">
+                <SelectTrigger className="h-8 w-full text-sm">
                   <SelectValue placeholder="Select collection…" />
                 </SelectTrigger>
                 <SelectContent>
@@ -200,7 +200,7 @@ export function BulkGroupSheet({
                 onValueChange={(v) => setParentId(v === NONE_VALUE ? null : v)}
                 disabled={!collectionId}
               >
-                <SelectTrigger className="h-9 w-full text-sm">
+                <SelectTrigger className="h-8 w-full text-sm">
                   <SelectValue
                     placeholder={
                       !collectionId ? "Select a collection first…" : "Top-level (no parent)"
@@ -233,10 +233,16 @@ export function BulkGroupSheet({
         </div>
 
         <div className="flex gap-2 border-t px-6 py-4">
-          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button
+            size="sm"
             className="flex-1"
             onClick={handleApply}
             disabled={!groupName.trim() || !collectionId || applying}

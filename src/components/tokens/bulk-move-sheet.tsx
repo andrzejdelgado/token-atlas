@@ -127,7 +127,7 @@ export function BulkMoveSheet({ open, onOpenChange, selectedIds, onApplied }: Bu
             <div className="space-y-1.5">
               <Label className="text-muted-foreground text-xs">Collection</Label>
               <Select value={collectionId} onValueChange={setCollectionId}>
-                <SelectTrigger className="h-9 w-full text-sm">
+                <SelectTrigger className="h-8 w-full text-sm">
                   <SelectValue placeholder="Select collection…" />
                 </SelectTrigger>
                 <SelectContent>
@@ -147,7 +147,7 @@ export function BulkMoveSheet({ open, onOpenChange, selectedIds, onApplied }: Bu
                 onValueChange={setGroupId}
                 disabled={!collectionId || groups.length === 0}
               >
-                <SelectTrigger className="h-9 w-full text-sm">
+                <SelectTrigger className="h-8 w-full text-sm">
                   <SelectValue
                     placeholder={
                       !collectionId
@@ -181,10 +181,20 @@ export function BulkMoveSheet({ open, onOpenChange, selectedIds, onApplied }: Bu
         </div>
 
         <div className="flex gap-2 border-t px-6 py-4">
-          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
-          <Button className="flex-1" onClick={handleApply} disabled={!groupId || applying}>
+          <Button
+            size="sm"
+            className="flex-1"
+            onClick={handleApply}
+            disabled={!groupId || applying}
+          >
             {applying ? "Moving…" : `Move ${count} token${count !== 1 ? "s" : ""}`}
           </Button>
         </div>

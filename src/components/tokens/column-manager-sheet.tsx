@@ -137,7 +137,7 @@ export function ColumnManagerSheet({
 
         {/* ── Footer ───────────────────────────── */}
         <div className="flex gap-2 border-t px-6 py-4">
-          <Button variant="outline" className="flex-1" onClick={resetDefaults}>
+          <Button variant="outline" size="sm" className="flex-1" onClick={resetDefaults}>
             Reset defaults
           </Button>
         </div>

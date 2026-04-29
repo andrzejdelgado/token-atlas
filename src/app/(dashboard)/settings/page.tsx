@@ -204,10 +204,10 @@ function ResetPasswordDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleReset} disabled={saving}>
+          <Button size="sm" onClick={handleReset} disabled={saving}>
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Reset password
           </Button>
@@ -431,6 +431,7 @@ export default function SettingsPage() {
                   />
                   <Button
                     variant="outline"
+                    size="sm"
                     onClick={generateInvite}
                     disabled={generatingInvite || !inviteEmail.trim()}
                   >
@@ -566,8 +567,9 @@ export default function SettingsPage() {
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogCancel size="sm">Cancel</AlertDialogCancel>
                                       <AlertDialogAction
+                                        size="sm"
                                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                         onClick={() => removeUser(user._id)}
                                       >
@@ -622,11 +624,16 @@ export default function SettingsPage() {
               </div>
               {isAdmin && (
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={testFigmaConnection} disabled={testingFigma}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={testFigmaConnection}
+                    disabled={testingFigma}
+                  >
                     {testingFigma && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Test connection
                   </Button>
-                  <Button onClick={saveFigmaSettings} disabled={savingFigma}>
+                  <Button size="sm" onClick={saveFigmaSettings} disabled={savingFigma}>
                     {savingFigma && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Save
                   </Button>
@@ -684,7 +691,7 @@ export default function SettingsPage() {
                     />
                   </div>
                 </div>
-                <Button onClick={saveStorybookSettings} disabled={savingStorybook}>
+                <Button size="sm" onClick={saveStorybookSettings} disabled={savingStorybook}>
                   {savingStorybook && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Save
                 </Button>

@@ -299,6 +299,7 @@ export default function ExportPage() {
         <Button
           onClick={handleDownload}
           disabled={!isReady() || downloading}
+          size="sm"
           className={cn(
             "min-w-40 transition-all",
             downloaded && "bg-emerald-600 hover:bg-emerald-600"

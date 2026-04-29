@@ -361,7 +361,7 @@ export default function ImportOverridesPage({ params }: { params: Promise<{ id: 
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={goToReview} disabled={!rawTokens || previewing}>
+            <Button size="sm" onClick={goToReview} disabled={!rawTokens || previewing}>
               {previewing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Preview overrides
               <ChevronRight className="ml-1.5 h-4 w-4" />
@@ -439,11 +439,11 @@ export default function ImportOverridesPage({ params }: { params: Promise<{ id: 
           </div>
 
           <div className="flex justify-between">
-            <Button variant="outline" onClick={() => setStep(1)}>
+            <Button variant="outline" size="sm" onClick={() => setStep(1)}>
               <ChevronLeft className="mr-1.5 h-4 w-4" />
               Back
             </Button>
-            <Button onClick={confirmImport} disabled={confirming}>
+            <Button size="sm" onClick={confirmImport} disabled={confirming}>
               {confirming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Confirm import
               <ChevronRight className="ml-1.5 h-4 w-4" />
@@ -514,10 +514,10 @@ export default function ImportOverridesPage({ params }: { params: Promise<{ id: 
             </div>
           ) : (
             <div className="flex justify-center gap-3">
-              <Button variant="outline" onClick={() => router.push("/themes")}>
+              <Button variant="outline" size="sm" onClick={() => router.push("/themes")}>
                 Accept
               </Button>
-              <Button onClick={loadUsers} disabled={assigningReviewer}>
+              <Button size="sm" onClick={loadUsers} disabled={assigningReviewer}>
                 {assigningReviewer && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Assign Peer Review
               </Button>

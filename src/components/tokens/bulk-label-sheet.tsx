@@ -87,10 +87,16 @@ export function BulkLabelSheet({
         </div>
 
         <div className="flex gap-2 border-t px-6 py-4">
-          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button
+            size="sm"
             className="flex-1"
             onClick={handleApply}
             disabled={applying || selectedLabels.length === 0}

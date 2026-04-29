@@ -217,7 +217,7 @@ function CriterionRow({
     if (criterion.field === "type")
       return (
         <Select value={criterion.value} onValueChange={(v) => onChange({ ...criterion, value: v })}>
-          <SelectTrigger className="h-9 min-w-0 flex-1">
+          <SelectTrigger className="h-8 min-w-0 flex-1">
             <SelectValue placeholder="Select type…" />
           </SelectTrigger>
           <SelectContent>
@@ -233,7 +233,7 @@ function CriterionRow({
     if (criterion.field === "collection")
       return (
         <Select value={criterion.value} onValueChange={(v) => onChange({ ...criterion, value: v })}>
-          <SelectTrigger className="h-9 min-w-0 flex-1">
+          <SelectTrigger className="h-8 min-w-0 flex-1">
             <SelectValue placeholder="Select collection…" />
           </SelectTrigger>
           <SelectContent>
@@ -249,7 +249,7 @@ function CriterionRow({
     if (criterion.field === "group")
       return (
         <Select value={criterion.value} onValueChange={(v) => onChange({ ...criterion, value: v })}>
-          <SelectTrigger className="h-9 min-w-0 flex-1">
+          <SelectTrigger className="h-8 min-w-0 flex-1">
             <SelectValue placeholder="Select group…" />
           </SelectTrigger>
           <SelectContent className="max-h-60">
@@ -268,7 +268,7 @@ function CriterionRow({
     if (criterion.field === "theme")
       return (
         <Select value={criterion.value} onValueChange={(v) => onChange({ ...criterion, value: v })}>
-          <SelectTrigger className="h-9 min-w-0 flex-1">
+          <SelectTrigger className="h-8 min-w-0 flex-1">
             <SelectValue placeholder="Select theme…" />
           </SelectTrigger>
           <SelectContent>
@@ -300,8 +300,9 @@ function CriterionRow({
           <PopoverTrigger asChild>
             <Button
               variant="outline"
+              size="sm"
               role="combobox"
-              className="h-9 min-w-0 flex-1 justify-between text-sm font-normal"
+              className="h-8 min-w-0 flex-1 justify-between text-sm font-normal"
             >
               {criterion.value ? (
                 <span className="truncate">{criterion.value}</span>
@@ -411,7 +412,7 @@ function CriterionRow({
 
       {/* Field */}
       <Select value={criterion.field} onValueChange={(v) => handleFieldChange(v as Field)}>
-        <SelectTrigger className="h-9 w-36 shrink-0">
+        <SelectTrigger className="h-8 w-36 shrink-0">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -429,7 +430,7 @@ function CriterionRow({
           value={criterion.operator}
           onValueChange={(v) => onChange({ ...criterion, operator: v as Operator })}
         >
-          <SelectTrigger className="h-9 w-28 shrink-0">
+          <SelectTrigger className="h-8 w-28 shrink-0">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

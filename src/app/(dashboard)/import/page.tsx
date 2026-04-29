@@ -210,7 +210,7 @@ function PreviewPanel({
           <RotateCcw className="mr-2 h-3.5 w-3.5" />
           Choose different file
         </Button>
-        <Button onClick={onConfirm} disabled={importing || preview.count === 0}>
+        <Button size="sm" onClick={onConfirm} disabled={importing || preview.count === 0}>
           {importing ? (
             <>
               <span className="mr-2 inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -239,7 +239,7 @@ function DonePanel({ count, onReset }: { count: number; onReset: () => void }) {
           {count} token{count !== 1 ? "s" : ""} imported successfully
         </p>
       </div>
-      <Button variant="outline" onClick={onReset}>
+      <Button variant="outline" size="sm" onClick={onReset}>
         <Upload className="mr-2 h-4 w-4" />
         Import another file
       </Button>

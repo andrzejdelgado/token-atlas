@@ -300,10 +300,20 @@ export function BulkRenameSheet({
 
         {/* ── Footer ───────────────────────────── */}
         <div className="flex gap-2 border-t px-6 py-4">
-          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
-          <Button className="flex-1" onClick={handleApply} disabled={!hasChanges || applying}>
+          <Button
+            size="sm"
+            className="flex-1"
+            onClick={handleApply}
+            disabled={!hasChanges || applying}
+          >
             {applying ? "Applying…" : "Apply"}
           </Button>
         </div>

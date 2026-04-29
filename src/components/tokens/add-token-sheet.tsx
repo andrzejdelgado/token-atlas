@@ -254,7 +254,7 @@ export function AddTokenSheet({ open, onOpenChange, onTokenAdded }: AddTokenShee
               <div className="space-y-1.5">
                 <Label className="text-muted-foreground text-xs">Collection</Label>
                 <Select value={collectionId} onValueChange={setCollectionId}>
-                  <SelectTrigger className="h-9 w-full text-sm">
+                  <SelectTrigger className="h-8 w-full text-sm">
                     <SelectValue placeholder="Select collection…" />
                   </SelectTrigger>
                   <SelectContent>
@@ -274,7 +274,7 @@ export function AddTokenSheet({ open, onOpenChange, onTokenAdded }: AddTokenShee
                   onValueChange={setGroupId}
                   disabled={!collectionId || groups.length === 0}
                 >
-                  <SelectTrigger className="h-9 w-full text-sm">
+                  <SelectTrigger className="h-8 w-full text-sm">
                     <SelectValue
                       placeholder={!collectionId ? "Select a collection first…" : "Select group…"}
                     />
@@ -342,12 +342,13 @@ export function AddTokenSheet({ open, onOpenChange, onTokenAdded }: AddTokenShee
             <Button
               type="button"
               variant="outline"
+              size="sm"
               className="flex-1"
               onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={saving}>
+            <Button type="submit" size="sm" className="flex-1" disabled={saving}>
               {saving ? "Creating…" : "Create token"}
             </Button>
           </div>

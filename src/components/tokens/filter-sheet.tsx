@@ -67,9 +67,10 @@ function MultiSelectCombobox({
         <PopoverTrigger asChild>
           <Button
             variant="outline"
+            size="sm"
             role="combobox"
             aria-expanded={open}
-            className="h-9 w-full justify-between text-sm font-normal"
+            className="h-8 w-full justify-between text-sm font-normal"
           >
             {selected.length === 0 ? (
               <span className="text-muted-foreground">{placeholder}</span>
@@ -160,9 +161,10 @@ function GroupCombobox({
         <PopoverTrigger asChild>
           <Button
             variant="outline"
+            size="sm"
             role="combobox"
             aria-expanded={open}
-            className="h-9 w-full justify-between text-sm font-normal"
+            className="h-8 w-full justify-between text-sm font-normal"
           >
             {selected.length === 0 ? (
               <span className="text-muted-foreground">Filter by group…</span>
@@ -530,10 +532,10 @@ export function FilterSheet({
 
         {/* ── Footer ───────────────────────────── */}
         <div className="flex gap-2 border-t px-6 py-4">
-          <Button variant="outline" className="flex-1" onClick={clearAll}>
+          <Button variant="outline" size="sm" className="flex-1" onClick={clearAll}>
             Reset filters
           </Button>
-          <Button className="flex-1" onClick={apply}>
+          <Button size="sm" className="flex-1" onClick={apply}>
             Apply filters
           </Button>
         </div>

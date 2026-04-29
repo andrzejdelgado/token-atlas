@@ -176,6 +176,7 @@ export function FloatingActionToolbar({
             {!deleteConfirm ? (
               <Button
                 variant="destructive"
+                size="sm"
                 className="w-full"
                 onClick={() => setDeleteConfirm(true)}
               >
@@ -184,11 +185,12 @@ export function FloatingActionToolbar({
               </Button>
             ) : (
               <div className="flex gap-2">
-                <Button variant="destructive" className="flex-1" onClick={confirmDelete}>
+                <Button variant="destructive" size="sm" className="flex-1" onClick={confirmDelete}>
                   Yes
                 </Button>
                 <Button
                   variant="outline"
+                  size="sm"
                   className="flex-1"
                   onClick={() => {
                     setDeleteConfirm(false);

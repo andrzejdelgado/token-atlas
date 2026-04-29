@@ -276,7 +276,7 @@ export function EditGroupSheet({
               <div className="space-y-1.5">
                 <Label className="text-muted-foreground text-xs">Collection</Label>
                 <Select value={collectionId} onValueChange={handleCollectionChange}>
-                  <SelectTrigger className="h-9 w-full text-sm">
+                  <SelectTrigger className="h-8 w-full text-sm">
                     <SelectValue placeholder="Select collection…" />
                   </SelectTrigger>
                   <SelectContent>
@@ -298,7 +298,7 @@ export function EditGroupSheet({
                   onValueChange={(v) => setParentId(v === NONE_VALUE ? null : v)}
                   disabled={!collectionId}
                 >
-                  <SelectTrigger className="h-9 w-full text-sm">
+                  <SelectTrigger className="h-8 w-full text-sm">
                     <SelectValue placeholder="Top-level (no parent)" />
                   </SelectTrigger>
                   <SelectContent className="max-h-64">
@@ -357,10 +357,15 @@ export function EditGroupSheet({
 
           {/* ── Footer ───────────────────────────── */}
           <div className="flex gap-2 border-t px-6 py-4">
-            <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button className="flex-1" onClick={handleSaveClick} disabled={saving}>
+            <Button size="sm" className="flex-1" onClick={handleSaveClick} disabled={saving}>
               {saving ? "Saving…" : "Save changes"}
             </Button>
           </div>
@@ -413,10 +418,10 @@ export function EditGroupSheet({
           </div>
 
           <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+            <Button variant="outline" size="sm" onClick={() => setConfirmOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => performSave(moveTokens)} disabled={saving}>
+            <Button size="sm" onClick={() => performSave(moveTokens)} disabled={saving}>
               {saving ? "Moving…" : "Confirm move"}
             </Button>
           </DialogFooter>
@@ -463,7 +468,7 @@ export function EditGroupSheet({
                   Move {directTokenCount} token{directTokenCount !== 1 ? "s" : ""} to:
                 </Label>
                 <Select value={tokenTarget} onValueChange={setTokenTarget}>
-                  <SelectTrigger className="h-9 w-full text-sm">
+                  <SelectTrigger className="h-8 w-full text-sm">
                     <SelectValue placeholder="Select a group…" />
                   </SelectTrigger>
                   <SelectContent className="max-h-56">
@@ -494,10 +499,10 @@ export function EditGroupSheet({
           </div>
 
           <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+            <Button variant="destructive" size="sm" onClick={handleDelete} disabled={deleting}>
               {deleting ? "Deleting…" : "Delete group"}
             </Button>
           </DialogFooter>
