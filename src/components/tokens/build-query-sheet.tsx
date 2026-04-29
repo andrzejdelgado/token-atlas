@@ -49,6 +49,8 @@ export interface QueryResult {
   initialFilters?: TokenFilters;
   excludeFilters?: ExcludeFilters;
   criteriaCount: number;
+  rawCriteria: Criterion[];
+  rawExcludeCriteria: Criterion[];
 }
 
 type Field =
@@ -265,6 +267,8 @@ function buildQueryResult(criteria: Criterion[], excludeCriteria: Criterion[]): 
     initialFilters,
     excludeFilters,
     criteriaCount: criteria.length + excludeCriteria.length,
+    rawCriteria: criteria,
+    rawExcludeCriteria: excludeCriteria,
   };
 }
 
@@ -758,9 +762,17 @@ interface BuildQuerySheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSearch: (result: QueryResult) => void;
+  initialCriteria?: Criterion[];
+  initialExcludeCriteria?: Criterion[];
 }
 
-export function BuildQuerySheet({ open, onOpenChange, onSearch }: BuildQuerySheetProps) {
+export function BuildQuerySheet({
+  open,
+  onOpenChange,
+  onSearch,
+  initialCriteria,
+  initialExcludeCriteria,
+}: BuildQuerySheetProps) {
   const [activeTab, setActiveTab] = useState<"builder" | "queries">("builder");
   const [criteria, setCriteria] = useState<Criterion[]>([makeCriterion("name")]);
   const [excludeCriteria, setExcludeCriteria] = useState<Criterion[]>([]);
@@ -778,6 +790,13 @@ export function BuildQuerySheet({ open, onOpenChange, onSearch }: BuildQueryShee
 
   useEffect(() => {
     if (!open) return;
+    if (initialCriteria && initialCriteria.length > 0) {
+      setCriteria(initialCriteria.map((c) => ({ ...c, id: uid() })));
+      const exc = initialExcludeCriteria ?? [];
+      setExcludeCriteria(exc.map((c) => ({ ...c, id: uid() })));
+      setShowExclude(exc.length > 0);
+      setActiveTab("builder");
+    }
     Promise.all([
       fetch("/api/themes").then((r) => r.json()),
       fetch("/api/collections").then((r) => r.json()),
@@ -1012,7 +1031,12 @@ export function BuildQuerySheet({ open, onOpenChange, onSearch }: BuildQueryShee
                 >
                   <BookmarkPlus className="h-3.5 w-3.5" /> Save query
                 </Button>
-                <Button size="sm" onClick={handleSearch} className="gap-1.5">
+                <Button
+                  size="sm"
+                  onClick={handleSearch}
+                  disabled={criteria.every((c) => !c.value && c.field !== "flagged")}
+                  className="gap-1.5"
+                >
                   <Search className="h-3.5 w-3.5" /> Search
                 </Button>
               </div>

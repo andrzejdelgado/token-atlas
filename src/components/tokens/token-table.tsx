@@ -933,6 +933,8 @@ export function TokenTable({
         open={buildQueryOpen}
         onOpenChange={setBuildQueryOpen}
         onSearch={handleQuerySearch}
+        initialCriteria={activeQuery?.rawCriteria}
+        initialExcludeCriteria={activeQuery?.rawExcludeCriteria}
       />
       <FilterSheet
         open={filterOpen}
