@@ -659,7 +659,7 @@ export function TokenTable({
               </button>
               {activeFilterCount > 0 && (
                 <button
-                  className="flex h-full items-center rounded-r-md px-1 transition-opacity hover:opacity-70"
+                  className="flex h-full items-center rounded-r-md pr-3 transition-opacity hover:opacity-70"
                   onClick={() => setFilters({})}
                   title="Clear all filters"
                 >
