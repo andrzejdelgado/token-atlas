@@ -863,7 +863,7 @@ export function BuildQuerySheet({
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-[560px]">
-          <SheetHeader className="border-b px-5 py-4">
+          <SheetHeader className="px-5 py-4">
             <SheetTitle>Build Query</SheetTitle>
           </SheetHeader>
 
