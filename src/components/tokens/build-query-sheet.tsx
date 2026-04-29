@@ -905,7 +905,7 @@ export function BuildQuerySheet({
             {activeTab === "builder" ? (
               <div className="space-y-3">
                 {/* Column headers */}
-                <div className="flex items-center gap-2">
+                <div className="border-border flex items-center gap-2 border-b pb-2">
                   <div className="w-10 shrink-0" />
                   <span className="text-muted-foreground w-32 shrink-0 text-xs font-medium">
                     Field

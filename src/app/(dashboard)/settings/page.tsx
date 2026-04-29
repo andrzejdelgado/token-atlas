@@ -404,8 +404,9 @@ export default function SettingsPage() {
       <Tabs defaultValue={defaultTab}>
         <TabsList>
           {isAdmin && <TabsTrigger value="team">Team</TabsTrigger>}
+          {!isAdmin && <TabsTrigger value="profile">Profile</TabsTrigger>}
           <TabsTrigger value="workspace">Workspace</TabsTrigger>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
+          {isAdmin && <TabsTrigger value="profile">Profile</TabsTrigger>}
         </TabsList>
 
         {/* ── Team tab (admin only) ── */}
@@ -703,10 +704,7 @@ export default function SettingsPage() {
         {/* ── Profile tab ── */}
         <TabsContent value="profile" className="mt-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Profile</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>Name</Label>
