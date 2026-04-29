@@ -659,11 +659,16 @@ export function TokenTable({
               </button>
               {activeFilterCount > 0 && (
                 <button
-                  className="flex h-full items-center rounded-r-md px-2 transition-opacity hover:opacity-70"
+                  className="flex h-full items-center rounded-r-md px-1 transition-opacity hover:opacity-70"
                   onClick={() => setFilters({})}
                   title="Clear all filters"
                 >
-                  <span className="bg-muted border-primary flex h-4 w-4 items-center justify-center rounded-full border">
+                  <span
+                    className="bg-muted flex h-4 w-4 items-center justify-center rounded-full border"
+                    style={{
+                      borderColor: "color-mix(in oklab, var(--ring) 50%, transparent)",
+                    }}
+                  >
                     <X className="text-primary h-2.5 w-2.5" />
                   </span>
                 </button>
