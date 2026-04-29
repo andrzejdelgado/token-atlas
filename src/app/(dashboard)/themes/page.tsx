@@ -690,7 +690,7 @@ export default function ThemesPage() {
           Loading themes…
         </div>
       ) : (
-        <div className="space-y-10">
+        <div className="space-y-6">
           <ThemeSection
             title="Base Themes"
             description="Provide a full set of token values. Use these as the foundation for modifier themes."

@@ -914,7 +914,7 @@ export default function AdvancedSearchPage() {
           {!builderCollapsed && (
             <div className="space-y-3 p-5">
               {/* Column headers */}
-              <div className="flex items-center gap-2 pl-0">
+              <div className="border-border flex items-center gap-2 border-b pb-2">
                 <div className="w-12 shrink-0" />
                 <span className="text-muted-foreground w-36 shrink-0 text-xs font-medium">
                   Field
