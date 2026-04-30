@@ -51,6 +51,7 @@ export function UserAvatarMenu() {
   const { theme, setTheme } = useTheme();
   const [langOpen, setLangOpen] = useState(false);
   const [notifications, setNotifications] = useState<INotification[]>([]);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const unread = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
@@ -64,6 +65,17 @@ export function UserAvatarMenu() {
     const interval = setInterval(fetchNotifications, 30_000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    fetch(`/api/users/${session.user.id}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.data?.avatarUrl) setAvatarUrl(d.data.avatarUrl);
+        else setAvatarUrl(null);
+      })
+      .catch(() => {});
+  }, [session?.user?.id]);
 
   async function markAllRead() {
     await fetch("/api/notifications", {
@@ -95,7 +107,7 @@ export function UserAvatarMenu() {
       <DropdownMenuTrigger asChild>
         <button className="hover:bg-sidebar-accent flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors outline-none">
           <Avatar className="h-6 w-6 shrink-0">
-            <AvatarImage src={user?.image ?? undefined} />
+            <AvatarImage src={avatarUrl ?? undefined} />
             <AvatarFallback
               suppressHydrationWarning
               className="bg-foreground text-background text-[10px]"

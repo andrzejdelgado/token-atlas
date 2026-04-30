@@ -316,15 +316,17 @@ export default function SettingsPage() {
     setProfileName(session?.user?.name ?? "");
   }, [isAdmin, session]);
 
-  // Initialize avatarUrl from session once — not on every session change so
-  // local updates from upload/delete are not overwritten by intermediate states.
-  const avatarInitialized = useRef(false);
+  // Fetch avatar directly from DB on mount so it persists across navigations
+  // regardless of session propagation timing.
   useEffect(() => {
-    if (!avatarInitialized.current && session !== undefined) {
-      setAvatarUrl(session?.user?.image ?? null);
-      avatarInitialized.current = true;
-    }
-  }, [session]);
+    if (!session?.user?.id) return;
+    fetch(`/api/users/${session.user.id}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.data?.avatarUrl) setAvatarUrl(d.data.avatarUrl);
+      })
+      .catch(() => {});
+  }, [session?.user?.id]);
 
   async function saveFigmaSettings() {
     setSavingFigma(true);
@@ -588,86 +590,6 @@ export default function SettingsPage() {
         {/* ── Team tab (admin only) ── */}
         {isAdmin && (
           <TabsContent value="team" className="mt-6 space-y-6">
-            {/* Invite */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Invite member</CardTitle>
-                <CardDescription>
-                  Generate an invite link for a teammate. Links expire after 7 days.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-2">
-                  <Input
-                    type="email"
-                    placeholder="teammate@example.com"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && generateInvite()}
-                    className="max-w-xs"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={generateInvite}
-                    disabled={generatingInvite || !inviteEmail.trim()}
-                  >
-                    {generatingInvite && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Generate invite
-                  </Button>
-                </div>
-
-                {generatedLink && (
-                  <div className="bg-muted flex items-center gap-2 rounded-lg px-3 py-2">
-                    <span className="text-muted-foreground min-w-0 flex-1 truncate font-mono text-xs">
-                      {generatedLink}
-                    </span>
-                    <CopyButton text={generatedLink} />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 shrink-0"
-                      onClick={() => setGeneratedLink(null)}
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                )}
-
-                {invites.length > 0 && (
-                  <div className="space-y-1">
-                    <p className="text-muted-foreground text-xs font-medium">Pending invites</p>
-                    {invites.map((invite) => (
-                      <div
-                        key={invite._id}
-                        className="flex items-center gap-2 rounded-md px-0 py-1"
-                      >
-                        <span className="text-foreground min-w-0 flex-1 truncate text-sm">
-                          {invite.email}
-                        </span>
-                        <span className="text-muted-foreground shrink-0 text-xs">
-                          expires <TimestampCell date={invite.expiresAt} className="inline" />
-                        </span>
-                        <CopyButton
-                          text={`${typeof window !== "undefined" ? window.location.origin : ""}/register?token=${invite.token}`}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-muted-foreground hover:text-destructive h-7 w-7 shrink-0"
-                          onClick={() => revokeInvite(invite.token)}
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
             {/* Members */}
             <Card>
               <CardHeader>
@@ -781,6 +703,96 @@ export default function SettingsPage() {
                   </Table>
                 </CardContent>
               )}
+            </Card>
+
+            {/* Invite */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Invite</CardTitle>
+                <CardDescription>
+                  Generate an invite link for a teammate. Links expire after 7 days.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="mt-4 space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    placeholder="teammate@example.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && generateInvite()}
+                    className="max-w-xs"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={generateInvite}
+                    disabled={generatingInvite || !inviteEmail.trim()}
+                  >
+                    {generatingInvite && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Generate invite
+                  </Button>
+                </div>
+
+                {generatedLink && (
+                  <div className="bg-muted flex items-center gap-2 rounded-lg px-3 py-2">
+                    <span className="text-muted-foreground min-w-0 flex-1 truncate font-mono text-xs">
+                      {generatedLink}
+                    </span>
+                    <CopyButton text={generatedLink} />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 shrink-0"
+                      onClick={() => setGeneratedLink(null)}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Pending Invitations */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Pending Invitations</CardTitle>
+                <CardDescription>
+                  Invitations that have been sent but not yet accepted.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {invites.length === 0 ? (
+                  <p className="text-muted-foreground py-4 text-center text-sm">
+                    No pending invitations.
+                  </p>
+                ) : (
+                  <div className="space-y-1">
+                    {invites.map((invite) => (
+                      <div key={invite._id} className="flex items-center gap-2 rounded-md py-1">
+                        <span className="text-foreground min-w-0 flex-1 truncate text-sm">
+                          {invite.email}
+                        </span>
+                        <span className="text-muted-foreground shrink-0 text-xs">
+                          expires <TimestampCell date={invite.expiresAt} className="inline" />
+                        </span>
+                        <CopyButton
+                          text={`${typeof window !== "undefined" ? window.location.origin : ""}/register?token=${invite.token}`}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-destructive h-7 w-7 shrink-0"
+                          onClick={() => revokeInvite(invite.token)}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
             </Card>
           </TabsContent>
         )}

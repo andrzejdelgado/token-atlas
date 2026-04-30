@@ -112,6 +112,7 @@ export const authConfig: NextAuthConfig = {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role ?? "user";
+        token.picture = (user as { image?: string | null }).image ?? null;
       }
       // Refresh token if role is missing, id is stale, or a session update was triggered
       const needsRefresh =
