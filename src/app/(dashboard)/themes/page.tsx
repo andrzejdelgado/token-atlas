@@ -25,7 +25,7 @@ import {
   MoreHorizontal,
   Loader2,
   Layers,
-  ArrowRight,
+  ArrowUpRight,
   Pencil,
   Trash2,
   Upload,
@@ -171,13 +171,15 @@ function ThemeCard({ theme, onEdit, onDelete, onRename, onRevert }: ThemeCardPro
                 }}
               />
             ) : (
-              <p
-                className="text-foreground truncate text-sm font-medium"
+              <Link
+                href={`/tokens?theme=${theme._id}`}
+                className="group/title text-foreground inline-flex items-center gap-1 truncate text-sm font-medium hover:underline"
                 onDoubleClick={() => setRenaming(true)}
-                title="Double-click to rename"
+                title="Browse tokens"
               >
                 {theme.name}
-              </p>
+                <ArrowUpRight className="text-muted-foreground h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity group-hover/title:opacity-100" />
+              </Link>
             )}
           </div>
 
@@ -255,26 +257,15 @@ function ThemeCard({ theme, onEdit, onDelete, onRename, onRevert }: ThemeCardPro
             <div className="text-muted-foreground flex items-center gap-2 text-xs">
               {theme.modificationCount > 0 && (
                 <>
-                  <span>
-                    {theme.modificationCount} override{theme.modificationCount !== 1 ? "s" : ""}
-                  </span>
-                  <span className="text-border">|</span>
+                  <Badge variant="outline" className="h-4 px-1.5 text-[10px] font-normal">
+                    {theme.modificationCount}
+                  </Badge>
+                  <span>override{theme.modificationCount !== 1 ? "s" : ""}</span>
                 </>
               )}
-              <Link
-                href={`/tokens?theme=${theme._id}`}
-                className="hover:text-foreground flex items-center gap-0.5 transition-colors"
-              >
-                Browse tokens <ArrowRight className="h-3 w-3" />
-              </Link>
             </div>
           ) : (
-            <Link
-              href={`/tokens?theme=${theme._id}`}
-              className="text-muted-foreground hover:text-foreground flex items-center gap-0.5 text-xs transition-colors"
-            >
-              Browse tokens <ArrowRight className="h-3 w-3" />
-            </Link>
+            <div />
           )}
 
           {/* Modifier action buttons */}

@@ -213,6 +213,18 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  button,
+  [role="button"],
+  [role="tab"],
+  [role="option"],
+  [role="menuitem"],
+  [role="checkbox"],
+  [role="radio"],
+  label[for],
+  select {
+    cursor: pointer;
+  }
+
   body {
     @apply bg-background text-foreground;
     @apply font-sans;

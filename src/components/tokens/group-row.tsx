@@ -73,7 +73,7 @@ export function GroupRow({
         <td colSpan={20} className="py-2 pr-3" style={{ paddingLeft: `${8 + depth * 12}px` }}>
           <div className="flex items-center gap-2">
             <span className="text-foreground text-xs font-semibold">{groupName}</span>
-            <Badge variant="secondary" className="h-4 px-1.5 text-[10px] font-normal">
+            <Badge variant="outline" className="h-4 px-1.5 text-[10px] font-normal">
               {tokenCount}
             </Badge>
             <ChevronRight

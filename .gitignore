@@ -39,8 +39,10 @@ next-env.d.ts
 # project internals
 /wireframes/
 /variables/
+/user-flows/
 initial-prompt.xml
 case-study.md
+TOKEN_ATLAS_PROMPT.md
 LICENSE
 
 # os / editor

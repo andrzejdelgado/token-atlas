@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Search, SlidersHorizontal, Plus, Columns3, ArrowUpDown, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -578,7 +577,7 @@ export function TokenTable({
                       {theme.name}
                       {theme.modificationCount > 0 && (
                         <Badge
-                          variant="secondary"
+                          variant="outline"
                           className="pointer-events-none h-4 px-1.5 text-[10px] font-normal"
                         >
                           {theme.modificationCount}
@@ -604,7 +603,7 @@ export function TokenTable({
                       +{overflowModifiers.length}
                       {activeIsOverflow && (
                         <Badge
-                          variant="secondary"
+                          variant="outline"
                           className="pointer-events-none h-4 px-1.5 text-[10px] font-normal"
                         >
                           {activeTheme?.name}
@@ -676,7 +675,10 @@ export function TokenTable({
                 <Search className="h-3.5 w-3.5" />
                 Query
                 {activeQuery && (
-                  <Badge className="pointer-events-none ml-0.5 h-4 px-1.5 text-[10px] font-normal">
+                  <Badge
+                    variant="outline"
+                    className="pointer-events-none ml-0.5 h-4 px-1.5 text-[10px] font-normal"
+                  >
                     {activeQuery.criteriaCount}
                   </Badge>
                 )}
@@ -699,19 +701,22 @@ export function TokenTable({
               )}
             </div>
 
-            <Tabs
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              size="sm"
               value={flaggedOnly ? "flagged" : "all"}
-              onValueChange={(v) => setFlaggedOnly(v === "flagged")}
+              onValueChange={(v) => {
+                if (v) setFlaggedOnly(v === "flagged");
+              }}
             >
-              <TabsList className="h-8">
-                <TabsTrigger value="all" className="px-3 text-xs">
-                  All
-                </TabsTrigger>
-                <TabsTrigger value="flagged" className="px-3 text-xs">
-                  Flagged
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+              <ToggleGroupItem value="all" className="text-xs">
+                All
+              </ToggleGroupItem>
+              <ToggleGroupItem value="flagged" className="text-xs">
+                Flagged
+              </ToggleGroupItem>
+            </ToggleGroup>
 
             <div
               className={cn(
@@ -728,7 +733,10 @@ export function TokenTable({
                 <SlidersHorizontal className="h-3.5 w-3.5" />
                 Filters
                 {activeFilterCount > 0 && (
-                  <Badge className="pointer-events-none ml-0.5 h-4 px-1.5 text-[10px] font-normal">
+                  <Badge
+                    variant="outline"
+                    className="pointer-events-none ml-0.5 h-4 px-1.5 text-[10px] font-normal"
+                  >
                     {activeFilterCount}
                   </Badge>
                 )}

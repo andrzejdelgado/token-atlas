@@ -20,7 +20,7 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { UserAvatarMenu } from "./user-avatar-menu";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -62,7 +62,7 @@ function useActiveParam() {
 function TokenBadge({ count }: { count: number }) {
   return (
     <Badge
-      variant="secondary"
+      variant="outline"
       className="pointer-events-none ml-auto h-4 shrink-0 px-1.5 text-[10px] font-normal"
     >
       {count}
@@ -481,21 +481,28 @@ export function AppSidebar({ collections, groups, defaultCollectionId }: AppSide
           {/* Collections — toggle */}
           <SidebarGroup className="px-3 py-2">
             <SidebarGroupContent>
-              <Tabs value={activeCollectionId ?? ""} onValueChange={handleCollectionChange}>
-                <TabsList className="h-8 w-full">
-                  {collections.map((col) => (
-                    <TabsTrigger key={col._id} value={col._id} className="flex-1 gap-1.5 text-xs">
-                      {col.name}
-                      <Badge
-                        variant="secondary"
-                        className="pointer-events-none h-4 px-1.5 text-[10px] font-normal"
-                      >
-                        {col.tokenCount}
-                      </Badge>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                size="sm"
+                value={activeCollectionId ?? ""}
+                onValueChange={(v) => {
+                  if (v) handleCollectionChange(v);
+                }}
+                className="w-full"
+              >
+                {collections.map((col) => (
+                  <ToggleGroupItem key={col._id} value={col._id} className="flex-1 gap-1.5 text-xs">
+                    {col.name}
+                    <Badge
+                      variant="outline"
+                      className="pointer-events-none h-4 px-1.5 text-[10px] font-normal"
+                    >
+                      {col.tokenCount}
+                    </Badge>
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
             </SidebarGroupContent>
           </SidebarGroup>
 
